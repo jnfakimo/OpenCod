@@ -90,6 +90,14 @@
   }
   #clearBtn:hover { border-color: #ef4444; color: #fca5a5; }
 
+  #downloadBtn {
+    background: #1e293b;
+    color: #94a3b8;
+    border: 2px solid #334155;
+    font-size: 0.9rem;
+  }
+  #downloadBtn:hover { border-color: #34d399; color: #6ee7b7; }
+
   .cloud-wrapper {
     width: 100%;
     max-width: 800px;
@@ -191,6 +199,7 @@
 <div class="controls">
   <button id="toggleBtn">👁 隱藏文字雲</button>
   <button id="clearBtn">🗑 清除全部</button>
+  <button id="downloadBtn">⬇ 下載資料</button>
 </div>
 
 <div class="cloud-wrapper" id="cloudWrapper">
@@ -319,6 +328,18 @@ clearBtn.addEventListener('click', async () => {
   allWords = [];
   drawCloud();
   showToast('已清除');
+});
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  if (allWords.length === 0) { showToast('目前沒有資料', true); return; }
+  const header = '詞彙,次數\n';
+  const rows = allWords.map(w => `${w.word},${w.count}`).join('\n');
+  const blob = new Blob(['﻿' + header + rows], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `文字雲資料_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
 });
 
 document.getElementById('wordInput').addEventListener('keydown', e => {
