@@ -264,8 +264,12 @@ async function syncOfflineData() {
 }
 
 async function loadEquipment() {
-  const { data: eqs } = await db.from('equipment').select('*').eq('status', 'active').order('name');
-  if (!eqs) return;
+  const { data: eqs, error: eqErr } = await db.from('equipment').select('*').eq('status', 'active').order('name');
+  if (eqErr || !eqs) {
+    document.getElementById('eqList').innerHTML = `<div style="text-align:center;color:#ef4444;padding:40px 0">載入失敗：${eqErr ? eqErr.message : '無資料'}</div>`;
+    document.getElementById('pendingCount').textContent = '';
+    return;
+  }
   eqs.forEach(e => equipmentMap[e.equipment_id] = e);
 
   // Load today's inspection records for current cycle
