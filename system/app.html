@@ -219,13 +219,9 @@ function saveOfflineQueue(q) { localStorage.setItem(OFFLINE_KEY, JSON.stringify(
 
 // INIT
 (async () => {
-  const { data: { session } } = await db.auth.getSession();
-  if (!session) { window.location.href = 'login.html'; return; }
-
-  const { data: profile } = await db.from('users').select('*').eq('auth_id', session.user.id).single();
-  if (!profile) { await db.auth.signOut(); window.location.href = 'login.html'; return; }
-  currentUser = profile;
-  document.getElementById('navUser').textContent = profile.name;
+  const { data: profile } = await db.from('users').select('*').eq('name', '系統管理者').single();
+  currentUser = profile || { user_id: 'eb771a87-aa4d-4066-b23d-9b810a5c00bd', name: '系統管理者', role: 'inspector' };
+  document.getElementById('navUser').textContent = currentUser.name;
 
   const { data: cycle } = await db.from('inspection_cycles').select('*').is('ended_at', null).order('started_at', { ascending: false }).limit(1).single();
   currentCycle = cycle;
