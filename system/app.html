@@ -620,17 +620,31 @@ function getOfflineQueue() { try { return JSON.parse(localStorage.getItem(OFFLIN
 function saveOfflineQueue(q) { localStorage.setItem(OFFLINE_KEY, JSON.stringify(q)); }
 
 (async () => {
-  const { data: profile } = await db.from('users').select('*').eq('name', '系統管理者').single();
-  currentUser = profile || { user_id: 'eb771a87-aa4d-4066-b23d-9b810a5c00bd', name: '系統管理者', role: 'inspector' };
-  document.getElementById('navUser').textContent = currentUser.name;
+  const showInitErr = msg => {
+    document.getElementById('eqList').innerHTML =
+      `<div style="text-align:center;color:var(--red);padding:40px 16px;font-family:var(--font-mono);font-size:.8rem;line-height:1.8">
+        ⚠ 系統初始化失敗<br><span style="color:var(--text-dim);font-size:.72rem">${msg}</span><br><br>
+        <button onclick="location.reload()" style="margin-top:8px;padding:8px 20px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:var(--font-mono);cursor:pointer;font-size:.72rem">重新載入</button>
+      </div>`;
+    document.getElementById('pendingCount').textContent = 'ERROR';
+  };
 
-  const { data: cycle } = await db.from('inspection_cycles').select('*').is('ended_at', null).order('started_at', { ascending: false }).limit(1).single();
-  currentCycle = cycle;
+  try {
+    const { data: profile, error: pErr } = await db.from('users').select('*').eq('name', '系統管理者').single();
+    currentUser = profile || { user_id: 'eb771a87-aa4d-4066-b23d-9b810a5c00bd', name: '系統管理者', role: 'inspector' };
+    document.getElementById('navUser').textContent = currentUser.name;
 
-  await loadEquipment();
-  setupTabs();
-  setupOfflineDetect();
-  checkOfflineQueue();
+    const { data: cycle } = await db.from('inspection_cycles').select('*').is('ended_at', null).order('started_at', { ascending: false }).limit(1).single();
+    currentCycle = cycle;
+
+    await loadEquipment();
+    setupTabs();
+    setupOfflineDetect();
+    checkOfflineQueue();
+  } catch (err) {
+    console.error('[INIT ERROR]', err);
+    showInitErr(err.message || String(err));
+  }
 })();
 
 function setupOfflineDetect() {
@@ -669,9 +683,15 @@ let _inspectedMap = {};
 
 async function loadEquipment() {
   const { data: eqs, error: eqErr } = await db.from('equipment').select('*').eq('status', 'active').order('name');
-  if (eqErr || !eqs) {
-    document.getElementById('eqList').innerHTML = `<div style="text-align:center;color:var(--red);padding:40px 0;font-family:var(--font-mono)">ERR: ${eqErr ? eqErr.message : 'NO DATA'}</div>`;
-    document.getElementById('pendingCount').textContent = '';
+  if (eqErr) {
+    document.getElementById('eqList').innerHTML = `<div style="text-align:center;color:var(--red);padding:40px 16px;font-family:var(--font-mono);font-size:.8rem;line-height:1.8">⚠ 設備資料載入失敗<br><span style="color:var(--text-dim);font-size:.72rem">${eqErr.message}</span><br><br><button onclick="loadEquipment()" style="padding:8px 20px;background:transparent;border:1px solid var(--cyan);color:var(--cyan);font-family:var(--font-mono);cursor:pointer;font-size:.72rem">重試</button></div>`;
+    document.getElementById('pendingCount').textContent = 'ERROR';
+    return;
+  }
+  if (!eqs || eqs.length === 0) {
+    document.getElementById('eqList').innerHTML = `<div style="text-align:center;color:var(--text-dim);padding:40px 0;font-family:var(--font-mono);font-size:.8rem">尚無啟用中的設備<br><span style="font-size:.7rem">請在後台管理系統新增設備</span></div>`;
+    document.getElementById('pendingCount').textContent = 'PENDING 0 / 0';
+    document.getElementById('progressText').textContent = '0 / 0';
     return;
   }
   eqs.forEach(e => equipmentMap[e.equipment_id] = e);
@@ -839,35 +859,4 @@ function openInspectModal(eqId) {
   document.getElementById('modal-note-field').style.display = 'none';
   document.getElementById('modal-photo-field').style.display = 'none';
   document.getElementById('modalAbnormalNote').value = '';
-  document.getElementById('modalPhotoInput').value = '';
-  document.getElementById('modalPhotoPreview').innerHTML = '點此拍照或選擇圖片';
-  document.getElementById('inspectModal').classList.add('show');
-}
-
-function selectModalStatus(s) {
-  modalStatus = s;
-  document.getElementById('modal-btn-normal').className = 'radio-btn' + (s === 'normal' ? ' selected-normal' : '');
-  document.getElementById('modal-btn-abnormal').className = 'radio-btn' + (s === 'abnormal' ? ' selected-abnormal' : '');
-  document.getElementById('modal-note-field').style.display = s === 'abnormal' ? 'block' : 'none';
-  document.getElementById('modal-photo-field').style.display = s === 'abnormal' ? 'block' : 'none';
-}
-
-function closeModal() { document.getElementById('inspectModal').classList.remove('show'); }
-
-async function saveModalInspection() {
-  if (!modalStatus) { showToast('請選擇運轉狀態', true); return; }
-  if (modalStatus === 'abnormal' && !document.getElementById('modalAbnormalNote').value.trim()) {
-    showToast('請填寫異常說明', true); return;
-  }
-  if (modalStatus === 'abnormal' && !document.getElementById('modalPhotoInput').files[0]) {
-    showToast('異常狀態請上傳照片', true); return;
-  }
-  const photoFile = modalStatus === 'abnormal' ? document.getElementById('modalPhotoInput').files[0] : null;
-  const note = document.getElementById('modalAbnormalNote').value.trim();
-  closeModal();
-  await doSaveInspection(modalEquipment, modalStatus, note, photoFile);
-}
-
-async function uploadPhoto(file, equipmentId) {
-  if (!file) return null;
-  const ext = file.name.split('.').pop() || 'jp
+  document.getElementById('modalPhotoInput
