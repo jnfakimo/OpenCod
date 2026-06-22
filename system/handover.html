@@ -177,7 +177,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <a href="admin.html">⬡ 後台</a>
     <span class="nav-user" id="navUser">LOADING…</span>
     <span class="clock" id="topClock">--:--:--</span>
-    <button class="logout-btn" onclick="logout()">⏻ 登出</button>
+    <a href="index.html" class="topbar-right" style="color:var(--text-dim);text-decoration:none;padding:3px 10px;border:1px solid var(--border);border-radius:2px;font-size:.72rem;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'">⏏ 首頁</a>
   </div>
 </div>
 
@@ -390,12 +390,8 @@ let editingId = null;
 
 // ── INIT ─────────────────────────────────────────────────────
 (async () => {
-  const { data: { user }, error } = await db.auth.getUser();
-  if (error || !user) { window.location.href = 'login.html'; return; }
-
-  const { data: profile } = await db.from('users').select('*').eq('email', user.email).maybeSingle();
-  currentUser = profile || { user_id: user.id, name: user.email.split('@')[0], role: 'inspector' };
-  document.getElementById('navUser').textContent = currentUser.name;
+  currentUser = { user_id: null, name: '交接人員' };
+  document.getElementById('navUser').textContent = '電子交接簿';
 
   const [{ data: depts }, { data: users }] = await Promise.all([
     db.from('departments').select('*').eq('status','active').order('level').order('sort_order'),
@@ -731,7 +727,6 @@ function showToast(msg, isErr = false) {
   setTimeout(() => { t.className = 'toast'; }, 2800);
 }
 
-async function logout() { await db.auth.signOut(); window.location.href = 'login.html'; }
 </script>
 </body>
 </html>
