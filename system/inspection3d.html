@@ -394,7 +394,9 @@ function updateCam(){
 function build3D(){
   // Ground
   const gg=new THREE.PlaneGeometry(350,350);
-  scene.add(Object.assign(new THREE.Mesh(gg,new THREE.MeshBasicMaterial({color:0x010810})),{rotation:{x:-Math.PI/2},position:{x:0,y:-5,z:0}}));
+  const ground=new THREE.Mesh(gg,new THREE.MeshBasicMaterial({color:0x010810}));
+  ground.rotation.x=-Math.PI/2; ground.position.y=-5;
+  scene.add(ground);
 
   const topElev=FLOORS[FLOORS.length-1].elev+FH;
   const hullPts=HULL.map(p=>new THREE.Vector2(p[0],p[1]));
