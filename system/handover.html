@@ -445,10 +445,15 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         </div>
         <div class="field"><label>建立日期</label><input id="caseCreatedAt" type="text" readonly></div>
       </div>
-      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px">
-        <div class="field"><label>所屬單位</label>
-          <select id="caseUnitSel" onchange="filterCaseReporter()">
-            <option value="">— 選擇單位 —</option>
+      <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:12px">
+        <div class="field"><label>所屬單位（第一層）</label>
+          <select id="caseUnitL1" onchange="onCaseUnitL1Change()">
+            <option value="">— 選擇第一層 —</option>
+          </select>
+        </div>
+        <div class="field"><label>課/組別（選填）</label>
+          <select id="caseUnitL2" onchange="filterCaseReporter()" disabled>
+            <option value="">— 無下級單位 —</option>
           </select>
         </div>
         <div class="field"><label>通報人</label>
@@ -794,8 +799,14 @@ function fillPersonSelect(selId, deptId) {
 }
 
 
+function onCaseUnitL1Change() {
+  const l1 = document.getElementById('caseUnitL1').value;
+  fillL2(l1, 'caseUnitL2');
+  filterCaseReporter();
+}
+
 function filterCaseReporter() {
-  const deptId = document.getElementById('caseUnitSel')?.value || null;
+  const deptId = document.getElementById('caseUnitL2')?.value || document.getElementById('caseUnitL1')?.value || null;
   let filtered;
   if (deptId) {
     const dept = allDepts.find(d => d.dept_id === deptId);
@@ -1069,10 +1080,22 @@ async function openCaseForm() {
   });
   DTP.setValue('caseIncidentPicker', null);
 
-  // 所屬單位：建立帶層級縮排的單一選單
-  document.getElementById('caseUnitSel').innerHTML =
-    '<option value="">— 選擇單位 —</option>' + buildFlatDeptOpts();
-  if (currentUser?.dept_id) document.getElementById('caseUnitSel').value = currentUser.dept_id;
+  // 所屬單位：二層下拉
+  const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
+  document.getElementById('caseUnitL1').innerHTML = '<option value="">— 選擇第一層 —</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+  document.getElementById('caseUnitL2').innerHTML = '<option value="">— 無下級單位 —</option>';
+  document.getElementById('caseUnitL2').disabled = true;
+  if (currentUser?.dept_id) {
+    const dept = allDepts.find(d => d.dept_id === currentUser.dept_id);
+    if (dept?.parent_id) {
+      document.getElementById('caseUnitL1').value = dept.parent_id;
+      fillL2(dept.parent_id, 'caseUnitL2');
+      document.getElementById('caseUnitL2').value = currentUser.dept_id;
+    } else {
+      document.getElementById('caseUnitL1').value = currentUser.dept_id;
+      fillL2(currentUser.dept_id, 'caseUnitL2');
+    }
+  }
   filterCaseReporter();
   document.getElementById('caseReporter').value = currentUser.name || '';
   pendingAttachments = [];
