@@ -379,7 +379,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="tab-panel" id="panel-history">
     <div class="filter-bar">
       <select id="fDeptL1" onchange="onFDeptL1Change()" style="min-width:120px"><option value="">全部部門</option></select>
-      <select id="fDeptL2" onchange="loadHistory()" style="min-width:120px" disabled><option value="">全部課別</option></select>
+      <select id="fDeptL2" onchange="loadHistory()" style="min-width:120px;opacity:0.45;pointer-events:none"><option value="">全部課別</option></select>
       <select id="fShift" onchange="loadHistory()">
         <option value="">全部班別</option>
         <option value="morning">早班</option>
@@ -767,8 +767,10 @@ function buildDeptSelects() {
   document.getElementById('hTakeoverL1').innerHTML = l1Opts;
   const fL1Opts = '<option value="">全部部門</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
   document.getElementById('fDeptL1').innerHTML = fL1Opts;
-  document.getElementById('fDeptL2').innerHTML = '<option value="">全部課別</option>';
-  document.getElementById('fDeptL2').disabled = true;
+  const fL2 = document.getElementById('fDeptL2');
+  fL2.innerHTML = '<option value="">全部課別</option>';
+  fL2.style.opacity = '0.45';
+  fL2.style.pointerEvents = 'none';
 }
 
 function onFDeptL1Change() {
@@ -778,14 +780,17 @@ function onFDeptL1Change() {
     const children = allDepts.filter(d => d.parent_id === l1).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
     if (children.length) {
       l2Sel.innerHTML = '<option value="">全部課別</option>' + children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
-      l2Sel.disabled = false;
+      l2Sel.style.opacity = '1';
+      l2Sel.style.pointerEvents = 'auto';
     } else {
       l2Sel.innerHTML = '<option value="">— 無下級單位 —</option>';
-      l2Sel.disabled = true;
+      l2Sel.style.opacity = '0.45';
+      l2Sel.style.pointerEvents = 'none';
     }
   } else {
     l2Sel.innerHTML = '<option value="">全部課別</option>';
-    l2Sel.disabled = true;
+    l2Sel.style.opacity = '0.45';
+    l2Sel.style.pointerEvents = 'none';
   }
   loadHistory();
 }
