@@ -1441,7 +1441,7 @@ async function loadDashboard() {
 async function loadUsers() {
   await loadAll();
   populateUserFilters();
-  renderUsers(allUsers);
+  filterUsers();
 }
 
 function formatPerms(p) {
