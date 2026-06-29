@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>臺北農產 第一果菜市場 — 3D 立體樓層模型</title>
+<style>
+:root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
+#topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200}
+.tb-logo{font-size:13px;font-weight:700;color:var(--cyan);white-space:nowrap}
+.tb-sep{width:1px;height:24px;background:var(--border)}
+.tb-title{font-size:11px;color:var(--text2)}
+.tb-space{flex:1}
+.tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s}
+.tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
+#c3d{position:fixed;inset:50px 0 0 0}
+#c3d canvas{display:block}
+
+#floors{position:fixed;right:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.fbtn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;text-align:left;transition:all .15s;white-space:nowrap}
+.fbtn:last-child{border-bottom:none}
+.fbtn:hover{background:rgba(0,212,255,.08)}
+.fbtn .dot{width:9px;height:9px;border-radius:2px;border:1px solid var(--cyan);flex-shrink:0}
+.fbtn.on .dot{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.fbtn.off{color:var(--text2)}
+
+#panel{position:fixed;left:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:11px 13px;font-size:11px;line-height:1.9;min-width:165px}
+#panel .p-t{color:var(--cyan);font-weight:700;font-size:12px;margin-bottom:5px}
+#panel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
+#panel input[type=range]{width:100%;accent-color:var(--cyan)}
+.btnrow{display:flex;gap:6px;margin-top:8px}
+.mini{flex:1;padding:5px;background:rgba(0,212,255,.08);border:1px solid var(--border);color:var(--cyan2);border-radius:3px;cursor:pointer;font-size:10px;transition:all .15s}
+.mini:hover{border-color:var(--cyan);color:var(--cyan)}
+
+#hint{position:fixed;bottom:14px;right:14px;font-size:10px;color:var(--text2);z-index:150;text-align:right;line-height:1.8;pointer-events:none}
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px}
+.ld-t{font-size:13px;color:var(--cyan);letter-spacing:.1em}
+.ld-bar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:var(--cyan);width:0%;transition:width .25s}
+.ld-m{font-size:11px;color:var(--text2)}
+@media(max-width:600px){.tb-title{display:none}}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-t">載入 3D 樓層模型…</div>
+  <div class="ld-bar"><div class="ld-fill" id="ldfill"></div></div>
+  <div class="ld-m" id="ldmsg">初始化…</div>
+</div>
+
+<div id="topbar">
+  <div class="tb-logo">臺北農產 第一果菜市場</div>
+  <div class="tb-sep"></div>
+  <div class="tb-title">3D 立體樓層模型</div>
+  <div class="tb-space"></div>
+  <a href="b1plan.html" class="tb-back">▣ 平面圖</a>
+  <a href="app.html" class="tb-back">← 巡檢</a>
+</div>
+
+<div id="c3d"></div>
+
+<div id="floors">
+  <button class="fbtn on" id="t-F1" onclick="toggleFloor('1F')"><span class="dot"></span>1F 一樓</button>
+  <button class="fbtn on" id="t-B1" onclick="toggleFloor('B1')"><span class="dot"></span>B1 地下一層</button>
+</div>
+
+<div id="panel">
+  <div class="p-t">⬡ 立體控制</div>
+  <label>樓層間距（視覺）</label>
+  <input type="range" id="explode" min="1" max="20" value="8" step="0.5" oninput="setExplode(this.value)">
+  <div class="h-r" style="color:var(--text2)">實際樓高：<span style="color:var(--text)">450 cm</span></div>
+  <div class="h-r" style="color:var(--text2)">放大倍率：<span style="color:var(--text)" id="exVal">8×</span></div>
+  <div class="btnrow">
+    <button class="mini" onclick="resetView()">⊡ 重置</button>
+    <button class="mini" onclick="topView()">⊤ 俯視</button>
+    <button class="mini" onclick="setExplode(1)">真實比例</button>
+  </div>
+</div>
+
+<div id="hint">拖曳 旋轉環繞 &nbsp;|&nbsp; 滾輪 縮放 &nbsp;|&nbsp; 右鍵 平移</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
+
+// ── World dimensions (from shared DXF frame, mm → metres) ──
+const FRAME_W = 432465/1000;   // 432.5 m
+const FRAME_H = 406810/1000;   // 406.8 m
+const FLOOR_GAP = 4.5;         // real floor height (m): B1 ↔ 1F = 450 cm
+let EXPLODE = 8;               // visual vertical exaggeration
+
+// floor definitions (bottom → up)
+const FLOORS = [
+  { id:'B1', label:'B1 地下一層', tex:'plans/tex/b1_tex.png', level:0, mesh:null, frame:null, visible:true },
+  { id:'1F', label:'1F 一樓',     tex:'plans/tex/f1_tex.png', level:1, mesh:null, frame:null, visible:true },
+];
+
+let scene,camera,renderer;
+prog(10,'建立場景…');
+function init(){
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x020b18);
+  scene.fog=new THREE.FogExp2(0x020b18,0.0009);
+  const W=innerWidth,H=innerHeight-50;
+  camera=new THREE.PerspectiveCamera(42,W/H,0.5,6000);
+  renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.setSize(W,H);
+  document.getElementById('c3d').appendChild(renderer.domElement);
+  scene.add(new THREE.AmbientLight(0xffffff,1.0));
+  addEventListener('resize',()=>{camera.aspect=innerWidth/(innerHeight-50);camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight-50);});
+  renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+}
+
+// ── neon edge frame for each floor (so empty plates still read) ──
+function floorFrame(y){
+  const g=new THREE.Group();
+  const hw=FRAME_W/2,hh=FRAME_H/2;
+  const pts=[[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh],[-hw,-hh]].map(p=>new THREE.Vector3(p[0],y,p[1]));
+  const geo=new THREE.BufferGeometry().setFromPoints(pts);
+  g.add(new THREE.Line(geo,new THREE.LineBasicMaterial({color:0x0a3a5a})));
+  return g;
+}
+
+function buildFloors(){
+  const loader=new THREE.TextureLoader();
+  let done=0;
+  FLOORS.forEach(fl=>{
+    const fr=floorFrame(0); fr.userData.fl=fl; scene.add(fr); fl.frame=fr;
+    loader.load(fl.tex, tex=>{
+      tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter;
+      tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+      const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide});
+      const geo=new THREE.PlaneGeometry(FRAME_W,FRAME_H);
+      const m=new THREE.Mesh(geo,mat);
+      m.rotation.x=-Math.PI/2;          // lay flat
+      m.userData.fl=fl; fl.mesh=m; scene.add(m);
+      done++; prog(40+done*28,'載入樓層貼圖…');
+      if(done===FLOORS.length){ layoutFloors(); finishLoad(); }
+    }, undefined, ()=>{ done++; if(done===FLOORS.length){layoutFloors();finishLoad();} });
+  });
+}
+
+function layoutFloors(){
+  FLOORS.forEach(fl=>{
+    const y=fl.level*FLOOR_GAP*EXPLODE;
+    if(fl.mesh){ fl.mesh.position.y=y; fl.mesh.visible=fl.visible; }
+    if(fl.frame){ fl.frame.position.y=y; fl.frame.visible=fl.visible; }
+  });
+}
+
+function finishLoad(){
+  prog(100,'完成');
+  setTimeout(()=>{const l=document.getElementById('loading');l.style.transition='opacity .4s';l.style.opacity='0';setTimeout(()=>l.style.display='none',400);},150);
+  resetView(); animate();
+}
+
+// ── Orbit controls ──
+const orb={theta:-0.6,phi:1.05,r:620,tx:0,ty:20,tz:0,down:false,right:false,sx:0,sy:0,minPhi:.05,maxPhi:1.55,minR:40,maxR:2200};
+function updateCam(){
+  const x=orb.tx+orb.r*Math.sin(orb.phi)*Math.sin(orb.theta);
+  const y=orb.ty+orb.r*Math.cos(orb.phi);
+  const z=orb.tz+orb.r*Math.sin(orb.phi)*Math.cos(orb.theta);
+  camera.position.set(x,y,z); camera.lookAt(orb.tx,orb.ty,orb.tz);
+}
+function setupOrbit(){
+  const el=renderer.domElement;
+  el.addEventListener('mousedown',e=>{ if(e.button===0){orb.down=true;}else if(e.button===2){orb.right=true;} orb.sx=e.clientX;orb.sy=e.clientY; });
+  addEventListener('mouseup',()=>{orb.down=false;orb.right=false;});
+  addEventListener('mousemove',e=>{
+    const dx=e.clientX-orb.sx, dy=e.clientY-orb.sy;
+    if(orb.down){ orb.theta-=dx*0.005; orb.phi=Math.max(orb.minPhi,Math.min(orb.maxPhi,orb.phi-dy*0.005)); }
+    else if(orb.right){ const ct=Math.cos(orb.theta),st=Math.sin(orb.theta); const s=orb.r*0.0016; orb.tx-=(ct*dx)*s; orb.tz-=(st*dx)*s; orb.ty+=dy*s; }
+    orb.sx=e.clientX;orb.sy=e.clientY;
+  });
+  el.addEventListener('wheel',e=>{ orb.r=Math.max(orb.minR,Math.min(orb.maxR,orb.r+e.deltaY*0.5)); e.preventDefault(); },{passive:false});
+  // touch
+  let pd=0;
+  el.addEventListener('touchstart',e=>{const t=e.touches; if(t.length===1){orb.down=true;orb.sx=t[0].clientX;orb.sy=t[0].clientY;} if(t.length===2){orb.down=false;pd=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}},{passive:true});
+  el.addEventListener('touchmove',e=>{const t=e.touches;
+    if(t.length===1&&orb.down){orb.theta-=(t[0].clientX-orb.sx)*0.005;orb.phi=Math.max(orb.minPhi,Math.min(orb.maxPhi,orb.phi-(t[0].clientY-orb.sy)*0.005));orb.sx=t[0].clientX;orb.sy=t[0].clientY;}
+    if(t.length===2){const d=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);orb.r=Math.max(orb.minR,Math.min(orb.maxR,orb.r-(d-pd)*1.2));pd=d;}
+    e.preventDefault();},{passive:false});
+  el.addEventListener('touchend',()=>{orb.down=false;});
+}
+
+function animate(){ requestAnimationFrame(animate); updateCam(); renderer.render(scene,camera); }
+
+// ── UI ──
+function toggleFloor(id){
+  const fl=FLOORS.find(f=>f.id===id); fl.visible=!fl.visible;
+  if(fl.mesh)fl.mesh.visible=fl.visible; if(fl.frame)fl.frame.visible=fl.visible;
+  document.getElementById('t-'+id).classList.toggle('on',fl.visible);
+  document.getElementById('t-'+id).classList.toggle('off',!fl.visible);
+}
+function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'×'; layoutFloors(); }
+function resetView(){ orb.theta=-0.6;orb.phi=1.05;orb.r=620;orb.tx=0;orb.ty=FLOOR_GAP*EXPLODE*0.5;orb.tz=0; }
+function topView(){ orb.theta=0;orb.phi=0.06;orb.r=560;orb.tx=0;orb.tz=0; }
+
+init(); setupOrbit(); buildFloors();
+</script>
+</body>
+</html>
