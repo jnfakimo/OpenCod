@@ -99,11 +99,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;ov
 </div>
 
 <div id="floor-nav">
-  <button class="fn-btn" data-fi="4" onclick="floorClick(4)">4F 機電設備層</button>
-  <button class="fn-btn" data-fi="3" onclick="floorClick(3)">3F 花卉交易</button>
-  <button class="fn-btn" data-fi="2" onclick="floorClick(2)">2F 蔬果承銷</button>
-  <button class="fn-btn active" data-fi="1" onclick="floorClick(1)">1F 拍賣市場</button>
-  <button class="fn-btn" data-fi="0" onclick="floorClick(0)">B1 地下層</button>
+  <button class="fn-btn" data-fi="4" onclick="floorClick(4)">4F 四樓</button>
+  <button class="fn-btn" data-fi="3" onclick="floorClick(3)">3F 三樓</button>
+  <button class="fn-btn" data-fi="2" onclick="floorClick(2)">2F 二樓</button>
+  <button class="fn-btn active" data-fi="1" onclick="floorClick(1)">1F 一樓</button>
+  <button class="fn-btn" data-fi="0" onclick="floorClick(0)">B1 地下一層</button>
 </div>
 
 <div id="stats">
@@ -166,117 +166,19 @@ const ZT = {
 };
 
 // ─── FLOOR PLAN DATA ──────────────────────────────────────────────────────────
+// ▣ 空白骨架 — 已清除 B1~4F 全部分區/設備區/隔間/樓梯電梯資料。
+//   建物外殼(外牆/樓板/樑柱/屋頂)由 HULL 常數自動產生,無需資料。
+//   日後逐層填入真實分區時,依下列格式新增至各樓層:
+//     zones: [{ n:'分區名稱', t:'market', x, z, w, d }]  // 主要分區(t 對應上方 ZT 色彩表)
+//     sub:   [{ n:'子分區',   t:'cold',   x, z, w, d }]  // 細部隔間
+//     walls: [[x1,z1,x2,z2], ...]                         // 內部隔間牆
+//     feat:  [{ tp:'S'|'E'|'R', n:'名稱', x, z, w, d }]   // S=樓梯 E=電梯 R=坡道
 const FLOORS = [
-  { id:'B1', label:'B1 地下一層', fi:0, elev:-4,
-    zones:[
-      { n:'地下停車場（西）', t:'parking',   x:-50,z:-33,w:42,d:65 },
-      { n:'機電設備區',       t:'equipment', x:-8, z:-33,w:28,d:33 },
-      { n:'配電機房',         t:'equipment', x:20, z:-33,w:30,d:20 },
-      { n:'預冷庫',           t:'cold',      x:20, z:-13,w:15,d:13 },
-      { n:'泵浦機房',         t:'equipment', x:35, z:-13,w:15,d:13 },
-      { n:'廢水處理設施',     t:'equipment', x:20, z:0,  w:30,d:32 },
-      { n:'地下倉儲區',       t:'storage',   x:-8, z:0,  w:28,d:32 },
-    ],
-    sub:[
-      { n:'A區停車格', t:'parking', x:-48,z:-31,w:20,d:28 },
-      { n:'B區停車格', t:'parking', x:-48,z:-1, w:20,d:28 },
-      { n:'C區停車格', t:'parking', x:-26,z:-31,w:18,d:60 },
-    ],
-    walls:[[-8,-33,-8,32],[20,-33,20,32],[-8,0,20,0],[20,-13,50,-13],[35,-13,35,0]],
-    feat:[
-      {tp:'S',n:'S1',x:-46,z:-28,w:5,d:5},{tp:'S',n:'S2',x:-46,z:10,w:5,d:5},
-      {tp:'S',n:'S3',x:-4, z:-28,w:5,d:5},{tp:'S',n:'S4',x:15, z:20,w:5,d:5},
-      {tp:'E',n:'E1',x:-3, z:-20,w:3,d:3},{tp:'E',n:'E2',x:-3, z:10,w:3,d:3},
-      {tp:'R',n:'坡道',x:-12,z:-33,w:6,d:18},
-    ]
-  },
-  { id:'1F', label:'1F 一樓', fi:1, elev:0,
-    zones:[
-      { n:'蔬果拍賣場A區', t:'market',  x:-50,z:-37,w:50,d:32 },
-      { n:'蔬果拍賣場B區', t:'market',  x:0,  z:-37,w:50,d:32 },
-      { n:'魚貨交易區',    t:'fish',    x:-50,z:-5, w:70,d:37 },
-      { n:'服務管理區',    t:'office',  x:20, z:-5, w:30,d:37 },
-    ],
-    sub:[
-      { n:'入口大廳',  t:'circ',    x:-50,z:-12,w:20,d:7  },
-      { n:'服務台',    t:'service', x:-28,z:-12,w:10,d:7  },
-      { n:'收銀區',    t:'service', x:22, z:5,  w:15,d:10 },
-      { n:'休息區',    t:'service', x:22, z:16, w:15,d:10 },
-      { n:'廁所',      t:'service', x:38, z:5,  w:10,d:8  },
-      { n:'廁所',      t:'service', x:38, z:16, w:10,d:8  },
-    ],
-    walls:[[-50,-5,50,-5],[0,-37,0,-5],[20,-5,20,32]],
-    feat:[
-      {tp:'S',n:'S1',x:-46,z:-3, w:5,d:5},{tp:'S',n:'S2',x:-46,z:22,w:5,d:5},
-      {tp:'S',n:'S3',x:-4, z:-3, w:5,d:5},{tp:'S',n:'S4',x:15, z:22,w:5,d:5},
-      {tp:'E',n:'E1',x:-3, z:8,  w:3,d:3},{tp:'E',n:'E2',x:-3, z:17,w:3,d:3},
-    ]
-  },
-  { id:'2F', label:'2F 二樓', fi:2, elev:4,
-    zones:[
-      { n:'蔬菜承銷區', t:'market',   x:-50,z:-37,w:55,d:69 },
-      { n:'果品承銷區', t:'market',   x:5,  z:-37,w:45,d:37 },
-      { n:'物流作業區', t:'logistics',x:5,  z:0,  w:45,d:32 },
-    ],
-    sub:[
-      { n:'蔬菜理貨間',  t:'market',  x:-48,z:-35,w:30,d:20 },
-      { n:'蔬菜冷藏間',  t:'cold',    x:-48,z:-13,w:20,d:18 },
-      { n:'主通道',      t:'circ',    x:-15,z:-37,w:5, d:69  },
-      { n:'裝卸月台',    t:'logistics',x:10, z:5,  w:30,d:10 },
-    ],
-    walls:[[5,-37,5,32],[5,0,50,0],[-15,-37,-15,32]],
-    feat:[
-      {tp:'S',n:'S1',x:-46,z:-3, w:5,d:5},{tp:'S',n:'S2',x:-46,z:22,w:5,d:5},
-      {tp:'S',n:'S3',x:0,  z:-3, w:5,d:5},{tp:'S',n:'S4',x:15, z:22,w:5,d:5},
-      {tp:'E',n:'E1',x:1,  z:8,  w:3,d:3},{tp:'E',n:'E2',x:1,  z:17,w:3,d:3},
-    ]
-  },
-  { id:'3F', label:'3F 三樓', fi:3, elev:8,
-    zones:[
-      { n:'花卉交易區',   t:'flower',  x:-50,z:-37,w:60,d:69 },
-      { n:'市場管理辦公', t:'office',  x:10, z:-37,w:40,d:32 },
-      { n:'公共服務區',   t:'service', x:10, z:-5, w:40,d:37 },
-    ],
-    sub:[
-      { n:'花卉冷藏間',   t:'cold',    x:-48,z:-35,w:15,d:20 },
-      { n:'花卉交易A',    t:'flower',  x:-31,z:-35,w:25,d:30 },
-      { n:'花卉交易B',    t:'flower',  x:-31,z:-3, w:25,d:30 },
-      { n:'主任辦公室',   t:'office',  x:12, z:-35,w:12,d:10 },
-      { n:'會議室A',      t:'office',  x:24, z:-35,w:12,d:10 },
-      { n:'會議室B',      t:'office',  x:36, z:-35,w:12,d:10 },
-      { n:'展覽廳',       t:'service', x:12, z:-23,w:36,d:18 },
-      { n:'員工餐廳',     t:'service', x:12, z:-3, w:18,d:15 },
-      { n:'廁所',         t:'service', x:32, z:-3, w:10,d:8  },
-    ],
-    walls:[[10,-37,10,32],[10,-5,50,-5]],
-    feat:[
-      {tp:'S',n:'S1',x:-46,z:-3, w:5,d:5},{tp:'S',n:'S2',x:-46,z:22,w:5,d:5},
-      {tp:'S',n:'S3',x:5,  z:-3, w:5,d:5},{tp:'S',n:'S4',x:15, z:22,w:5,d:5},
-      {tp:'E',n:'E1',x:6,  z:8,  w:3,d:3},{tp:'E',n:'E2',x:6,  z:17,w:3,d:3},
-    ]
-  },
-  { id:'4F', label:'4F 四樓', fi:4, elev:12,
-    zones:[
-      { n:'機電設備層',  t:'equipment',x:-50,z:-37,w:70,d:69 },
-      { n:'冷凍機房',    t:'cold',     x:20, z:-37,w:30,d:37 },
-      { n:'擴充預留區',  t:'storage',  x:20, z:0,  w:30,d:32 },
-    ],
-    sub:[
-      { n:'主機組A',     t:'equipment',x:-48,z:-35,w:22,d:30 },
-      { n:'主機組B',     t:'equipment',x:-24,z:-35,w:22,d:30 },
-      { n:'控制室',      t:'office',   x:-48,z:-3, w:15,d:15 },
-      { n:'工具間',      t:'storage',  x:-31,z:-3, w:15,d:15 },
-      { n:'水塔區',      t:'equipment',x:-48,z:13, w:22,d:19 },
-      { n:'AHU機組',     t:'equipment',x:-24,z:13, w:22,d:19 },
-      { n:'冷凍壓縮機',  t:'cold',     x:22, z:-35,w:26,d:15 },
-      { n:'冷卻水塔',    t:'cold',     x:22, z:-18,w:26,d:10 },
-    ],
-    walls:[[20,-37,20,32],[-15,-37,-15,32],[20,0,50,0]],
-    feat:[
-      {tp:'S',n:'S1',x:-46,z:-3,w:5,d:5},{tp:'S',n:'S2',x:-46,z:22,w:5,d:5},
-      {tp:'E',n:'E1',x:11, z:8, w:3,d:3},
-    ]
-  }
+  { id:'B1', label:'B1 地下一層', fi:0, elev:-4, zones:[], sub:[], walls:[], feat:[] },
+  { id:'1F', label:'1F 一樓',     fi:1, elev:0,  zones:[], sub:[], walls:[], feat:[] },
+  { id:'2F', label:'2F 二樓',     fi:2, elev:4,  zones:[], sub:[], walls:[], feat:[] },
+  { id:'3F', label:'3F 三樓',     fi:3, elev:8,  zones:[], sub:[], walls:[], feat:[] },
+  { id:'4F', label:'4F 四樓',     fi:4, elev:12, zones:[], sub:[], walls:[], feat:[] },
 ];
 
 // ─── SHARED STATE ─────────────────────────────────────────────────────────────
