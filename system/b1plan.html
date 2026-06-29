@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>臺北農產 第一果菜市場 — B1 平面圖</title>
+<title>臺北農產 第一果菜市場 — 樓層平面圖</title>
 <style>
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0}
 *{margin:0;padding:0;box-sizing:border-box}
@@ -22,39 +22,40 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 
 #osd{position:fixed;inset:50px 0 0 0;background:#04101f}
 
+/* Floor switch (right) */
+#floors{position:fixed;right:14px;top:62px;display:flex;flex-direction:column;gap:0;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.fbtn{padding:9px 20px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:12px;text-align:center;transition:all .15s;white-space:nowrap}
+.fbtn:last-child{border-bottom:none}
+.fbtn:hover{background:rgba(0,212,255,.08);color:var(--cyan)}
+.fbtn.active{background:rgba(0,212,255,.18);color:var(--cyan);font-weight:700}
+
 /* Tool dock */
-#tools{position:fixed;right:14px;top:62px;display:flex;flex-direction:column;gap:6px;z-index:150}
+#tools{position:fixed;right:14px;top:210px;display:flex;flex-direction:column;gap:6px;z-index:150}
 .tbtn{width:40px;height:40px;background:rgba(4,20,40,.95);border:1px solid var(--border);color:var(--cyan2);border-radius:5px;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
 .tbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.1)}
 .tbtn:active{background:rgba(0,212,255,.22)}
-.tbtn small{font-size:9px}
 
 /* Bottom-left HUD */
-#hud{position:fixed;left:14px;bottom:14px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:9px 13px;z-index:150;font-size:11px;line-height:1.7;min-width:150px}
+#hud{position:fixed;left:14px;bottom:14px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:9px 13px;z-index:150;font-size:11px;line-height:1.7;min-width:160px}
 #hud .h-t{color:var(--cyan);font-weight:700;font-size:12px;margin-bottom:3px}
 #hud .h-r{color:var(--text2)}
 #hud .h-r span{color:var(--text)}
 
-/* Hint */
 #hint{position:fixed;bottom:14px;right:14px;font-size:10px;color:var(--text2);z-index:150;text-align:right;line-height:1.8;pointer-events:none}
 
-/* Loading */
 #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px}
 .ld-t{font-size:13px;color:var(--cyan);letter-spacing:.1em}
 .ld-bar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
 .ld-fill{height:100%;background:var(--cyan);width:0%;transition:width .25s}
 .ld-m{font-size:11px;color:var(--text2)}
 
-@media(max-width:600px){
-  .tb-title{display:none}
-  .tbtn{width:36px;height:36px;font-size:15px}
-}
+@media(max-width:600px){ .tb-title{display:none} .tbtn{width:36px;height:36px;font-size:15px} .fbtn{padding:8px 14px} }
 </style>
 </head>
 <body>
 
 <div id="loading">
-  <div class="ld-t">載入 B1 平面圖…</div>
+  <div class="ld-t">載入樓層平面圖…</div>
   <div class="ld-bar"><div class="ld-fill" id="ldfill"></div></div>
   <div class="ld-m" id="ldmsg">初始化…</div>
 </div>
@@ -62,13 +63,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 <div id="topbar">
   <div class="tb-logo">臺北農產 第一果菜市場</div>
   <div class="tb-sep"></div>
-  <div class="tb-title">B1 地下一層 平面圖</div>
+  <div class="tb-title" id="tbTitle">樓層平面圖</div>
   <div class="tb-space"></div>
   <a href="inspection3d.html" class="tb-back">← 3D地圖</a>
   <a href="app.html" class="tb-back">← 巡檢</a>
 </div>
 
 <div id="osd"></div>
+
+<div id="floors">
+  <button class="fbtn" id="f-1F" onclick="showFloor('1F')">1F 一樓</button>
+  <button class="fbtn active" id="f-B1" onclick="showFloor('B1')">B1 地下一層</button>
+  <button class="fbtn" id="f-OV" onclick="showFloor('OV')">⊕ 疊合對照</button>
+</div>
 
 <div id="tools">
   <div class="tbtn" id="t-zin"  title="放大">＋</div>
@@ -80,80 +87,79 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 </div>
 
 <div id="hud">
-  <div class="h-t">▣ B1 地下一層</div>
+  <div class="h-t" id="hudFloor">▣ B1 地下一層</div>
   <div class="h-r">縮放：<span id="h-zoom">100%</span></div>
   <div class="h-r">旋轉：<span id="h-rot">0°</span></div>
+  <div class="h-r">樓高：<span>B1↔1F 450 cm</span></div>
 </div>
 
-<div id="hint">拖曳 平移 &nbsp;|&nbsp; 滾輪 局部縮放 &nbsp;|&nbsp; ↺↻ 旋轉</div>
+<div id="hint">拖曳 平移 &nbsp;|&nbsp; 滾輪 局部縮放 &nbsp;|&nbsp; ↺↻ 旋轉 &nbsp;|&nbsp; 樓層上下對位</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
 <script>
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
-prog(20,'建立檢視器…');
+prog(15,'建立檢視器…');
 
+// B1 and 1F are rendered on the SAME world frame & pixel grid → perfectly aligned/stackable.
 const viewer = OpenSeadragon({
-  id: 'osd',
-  prefixUrl: '',                 // custom controls, no built-in button images
-  tileSources: 'plans/b1.dzi',
-  showNavigationControl: false,  // we provide our own toolbar
-  showNavigator: true,
-  navigatorPosition: 'BOTTOM_RIGHT',
-  navigatorHeight: 110,
-  navigatorWidth: 150,
-  navigatorAutoFade: false,
-  navigatorBackground: '#041428',
-  navigatorBorderColor: '#0a3a5a',
-  navigatorDisplayRegionColor: '#00d4ff',
-  backgroundColor: '#04101f',
-  degrees: 0,
-  flipped: false,
-  minZoomLevel: 0.5,
-  maxZoomPixelRatio: 4,          // allow deep local zoom past native resolution
-  zoomPerScroll: 1.3,
-  animationTime: 0.5,
-  springStiffness: 7,
-  gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true },
-  gestureSettingsTouch:{ pinchRotate: true }
+  id:'osd', prefixUrl:'',
+  showNavigationControl:false,
+  showNavigator:true, navigatorPosition:'BOTTOM_RIGHT', navigatorHeight:110, navigatorWidth:150,
+  navigatorAutoFade:false, navigatorBackground:'#041428', navigatorBorderColor:'#0a3a5a', navigatorDisplayRegionColor:'#00d4ff',
+  backgroundColor:'#04101f', degrees:0, minZoomLevel:0.4, maxZoomPixelRatio:4, zoomPerScroll:1.3,
+  animationTime:0.5, springStiffness:7,
+  gestureSettingsMouse:{ clickToZoom:false, dblClickToZoom:true }, gestureSettingsTouch:{ pinchRotate:true }
 });
 
-let rot = 0;
-function updHud(){
-  const z = viewer.viewport ? Math.round(viewer.viewport.getZoom(true)/viewer.viewport.getHomeZoom()*100) : 100;
-  document.getElementById('h-zoom').textContent = z + '%';
-  document.getElementById('h-rot').textContent = ((rot%360)+360)%360 + '°';
+let rot=0, idxB1=null, idxF1=null, loaded=0;
+const LABEL={B1:'▣ B1 地下一層', '1F':'▣ 1F 一樓', OV:'⊕ 疊合對照（B1+1F）'};
+
+// load both floors as aligned layers (same coordinates)
+viewer.addTiledImage({ tileSource:'plans/b1.dzi', x:0, y:0, width:1, opacity:1,
+  success:e=>{ idxB1=viewer.world.getIndexOfItem(e.item); onLoad(); } });
+viewer.addTiledImage({ tileSource:'plans/f1.dzi', x:0, y:0, width:1, opacity:0,
+  success:e=>{ idxF1=viewer.world.getIndexOfItem(e.item); onLoad(); } });
+
+function onLoad(){
+  loaded++; prog(50+loaded*25,'載入磚圖…');
+  if(loaded<2) return;
+  prog(100,'完成');
+  setTimeout(()=>{ const l=document.getElementById('loading'); l.style.transition='opacity .4s'; l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); },150);
+  showFloor('B1'); updHud();
 }
 
-viewer.addHandler('open', ()=>{
-  prog(100,'完成');
-  setTimeout(()=>{
-    const ld=document.getElementById('loading');
-    ld.style.transition='opacity .4s';ld.style.opacity='0';
-    setTimeout(()=>ld.style.display='none',400);
-  },150);
-  updHud();
-});
-viewer.addHandler('tile-loaded', ()=>{ const f=document.getElementById('ldfill'); if(parseInt(f.style.width)<90) prog(parseInt(f.style.width)+8,'載入磚圖…'); });
-viewer.addHandler('zoom', updHud);
-viewer.addHandler('animation', updHud);
-viewer.addHandler('open-failed', ()=>{document.getElementById('ldmsg').textContent='載入失敗，請重新整理';});
+function item(i){ return i==null?null:viewer.world.getItemAt(i); }
+function showFloor(f){
+  const b1=item(idxB1), f1=item(idxF1);
+  if(f==='B1'){ b1&&b1.setOpacity(1); f1&&f1.setOpacity(0); }
+  else if(f==='1F'){ b1&&b1.setOpacity(0); f1&&f1.setOpacity(1); }
+  else { b1&&b1.setOpacity(0.55); f1&&f1.setOpacity(0.95); } // overlay
+  ['1F','B1','OV'].forEach(k=>document.getElementById('f-'+k).classList.toggle('active',k===f));
+  document.getElementById('hudFloor').textContent=LABEL[f];
+  document.getElementById('tbTitle').textContent=(f==='OV'?'樓層疊合對照':LABEL[f].replace('▣ ',''))+' 平面圖';
+}
 
+function updHud(){
+  if(!viewer.viewport) return;
+  const z=Math.round(viewer.viewport.getZoom(true)/viewer.viewport.getHomeZoom()*100);
+  document.getElementById('h-zoom').textContent=z+'%';
+  document.getElementById('h-rot').textContent=(((rot%360)+360)%360)+'°';
+}
 function setRot(d){ rot=d; viewer.viewport.setRotation(((rot%360)+360)%360); updHud(); }
 
-document.getElementById('t-zin').onclick  = ()=>{ viewer.viewport.zoomBy(1.4); viewer.viewport.applyConstraints(); };
-document.getElementById('t-zout').onclick = ()=>{ viewer.viewport.zoomBy(0.71); viewer.viewport.applyConstraints(); };
-document.getElementById('t-rl').onclick   = ()=> setRot(rot-15);
-document.getElementById('t-rr').onclick   = ()=> setRot(rot+15);
-document.getElementById('t-home').onclick = ()=>{ viewer.viewport.goHome(); setRot(0); };
-document.getElementById('t-fs').onclick    = ()=> viewer.setFullScreen(!viewer.isFullPage());
-
-// keyboard shortcuts
+viewer.addHandler('zoom',updHud); viewer.addHandler('animation',updHud);
+document.getElementById('t-zin').onclick =()=>{viewer.viewport.zoomBy(1.4);viewer.viewport.applyConstraints();};
+document.getElementById('t-zout').onclick=()=>{viewer.viewport.zoomBy(0.71);viewer.viewport.applyConstraints();};
+document.getElementById('t-rl').onclick  =()=>setRot(rot-15);
+document.getElementById('t-rr').onclick  =()=>setRot(rot+15);
+document.getElementById('t-home').onclick=()=>{viewer.viewport.goHome();setRot(0);};
+document.getElementById('t-fs').onclick   =()=>viewer.setFullScreen(!viewer.isFullPage());
 window.addEventListener('keydown',e=>{
   if(e.key==='+'||e.key==='='){viewer.viewport.zoomBy(1.4);viewer.viewport.applyConstraints();}
   else if(e.key==='-'){viewer.viewport.zoomBy(0.71);viewer.viewport.applyConstraints();}
-  else if(e.key==='['){setRot(rot-15);}
-  else if(e.key===']'){setRot(rot+15);}
+  else if(e.key==='['){setRot(rot-15);} else if(e.key===']'){setRot(rot+15);}
   else if(e.key==='0'){viewer.viewport.goHome();setRot(0);}
+  else if(e.key==='1'){showFloor('1F');} else if(e.key==='b'||e.key==='B'){showFloor('B1');}
 });
 </script>
 </body>
