@@ -72,6 +72,12 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;ov
 #c2d-zoom{position:fixed;right:14px;bottom:14px;background:rgba(4,20,40,.88);border:1px solid var(--border);border-radius:3px;padding:4px 10px;font-size:10px;color:var(--text2);z-index:160;display:none}
 #c2d-zoom.show{display:block}
 
+/* Empty-state overlay (no building defined) */
+#empty-msg{position:fixed;inset:50px 0 0 0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:90;pointer-events:none}
+#empty-msg.show{display:flex}
+#empty-msg .em-t{font-size:16px;color:var(--cyan);letter-spacing:.08em}
+#empty-msg .em-s{font-size:12px;color:var(--text2)}
+
 /* Loading */
 #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:14px}
 .ld-t{font-size:13px;color:var(--cyan);letter-spacing:.1em}
@@ -126,6 +132,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;ov
 </div>
 
 <div id="hint">拖曳 旋轉 &nbsp;|&nbsp; 滾輪 縮放 &nbsp;|&nbsp; 右鍵 平移</div>
+<div id="empty-msg">
+  <div class="em-t">▣ 建物資料已全部清除</div>
+  <div class="em-s">場景已重置為空白，等待重新建構</div>
+  <div class="em-s">請提供建物外形與各樓層平面資料</div>
+</div>
 <div id="c3d"></div>
 <canvas id="c2d"></canvas>
 
@@ -146,8 +157,12 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const db = supabase.createClient(SUPA_URL, SUPA_KEY);
 
 // ─── BUILDING DATA ────────────────────────────────────────────────────────────
-// Hull polygon (X=east, Z=south, units=metres, origin=building centre)
-const HULL = [[-50,-33],[-28,-37],[10,-37],[36,-22],[50,-5],[46,14],[32,32],[-50,32]];
+// ▣ 全部清空 — 建物外殼(HULL)已移除,目前為完全空白的場景,等待重新建構。
+//   要重建建物時,把建物外牆轉角座標依順時針填入 HULL,例如:
+//     const HULL = [[-50,-33],[-28,-37],[10,-37],[36,-22],[50,-5],[46,14],[32,32],[-50,32]];
+//   (X=東向, Z=南向, 單位=公尺, 原點=建物中心)
+//   再到下方 FLOORS 各樓層填入 zones/sub/walls/feat 即可。
+const HULL = [];
 const FH = 4; // floor height metres
 
 // Zone type colours (fill, border, text)
@@ -355,6 +370,20 @@ function build3D(){
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400),new THREE.MeshBasicMaterial({color:0x010810}));
   ground.rotation.x=-Math.PI/2; ground.position.y=-5;
   scene.add(ground);
+
+  // Reference grid on ground so empty scene is not pitch-black
+  const gridMat=new THREE.LineBasicMaterial({color:0x07304a,transparent:true,opacity:.5});
+  for(let g=-100;g<=100;g+=10){
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(g,-4.9,-100),new THREE.Vector3(g,-4.9,100)]),gridMat));
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-100,-4.9,g),new THREE.Vector3(100,-4.9,g)]),gridMat));
+  }
+
+  // ▣ 建物外殼未定義(HULL 為空)→ 顯示空白場景,不建立任何建物幾何
+  if(HULL.length<3){
+    const ov=document.getElementById('empty-msg');
+    if(ov) ov.classList.add('show');
+    return;
+  }
 
   const topElev=FLOORS[FLOORS.length-1].elev+FH;
 
@@ -598,6 +627,17 @@ function draw2D(){
   const W=canvas2d.width,H=canvas2d.height;
   const fl=FLOORS[currentFI];
   ctx2d.clearRect(0,0,W,H);
+
+  // ▣ 建物外殼未定義 → 平面圖顯示空白提示
+  if(HULL.length<3){
+    ctx2d.fillStyle='#020b18';ctx2d.fillRect(0,0,W,H);
+    ctx2d.fillStyle='rgba(0,212,255,.5)';
+    ctx2d.font='14px "Segoe UI",sans-serif';ctx2d.textAlign='center';ctx2d.textBaseline='middle';
+    ctx2d.fillText('▣ '+fl.label+'　尚未建立建物資料',W/2,H/2);
+    ctx2d.font='11px "Segoe UI",sans-serif';ctx2d.fillStyle='rgba(90,138,176,.7)';
+    ctx2d.fillText('請提供樓層平面資料以重新建構',W/2,H/2+24);
+    return;
+  }
 
   // Background grid
   ctx2d.fillStyle='#020b18';
