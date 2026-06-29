@@ -108,9 +108,6 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;ov
 </div>
 
 <div id="floor-nav">
-  <button class="fn-btn" data-fi="4" onclick="floorClick(4)">4F 四樓</button>
-  <button class="fn-btn" data-fi="3" onclick="floorClick(3)">3F 三樓</button>
-  <button class="fn-btn" data-fi="2" onclick="floorClick(2)">2F 二樓</button>
   <button class="fn-btn active" data-fi="1" onclick="floorClick(1)">1F 一樓</button>
   <button class="fn-btn" data-fi="0" onclick="floorClick(0)">B1 地下一層</button>
 </div>
@@ -194,9 +191,6 @@ const ZT = {
 const FLOORS = [
   { id:'B1', label:'B1 地下一層', fi:0, elev:-4, zones:[], sub:[], walls:[], feat:[] },
   { id:'1F', label:'1F 一樓',     fi:1, elev:0,  zones:[], sub:[], walls:[], feat:[] },
-  { id:'2F', label:'2F 二樓',     fi:2, elev:4,  zones:[], sub:[], walls:[], feat:[] },
-  { id:'3F', label:'3F 三樓',     fi:3, elev:8,  zones:[], sub:[], walls:[], feat:[] },
-  { id:'4F', label:'4F 四樓',     fi:4, elev:12, zones:[], sub:[], walls:[], feat:[] },
 ];
 
 // ─── SHARED STATE ─────────────────────────────────────────────────────────────
@@ -977,6 +971,9 @@ function floorClick(fi){
 
 // ─── SUPABASE ────────────────────────────────────────────────────────────────
 async function loadData(){
+  // ▣ 重建模式:建物外殼未定義時,不在圖面顯示任何設備巡檢標記,統計歸零
+  if(HULL.length<3){ allEquip=[]; addEq3D(); updateStats([]); return; }
+
   prog(65,'載入設備…');
   const {data:eqs}=await db.from('equipment').select('*').eq('status','active');
   if(!eqs?.length){addEq3D();updateStats([]);return;}
