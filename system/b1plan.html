@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>臺北農產 第一果菜市場 — B1 平面圖</title>
+<style>
+:root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
+
+#topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200}
+.tb-logo{font-size:13px;font-weight:700;color:var(--cyan);white-space:nowrap}
+.tb-sep{width:1px;height:24px;background:var(--border)}
+.tb-title{font-size:11px;color:var(--text2);white-space:nowrap}
+.tb-space{flex:1}
+.tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s}
+.tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
+
+#osd{position:fixed;inset:50px 0 0 0;background:#0a0f14}
+
+/* Tool dock */
+#tools{position:fixed;right:14px;top:62px;display:flex;flex-direction:column;gap:6px;z-index:150}
+.tbtn{width:40px;height:40px;background:rgba(4,20,40,.95);border:1px solid var(--border);color:var(--cyan2);border-radius:5px;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
+.tbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.1)}
+.tbtn:active{background:rgba(0,212,255,.22)}
+.tbtn small{font-size:9px}
+
+/* Bottom-left HUD */
+#hud{position:fixed;left:14px;bottom:14px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:9px 13px;z-index:150;font-size:11px;line-height:1.7;min-width:150px}
+#hud .h-t{color:var(--cyan);font-weight:700;font-size:12px;margin-bottom:3px}
+#hud .h-r{color:var(--text2)}
+#hud .h-r span{color:var(--text)}
+
+/* Hint */
+#hint{position:fixed;bottom:14px;right:14px;font-size:10px;color:var(--text2);z-index:150;text-align:right;line-height:1.8;pointer-events:none}
+
+/* Loading */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px}
+.ld-t{font-size:13px;color:var(--cyan);letter-spacing:.1em}
+.ld-bar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:var(--cyan);width:0%;transition:width .25s}
+.ld-m{font-size:11px;color:var(--text2)}
+
+@media(max-width:600px){
+  .tb-title{display:none}
+  .tbtn{width:36px;height:36px;font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-t">載入 B1 平面圖…</div>
+  <div class="ld-bar"><div class="ld-fill" id="ldfill"></div></div>
+  <div class="ld-m" id="ldmsg">初始化…</div>
+</div>
+
+<div id="topbar">
+  <div class="tb-logo">臺北農產 第一果菜市場</div>
+  <div class="tb-sep"></div>
+  <div class="tb-title">B1 地下一層 平面圖</div>
+  <div class="tb-space"></div>
+  <a href="inspection3d.html" class="tb-back">← 3D地圖</a>
+  <a href="app.html" class="tb-back">← 巡檢</a>
+</div>
+
+<div id="osd"></div>
+
+<div id="tools">
+  <div class="tbtn" id="t-zin"  title="放大">＋</div>
+  <div class="tbtn" id="t-zout" title="縮小">－</div>
+  <div class="tbtn" id="t-rl"   title="逆時針旋轉 15°">↺</div>
+  <div class="tbtn" id="t-rr"   title="順時針旋轉 15°">↻</div>
+  <div class="tbtn" id="t-home" title="重置視角">⊡</div>
+  <div class="tbtn" id="t-fs"   title="全螢幕">⛶</div>
+</div>
+
+<div id="hud">
+  <div class="h-t">▣ B1 地下一層</div>
+  <div class="h-r">縮放：<span id="h-zoom">100%</span></div>
+  <div class="h-r">旋轉：<span id="h-rot">0°</span></div>
+</div>
+
+<div id="hint">拖曳 平移 &nbsp;|&nbsp; 滾輪 局部縮放 &nbsp;|&nbsp; ↺↻ 旋轉</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
+<script>
+function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
+prog(20,'建立檢視器…');
+
+const viewer = OpenSeadragon({
+  id: 'osd',
+  prefixUrl: '',                 // custom controls, no built-in button images
+  tileSources: 'plans/b1.dzi',
+  showNavigationControl: false,  // we provide our own toolbar
+  showNavigator: true,
+  navigatorPosition: 'BOTTOM_RIGHT',
+  navigatorHeight: 110,
+  navigatorWidth: 150,
+  navigatorAutoFade: false,
+  navigatorBackground: '#041428',
+  navigatorBorderColor: '#0a3a5a',
+  navigatorDisplayRegionColor: '#00d4ff',
+  backgroundColor: '#0a0f14',
+  degrees: 0,
+  flipped: false,
+  minZoomLevel: 0.5,
+  maxZoomPixelRatio: 4,          // allow deep local zoom past native resolution
+  zoomPerScroll: 1.3,
+  animationTime: 0.5,
+  springStiffness: 7,
+  gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true },
+  gestureSettingsTouch:{ pinchRotate: true }
+});
+
+let rot = 0;
+function updHud(){
+  const z = viewer.viewport ? Math.round(viewer.viewport.getZoom(true)/viewer.viewport.getHomeZoom()*100) : 100;
+  document.getElementById('h-zoom').textContent = z + '%';
+  document.getElementById('h-rot').textContent = ((rot%360)+360)%360 + '°';
+}
+
+viewer.addHandler('open', ()=>{
+  prog(100,'完成');
+  setTimeout(()=>{
+    const ld=document.getElementById('loading');
+    ld.style.transition='opacity .4s';ld.style.opacity='0';
+    setTimeout(()=>ld.style.display='none',400);
+  },150);
+  updHud();
+});
+viewer.addHandler('tile-loaded', ()=>{ const f=document.getElementById('ldfill'); if(parseInt(f.style.width)<90) prog(parseInt(f.style.width)+8,'載入磚圖…'); });
+viewer.addHandler('zoom', updHud);
+viewer.addHandler('animation', updHud);
+viewer.addHandler('open-failed', ()=>{document.getElementById('ldmsg').textContent='載入失敗，請重新整理';});
+
+function setRot(d){ rot=d; viewer.viewport.setRotation(((rot%360)+360)%360); updHud(); }
+
+document.getElementById('t-zin').onclick  = ()=>{ viewer.viewport.zoomBy(1.4); viewer.viewport.applyConstraints(); };
+document.getElementById('t-zout').onclick = ()=>{ viewer.viewport.zoomBy(0.71); viewer.viewport.applyConstraints(); };
+document.getElementById('t-rl').onclick   = ()=> setRot(rot-15);
+document.getElementById('t-rr').onclick   = ()=> setRot(rot+15);
+document.getElementById('t-home').onclick = ()=>{ viewer.viewport.goHome(); setRot(0); };
+document.getElementById('t-fs').onclick    = ()=> viewer.setFullScreen(!viewer.isFullPage());
+
+// keyboard shortcuts
+window.addEventListener('keydown',e=>{
+  if(e.key==='+'||e.key==='='){viewer.viewport.zoomBy(1.4);viewer.viewport.applyConstraints();}
+  else if(e.key==='-'){viewer.viewport.zoomBy(0.71);viewer.viewport.applyConstraints();}
+  else if(e.key==='['){setRot(rot-15);}
+  else if(e.key===']'){setRot(rot+15);}
+  else if(e.key==='0'){viewer.viewport.goHome();setRot(0);}
+});
+</script>
+</body>
+</html>
