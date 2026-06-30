@@ -66,16 +66,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 <div id="c3d"></div>
 
 <div id="floors">
-  <button class="fbtn on" id="t-F1" onclick="toggleFloor('1F')"><span class="dot"></span>1F 一樓</button>
+  <button class="fbtn on" id="t-3F" onclick="toggleFloor('3F')"><span class="dot"></span>3F 三樓</button>
+  <button class="fbtn on" id="t-2F" onclick="toggleFloor('2F')"><span class="dot"></span>2F 二樓</button>
+  <button class="fbtn on" id="t-1F" onclick="toggleFloor('1F')"><span class="dot"></span>1F 一樓</button>
   <button class="fbtn on" id="t-B1" onclick="toggleFloor('B1')"><span class="dot"></span>B1 地下一層</button>
 </div>
 
 <div id="panel">
   <div class="p-t">⬡ 立體控制</div>
   <label>樓層間距（視覺）</label>
-  <input type="range" id="explode" min="1" max="20" value="8" step="0.5" oninput="setExplode(this.value)">
-  <div class="h-r" style="color:var(--text2)">實際樓高：<span style="color:var(--text)">450 cm</span></div>
-  <div class="h-r" style="color:var(--text2)">放大倍率：<span style="color:var(--text)" id="exVal">8×</span></div>
+  <input type="range" id="explode" min="1" max="20" value="6" step="0.5" oninput="setExplode(this.value)">
+  <div class="h-r" style="color:var(--text2)">實際樓高：<span style="color:var(--text)">4000 mm（固定）</span></div>
+  <div class="h-r" style="color:var(--text2)">放大倍率：<span style="color:var(--text)" id="exVal">6×</span></div>
   <div class="btnrow">
     <button class="mini" onclick="resetView()">⊡ 重置</button>
     <button class="mini" onclick="topView()">⊤ 俯視</button>
@@ -90,15 +92,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 
 // ── World dimensions (from shared DXF frame, mm → metres) ──
-const FRAME_W = 432465/1000;   // 432.5 m
-const FRAME_H = 406810/1000;   // 406.8 m
-const FLOOR_GAP = 4.5;         // real floor height (m): B1 ↔ 1F = 450 cm
-let EXPLODE = 8;               // visual vertical exaggeration
+const FRAME_W = 326466/1000;   // 326.5 m
+const FRAME_H = 320094/1000;   // 320.1 m
+const FLOOR_GAP = 4.0;         // real floor height (m): fixed 4000 mm
+let EXPLODE = 6;               // visual vertical exaggeration
 
 // floor definitions (bottom → up)
 const FLOORS = [
   { id:'B1', label:'B1 地下一層', tex:'plans/tex/b1_tex.png', level:0, mesh:null, frame:null, visible:true },
   { id:'1F', label:'1F 一樓',     tex:'plans/tex/f1_tex.png', level:1, mesh:null, frame:null, visible:true },
+  { id:'2F', label:'2F 二樓',     tex:'plans/tex/f2_tex.png', level:2, mesh:null, frame:null, visible:true },
+  { id:'3F', label:'3F 三樓',     tex:'plans/tex/f3_tex.png', level:3, mesh:null, frame:null, visible:true },
 ];
 
 let scene,camera,renderer;
@@ -199,9 +203,10 @@ function toggleFloor(id){
   document.getElementById('t-'+id).classList.toggle('on',fl.visible);
   document.getElementById('t-'+id).classList.toggle('off',!fl.visible);
 }
-function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'×'; layoutFloors(); }
-function resetView(){ orb.theta=-0.6;orb.phi=1.05;orb.r=620;orb.tx=0;orb.ty=FLOOR_GAP*EXPLODE*0.5;orb.tz=0; }
-function topView(){ orb.theta=0;orb.phi=0.06;orb.r=560;orb.tx=0;orb.tz=0; }
+function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'×'; layoutFloors(); orb.ty=midY(); }
+function midY(){ return (FLOORS.length-1)*FLOOR_GAP*EXPLODE*0.5; }
+function resetView(){ orb.theta=-0.6;orb.phi=1.02;orb.r=640;orb.tx=0;orb.ty=midY();orb.tz=0; }
+function topView(){ orb.theta=0;orb.phi=0.06;orb.r=560;orb.tx=0;orb.ty=midY();orb.tz=0; }
 
 init(); setupOrbit(); buildFloors();
 </script>
