@@ -142,6 +142,7 @@ body{
   border-left:2px solid transparent;
   position:relative;
   letter-spacing:0.02em;
+  text-decoration:none;
 }
 .nav-item:hover{
   color:var(--text-hi);
@@ -555,8 +556,8 @@ body{
     <a href="app.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'">◉ 巡檢</a>
     <a href="workorder.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="報修派工系統">◪ 報修系統</a>
     <span style="font-size:.7rem;color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600">⬡ 後台</span>
-    <a href="handover.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'">◈ 交接簿</a>
-    <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'">◫ 儀表板</a>
+    <a href="handover.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'">◈ 電子交接簿</a>
+    <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'">◫ 戰情儀表板</a>
     <span><span class="online-dot"></span>系統連線中</span>
     <span class="topbar-clock" id="topClock"></span>
   </div>
@@ -570,7 +571,7 @@ body{
       <h1>⬡ 後台管理系統</h1>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-item active" data-page="dashboard"><span class="nav-icon">◫</span> 戰情儀表板</div>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon">◫</span> 戰情儀表板</a>
       <div class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> 系統設定</div>
       <div class="nav-item" data-page="users"><span class="nav-icon">◉</span> 帳號管理</div>
       <div class="nav-item" data-page="equipment"><span class="nav-icon">◧</span> 設備管理</div>
@@ -975,7 +976,7 @@ body{
             <div class="scard-badge">SYS-03</div>
             <div class="scard-icon">⌖</div>
             <div class="scard-title">班別管理</div>
-            <div class="scard-desc">早/中/夜班時段設定<br>交接簿班別自動套用</div>
+            <div class="scard-desc">早/中/夜班時段設定<br>電子交接簿班別自動套用</div>
             <div class="scard-enter">▶ 進入設定</div>
           </div>
 
@@ -1453,7 +1454,7 @@ renderPermissionList('e', defaultPermsForRole('reporter'));
   db.from('system_settings').select('key,value').then(({ data }) => {
     if (data) { data.forEach(s => sysSettings[s.key] = s.value); applySystemName(); }
   });
-  // 自動刷新儀表板每 60 秒
+  // 自動刷新戰情儀表板每 60 秒
   setInterval(async () => {
     const activePage = document.querySelector('.page-section.active');
     if (activePage && activePage.id === 'page-dashboard') {
@@ -1464,7 +1465,7 @@ renderPermissionList('e', defaultPermsForRole('reporter'));
 })();
 
 function setupNav() {
-  document.querySelectorAll('.nav-item').forEach(item => {
+  document.querySelectorAll('.nav-item[data-page]').forEach(item => {
     item.addEventListener('click', () => activateAdminPage(item.dataset.page));
   });
 }
