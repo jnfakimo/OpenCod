@@ -399,7 +399,7 @@ body{
     <div class="filter-chip" data-status="pending_review">待驗收</div>
     <div class="filter-chip" data-status="closed">已結案</div>
   </div>
-  <div id="ordersList"><div class="empty-state">LOADING…</div></div>
+  <div id="ordersList"><div class="empty-state">載入中…</div></div>
 </div>
 
 <div class="page" id="page-costs">
@@ -447,7 +447,7 @@ body{
       <label>篩選設備</label>
       <select id="costFilterEq" onchange="loadCosts()"><option value="">全部設備</option></select>
     </div>
-    <div id="costsTable"><div class="empty-state">LOADING…</div></div>
+    <div id="costsTable"><div class="empty-state">載入中…</div></div>
   </div>
 </div>
 
@@ -653,7 +653,7 @@ function renderOrders() {
     );
   }
   if (!filtered.length) {
-    document.getElementById('ordersList').innerHTML = '<div class="empty-state">NO MAINTENANCE ORDERS</div>';
+    document.getElementById('ordersList').innerHTML = '<div class="empty-state">目前無維修單</div>';
     return;
   }
   document.getElementById('ordersList').innerHTML = filtered.map(o => {
@@ -811,7 +811,7 @@ async function loadCosts() {
   const costs = data || [];
 
   if (!costs.length) {
-    document.getElementById('costsTable').innerHTML = '<div class="empty-state">NO COST RECORDS</div>';
+    document.getElementById('costsTable').innerHTML = '<div class="empty-state">目前無費用紀錄</div>';
     return;
   }
 
@@ -826,7 +826,7 @@ async function loadCosts() {
         <td style="text-align:right;font-family:var(--font-mono)">${Number(c.amount).toLocaleString()}</td>
       </tr>`).join('')}</tbody>
     </table>
-    <div class="cost-total">TOTAL：${total.toLocaleString()} 元</div>
+    <div class="cost-total">合計：${total.toLocaleString()} 元</div>
   `;
 }
 
