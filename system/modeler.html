@@ -7,7 +7,8 @@
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <title>3D 模型建模系統 — 臺北農產巡檢系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.js"
+        onerror="var s=document.createElement('script');s.src='https://unpkg.com/dxf-parser@1.1.2/dist/dxf-parser.js';document.head.appendChild(s);"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
   --cyan:#00d4ff;--pink:#ff5ea0;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;
@@ -116,7 +117,7 @@ select:focus,input:focus{border-color:var(--cyan)}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
-const Parser = window.DxfParser?.default || window.DxfParser;
+function getParser(){ return window.DxfParser?.default || window.DxfParser || null; }
 
 let lastBlob=null, lastBBox=null;
 const TEX=2400; // texture long-side px
@@ -142,10 +143,12 @@ function setMsg(t,cls){const m=document.getElementById('msg');m.textContent=t;m.
 
 async function handleFile(f){
   if(!/\.dxf$/i.test(f.name)){setMsg('請選擇 .dxf 檔','err');return;}
+  const ParserCls=getParser();
+  if(!ParserCls){ setMsg('DXF 解析元件尚未載入完成，請等 2~3 秒後重試（或檢查網路）','err'); return; }
   setMsg('解析 DXF…','work');
   try{
     const text=await f.text();
-    const dxf=new Parser().parseSync(text);
+    const dxf=new ParserCls().parseSync(text);
     const polylines=[];
     collect(dxf.entities||[], dxf.blocks||{}, p=>p, polylines, 0);
     if(!polylines.length){setMsg('找不到可繪製的幾何（線/弧/聚合線）','err');return;}
@@ -269,6 +272,15 @@ async function loadSaved(){
 }
 
 loadSaved();
+
+// warn if the DXF parser library failed to load from CDN
+setTimeout(()=>{
+  if(!getParser()){
+    const d=document.getElementById('drop');
+    d.style.borderColor='var(--red)'; d.style.color='var(--red)';
+    d.innerHTML='⚠ DXF 解析元件載入失敗<br><span style="font-size:.7rem">請檢查網路或稍後重新整理頁面</span>';
+  }
+},2800);
 </script>
 </body>
 </html>
