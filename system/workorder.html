@@ -96,8 +96,8 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
 <nav class="navbar">
   <div><div class="nav-title">⚒ 報修系統</div><div class="nav-sub">報修 → 派工 → 維修 → 驗收 → 結案</div></div>
   <div class="nav-space"></div>
-  <span class="nav-sub" id="navUser"></span>
-  <a href="workorder.html"><button class="nav-back">◬ 報修系統</button></a>
+  <span class="nav-sub" id="navUser">改建室 / 吳玉美</span>
+  <a href="workorder.html?v=reporter-20260701"><button class="nav-back">◬ 報修系統</button></a>
   <a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
   <a href="admin.html"><button class="nav-back">← 後台</button></a>
 </nav>
@@ -122,11 +122,11 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
     <div class="modal-h"><span class="t">＋ 新增報修</span><button class="x" onclick="closeM('m-create')">✕</button></div>
     <div class="modal-b">
       <div class="row2">
-        <div class="field"><label>報修人</label><select id="c-reporter"></select></div>
+        <div class="field"><label>報修人</label><select id="c-reporter"><option value="改建室 / 吳玉美">改建室 / 吳玉美</option></select></div>
         <div class="field"><label>聯絡電話</label><input id="c-phone"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>所屬單位</label><input id="c-dept" list="deptList"><datalist id="deptList"></datalist></div>
+        <div class="field"><label>所屬單位</label><input id="c-dept" list="deptList" value="改建室"><datalist id="deptList"></datalist></div>
         <div class="field"><label>設備</label><select id="c-eqp" onchange="onEqp()"><option value="">選擇設備…</option></select></div>
       </div>
       <div class="row2">
@@ -186,11 +186,15 @@ const WORKORDER_STATE_KEY='tcfm.workorder.state';
 const DEFAULT_OPERATOR_NAME='吳玉美';
 const DEFAULT_OPERATOR_DEPARTMENT='改建室';
 
+function cleanOperatorName(value){
+  const name=(value||'').trim();
+  return (!name||name==='操作員') ? DEFAULT_OPERATOR_NAME : name;
+}
 function readLoginCache(){
   return {
     user_id:sessionStorage.getItem('user_id') || null,
     dept_id:sessionStorage.getItem('user_dept_id') || null,
-    name:(sessionStorage.getItem('user_name') || '').trim() || DEFAULT_OPERATOR_NAME,
+    name:cleanOperatorName(sessionStorage.getItem('user_name')),
     departmentName:(sessionStorage.getItem('user_department') || '').trim(),
     role:sessionStorage.getItem('user_role') || 'inspector',
     rbac_role:sessionStorage.getItem('user_rbac_role') || 'reporter',
@@ -201,7 +205,7 @@ function operatorDepartment(){
   return (me_?.departmentName || me_?.department || me_?.dep || sessionStorage.getItem('user_department') || DEFAULT_OPERATOR_DEPARTMENT).trim();
 }
 function operatorName(){
-  return (me_?.name || sessionStorage.getItem('user_name') || DEFAULT_OPERATOR_NAME).trim() || DEFAULT_OPERATOR_NAME;
+  return cleanOperatorName(me_?.name || sessionStorage.getItem('user_name'));
 }
 function operatorLabel(){
   const dept=operatorDepartment();
@@ -241,7 +245,7 @@ let reqs=[],ordersByReq={},equip=[],locs=[],techs=[],filterStatus='';
 async function init(){
   try{const {data:{session}}=await db.auth.getSession();
     if(session){const {data}=await db.from('users').select('*').eq('auth_id',session.user.id).single();if(data){
-      me_={...me_,...data,name:data.name||me_.name};
+      me_={...me_,...data,name:cleanOperatorName(data.name||me_.name)};
       sessionStorage.setItem('user_name',me_.name);
       if(me_.user_id) sessionStorage.setItem('user_id',me_.user_id);
       if(me_.dept_id) sessionStorage.setItem('user_dept_id',me_.dept_id);
