@@ -88,7 +88,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 <div id="hint">拖曳 旋轉環繞 &nbsp;|&nbsp; 滾輪 縮放 &nbsp;|&nbsp; 右鍵 平移</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 
 // ── World dimensions (from shared DXF frame, mm → metres) ──
@@ -208,7 +212,23 @@ function midY(){ return (FLOORS.length-1)*FLOOR_GAP*EXPLODE*0.5; }
 function resetView(){ orb.theta=-0.6;orb.phi=1.02;orb.r=640;orb.tx=0;orb.ty=midY();orb.tz=0; }
 function topView(){ orb.theta=0;orb.phi=0.06;orb.r=560;orb.tx=0;orb.ty=midY();orb.tz=0; }
 
-init(); setupOrbit(); buildFloors();
+// fetch any updated floor models from Storage (override static textures)
+async function applyCustomModels(){
+  try{
+    const {data}=await db.from('floor_models').select('*');
+    if(data&&data.length){
+      data.forEach(m=>{
+        const fl=FLOORS.find(f=>f.id===m.floor_id);
+        if(fl&&m.image_path){
+          const t=encodeURIComponent(m.updated_at||'');
+          fl.tex=`${SUPA_URL}/storage/v1/object/public/floorplans/${m.image_path}?t=${t}`;
+        }
+      });
+    }
+  }catch(e){ /* fall back to static textures */ }
+}
+
+(async()=>{ init(); setupOrbit(); await applyCustomModels(); buildFloors(); })();
 </script>
 </body>
 </html>

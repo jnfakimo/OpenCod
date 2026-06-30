@@ -97,7 +97,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 <div id="hint">拖曳 平移 &nbsp;|&nbsp; 滾輪 局部縮放 &nbsp;|&nbsp; ↺↻ 旋轉 &nbsp;|&nbsp; 樓層上下對位</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 prog(15,'建立檢視器…');
 
@@ -123,10 +127,23 @@ const FLOORS=[
   {id:'3F', label:'▣ 3F 三樓',     dzi:'plans/f3.dzi', idx:null},
 ];
 
-FLOORS.forEach((fl,i)=>{
-  viewer.addTiledImage({ tileSource:fl.dzi, x:0, y:0, width:1, opacity:(fl.id==='B1'?1:0),
-    success:e=>{ fl.idx=viewer.world.getIndexOfItem(e.item); onLoad(); } });
-});
+// use updated models from Storage if available; else the static DZI tiles
+async function buildSources(){
+  try{
+    const {data}=await db.from('floor_models').select('*');
+    if(data&&data.length){
+      data.forEach(m=>{ const fl=FLOORS.find(f=>f.id===m.floor_id);
+        if(fl&&m.image_path){ const t=encodeURIComponent(m.updated_at||'');
+          fl.src={type:'image', url:`${SUPA_URL}/storage/v1/object/public/floorplans/${m.image_path}?t=${t}`}; } });
+    }
+  }catch(e){}
+  FLOORS.forEach(fl=>{
+    viewer.addTiledImage({ tileSource: fl.src||fl.dzi, x:0, y:0, width:1, opacity:(fl.id==='B1'?1:0),
+      success:e=>{ fl.idx=viewer.world.getIndexOfItem(e.item); onLoad(); },
+      error:()=>{ onLoad(); } });
+  });
+}
+buildSources();
 
 function onLoad(){
   loaded++; prog(20+loaded*20,'載入磚圖…');
