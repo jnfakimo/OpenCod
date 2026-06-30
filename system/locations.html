@@ -294,8 +294,21 @@ async function init(){
 }
 
 async function loadMarkets(){
-  const {data}=await db.from('markets').select('*').order('sort_order');
+  let {data,error}=await db.from('markets').select('*').order('sort_order');
   allMkts=data||[];
+  // 自動建立「第一市場 / 第二市場」(僅在市場表存在且為空時)
+  if(!error && allMkts.length===0){
+    const seed=[
+      {market_id:'market1',name:'第一市場',short_name:'第一',sort_order:1},
+      {market_id:'market2',name:'第二市場',short_name:'第二',sort_order:2},
+    ];
+    const ins=await db.from('markets').insert(seed);
+    if(!ins.error){
+      ({data}=await db.from('markets').select('*').order('sort_order'));
+      allMkts=data||[];
+      toast('已自動建立 第一市場 / 第二市場');
+    }
+  }
 }
 async function loadLocations(){
   const {data}=await db.from('locations').select('*').order('floor_order').order('area_order').order('detail_order');
@@ -422,7 +435,10 @@ function renderTree(){
     });
   });
   if(empty){
-    tbody.innerHTML='<tr><td colspan="4" class="empty">尚無位置資料<br><small>請先在 Supabase SQL Editor 執行 locations_schema.sql</small></td></tr>';
+    const hasMkt=allMkts.length>0;
+    tbody.innerHTML=hasMkt
+      ? '<tr><td colspan="4" class="empty">尚無位置資料<br><small>請點右上角「＋ 新增位置」，選擇市場後即可新增樓層 / 區域 / 細部位置</small></td></tr>'
+      : '<tr><td colspan="4" class="empty" style="color:var(--amber)">尚未建立場域資料表<br><small>請先在 Supabase SQL Editor 執行 system/sql/locations_schema.sql 建立資料表</small></td></tr>';
   }
 }
 
