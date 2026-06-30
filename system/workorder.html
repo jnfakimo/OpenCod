@@ -373,6 +373,9 @@ async function doDispatch(reqId){
   if(error){toast('派工失敗：'+error.message,true);return;}
   await db.from('repair_requests').update({status:'assigned',assignee_id:tech||null,updated_at:new Date().toISOString()}).eq('request_id',reqId);
   await logStatus(reqId,data.order_id,driver(r),'assigned','派工 '+(data.wo_no||'')+(tech?(' → '+(techs.find(t=>t.user_id===tech)?.name||'')):'')+(vendor?(' 委外:'+vendor):''));
+  // 站內通知技師（§九）
+  if(tech){ try{ await db.from('notifications').insert({recipient_id:tech,event:'dispatch',title:'新派工通知',
+    body:`${r.req_no||''}｜${r.equipment?.name||'設備'}｜${r.fault_desc||''}`,request_id:reqId,order_id:data.order_id}); }catch(e){} }
   await refreshAndReopen(reqId); toast('已派工');
 }
 async function accept(r,o){await db.from('maintenance_orders').update({status:'accepted',accept_status:'accepted'}).eq('order_id',o.order_id);
