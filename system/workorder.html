@@ -188,7 +188,7 @@ const DEFAULT_OPERATOR_DEPARTMENT='改建室';
 
 function cleanOperatorName(value){
   const name=(value||'').trim();
-  return (!name||name==='操作員') ? DEFAULT_OPERATOR_NAME : name;
+  return (!name||name==='\u64cd\u4f5c\u54e1') ? DEFAULT_OPERATOR_NAME : name;
 }
 function readLoginCache(){
   return {
