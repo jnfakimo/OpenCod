@@ -642,7 +642,7 @@ body{
         </div>
         <div class="field" style="grid-column:1/-1;margin-top:4px">
           <label>可使用系統（功能選單）</label>
-          <div id="perm-c-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:10px 14px;padding:8px 0"></div>
+          <div id="perm-c-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px 14px;padding:8px 0"></div>
         </div>
         <div style="margin-top:14px"><button class="btn btn-primary" onclick="createUser()">+ 建立帳號</button></div>
       </div>
@@ -1168,7 +1168,7 @@ body{
       </div>
       <div class="field" style="grid-column:1/-1">
         <label>可使用系統（功能選單）</label>
-        <div id="perm-e-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:10px 14px;padding:6px 0"></div>
+        <div id="perm-e-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px 14px;padding:6px 0"></div>
       </div>
     </div>
     <div class="modal-actions">
@@ -1281,6 +1281,7 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
 let allUsers = [], allEquipment = [], allDepts = [], userMap = {}, eqMap = {}, deptMap = {};
+let rolePermissionMatrix = {};
 let userTab = 'active';
 let userPage = 1;
 const USER_PAGE_SIZE = 15;
@@ -1345,8 +1346,11 @@ function legacyRoleForRbac(roleId) {
 }
 
 function defaultPermsForRole(roleId) {
+  const normalizedRole = normalizeRoleId(roleId);
   const base = Object.fromEntries(PERMISSION_DEFS.map(p => [p.key, false]));
-  return { ...base, ...(ROLE_PERMISSION_PRESETS[normalizeRoleId(roleId)] || {}) };
+  const fallback = ROLE_PERMISSION_PRESETS[normalizedRole] || {};
+  const matrix = rolePermissionMatrix[normalizedRole] || {};
+  return { ...base, ...fallback, ...matrix };
 }
 
 function normalizePermissions(permissions, roleId) {
@@ -1366,37 +1370,41 @@ function permissionSelectId(prefix) {
   return prefix === 'e' ? 'edit-u-role' : 'u-role';
 }
 
-function renderPermissionList(prefix, permissions) {
+function renderPermissionList(prefix) {
   const box = document.getElementById(`perm-${prefix}-list`);
   if (!box) return;
-  box.innerHTML = PERMISSION_DEFS.map(({ key, label }) => `
+  box.innerHTML = Object.entries(RBAC_ROLES).map(([roleId, label]) => `
     <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)">
-      <input type="checkbox" id="perm-${prefix}-${key}" style="accent-color:var(--cyan)"> ${label}
+      <input type="checkbox" id="role-${prefix}-${roleId}" value="${roleId}" data-role-pick="${prefix}" onchange="selectRoleCheckbox('${prefix}','${roleId}')" style="accent-color:var(--cyan)"> ${label}
     </label>
   `).join('');
-  setPermissionValues(prefix, permissions);
+  setPermissionValues(prefix);
 }
 
-function setPermissionValues(prefix, permissions) {
+function setPermissionValues(prefix) {
   const roleId = document.getElementById(permissionSelectId(prefix))?.value || 'reporter';
-  const normalized = normalizePermissions(permissions, roleId);
-  PERMISSION_DEFS.forEach(({ key }) => {
-    const el = document.getElementById(`perm-${prefix}-${key}`);
-    if (el) el.checked = normalized[key] === true;
+  document.querySelectorAll(`input[data-role-pick="${prefix}"]`).forEach(el => {
+    el.checked = el.value === roleId;
   });
+}
+
+function selectedRoleFromForm(prefix) {
+  const checked = document.querySelector(`input[data-role-pick="${prefix}"]:checked`);
+  return checked?.value || document.getElementById(permissionSelectId(prefix))?.value || 'reporter';
 }
 
 function collectPermissionValues(prefix) {
-  const values = {};
-  PERMISSION_DEFS.forEach(({ key }) => {
-    values[key] = document.getElementById(`perm-${prefix}-${key}`)?.checked === true;
-  });
-  return values;
+  return defaultPermsForRole(selectedRoleFromForm(prefix));
+}
+
+function selectRoleCheckbox(prefix, roleId) {
+  const sel = document.getElementById(permissionSelectId(prefix));
+  if (sel) sel.value = normalizeRoleId(roleId);
+  setPermissionValues(prefix);
 }
 
 function applyRolePreset(prefix) {
-  const roleId = document.getElementById(permissionSelectId(prefix))?.value || 'reporter';
-  renderPermissionList(prefix, defaultPermsForRole(roleId));
+  setPermissionValues(prefix);
 }
 
 function fmtLoc(loc) {
@@ -1492,12 +1500,18 @@ function activateAdminPage(page, opts = {}) {
 }
 
 async function loadAll() {
-  const [{ data: us }, { data: eqs }, { data: depts }] = await Promise.all([
+  const [{ data: us }, { data: eqs }, { data: depts }, { data: rolePerms }] = await Promise.all([
     db.from('users').select('*').order('name'),
     db.from('equipment').select('*').order('name'),
     db.from('departments').select('*').order('sort_order'),
+    db.from('role_permissions').select('role_id,perm,allowed'),
   ]);
   allUsers = us || []; allEquipment = eqs || []; allDepts = depts || [];
+  rolePermissionMatrix = {};
+  (rolePerms || []).forEach(row => {
+    if (!rolePermissionMatrix[row.role_id]) rolePermissionMatrix[row.role_id] = {};
+    rolePermissionMatrix[row.role_id][row.perm] = row.allowed === true;
+  });
   allUsers.forEach(u => userMap[u.user_id] = u);
   allEquipment.forEach(e => eqMap[e.equipment_id] = e);
   allDepts.forEach(d => deptMap[d.dept_id] = d);
