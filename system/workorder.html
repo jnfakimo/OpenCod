@@ -183,11 +183,13 @@ function normalizeRoleId(user){const role=user?.rbac_role||user?.role;if(RBAC_RO
 function hasPerm(key){const p=me_?.permissions||{};if(typeof p[key]==='boolean')return p[key];return ROLE_PERMISSION_PRESETS[normalizeRoleId(me_)]?.[key]===true;}
 function canAssign(user){return user?.role==='maintenance'||user?.role==='admin'||['technician','sysadmin'].includes(user?.rbac_role);}
 const WORKORDER_STATE_KEY='tcfm.workorder.state';
-const DEFAULT_OPERATOR_NAME='操作員';
+const DEFAULT_OPERATOR_NAME='吳玉美';
+const DEFAULT_OPERATOR_DEPARTMENT='改建室';
 
 function readLoginCache(){
   return {
     user_id:sessionStorage.getItem('user_id') || null,
+    dept_id:sessionStorage.getItem('user_dept_id') || null,
     name:(sessionStorage.getItem('user_name') || '').trim() || DEFAULT_OPERATOR_NAME,
     departmentName:(sessionStorage.getItem('user_department') || '').trim(),
     role:sessionStorage.getItem('user_role') || 'inspector',
@@ -196,7 +198,7 @@ function readLoginCache(){
   };
 }
 function operatorDepartment(){
-  return (me_?.departmentName || me_?.department || me_?.dep || sessionStorage.getItem('user_department') || '').trim();
+  return (me_?.departmentName || me_?.department || me_?.dep || sessionStorage.getItem('user_department') || DEFAULT_OPERATOR_DEPARTMENT).trim();
 }
 function operatorName(){
   return (me_?.name || sessionStorage.getItem('user_name') || DEFAULT_OPERATOR_NAME).trim() || DEFAULT_OPERATOR_NAME;
@@ -210,7 +212,7 @@ function setOperatorDisplay(){
   if(el) el.textContent=operatorLabel();
 }
 async function hydrateOperatorDepartment(){
-  const explicit=operatorDepartment();
+  const explicit=(me_?.departmentName || me_?.department || me_?.dep || sessionStorage.getItem('user_department') || '').trim();
   if(explicit){me_.departmentName=explicit;sessionStorage.setItem('user_department',explicit);return;}
   if(!me_?.dept_id)return;
   try{
@@ -242,6 +244,8 @@ async function init(){
       me_={...me_,...data,name:data.name||me_.name};
       sessionStorage.setItem('user_name',me_.name);
       if(me_.user_id) sessionStorage.setItem('user_id',me_.user_id);
+      if(me_.dept_id) sessionStorage.setItem('user_dept_id',me_.dept_id);
+      if(me_.department||me_.dep) sessionStorage.setItem('user_department',me_.department||me_.dep);
       if(me_.role) sessionStorage.setItem('user_role',me_.role);
       if(me_.rbac_role) sessionStorage.setItem('user_rbac_role',me_.rbac_role);
     }}
