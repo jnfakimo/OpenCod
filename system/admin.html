@@ -591,7 +591,7 @@ body{
       <div class="nav-item" data-page="inspections"><span class="nav-icon">◫</span> 巡檢記錄</div>
       <div class="nav-item" data-page="repairs"><span class="nav-icon">◪</span> 報修維修</div>
       <div class="nav-item" data-page="costs"><span class="nav-icon">◬</span> 費用統計</div>
-      <div class="nav-item" data-page="audit"><span class="nav-icon">◭</span> 稽核記錄</div>
+      <div class="nav-item" data-page="audit"><span class="nav-icon">◭</span> 系統紀錄</div>
       <div class="nav-item" data-page="cycles"><span class="nav-icon">↻</span> 巡檢週期</div>
       <div class="nav-item" data-page="locanalysis"><span class="nav-icon">⊞</span> 位置分析</div>
       <a href="handover.html" style="display:flex;align-items:center;gap:10px;padding:11px 22px;color:var(--text-dim);text-decoration:none;font-size:.88rem;letter-spacing:.04em;transition:color .2s" onmouseover="this.style.color='#b48aff'" onmouseout="this.style.color='var(--text-dim)'"><span class="nav-icon">◈</span> 電子交接簿</a>
@@ -847,7 +847,7 @@ body{
 
     <!-- AUDIT -->
     <div class="page-section" id="page-audit">
-      <div class="page-header"><h2>◭ 稽核記錄</h2><p>AUDIT LOG — PERMANENT / IMMUTABLE</p></div>
+      <div class="page-header"><h2>◭ 系統紀錄</h2><p>系統操作紀錄 — 永久保存 / 不可竄改</p></div>
       <div class="panel">
         <div class="search-bar">
           <select id="auditTableFilter" onchange="loadAudit()">
@@ -2384,7 +2384,7 @@ async function loadAudit() {
       <div class="audit-summary">${escHtml(item.summary)}</div>
       ${item.chips.length ? `<div class="audit-changes">${item.chips.map(x => `<span class="audit-chip">${escHtml(x)}</span>`).join('')}</div>` : ''}
     </div>`;
-  }).join('') : '<div style="color:var(--text-dim);font-size:.85rem;font-family:var(--font-mono)">目前無稽核紀錄</div>';
+  }).join('') : '<div style="color:var(--text-dim);font-size:.85rem;font-family:var(--font-mono)">目前無系統紀錄</div>';
 }
 
 async function loadCycles() {
