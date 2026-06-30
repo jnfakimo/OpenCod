@@ -181,7 +181,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
   <div class="topbar-right">
     <a href="app.html">◉ 巡檢</a>
-    <a href="maintenance.html">◪ 維修</a>
+    <a href="workorder.html">◪ 維修</a>
     <a href="admin.html">⬡ 後台</a>
     <span style="color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600">◈ 交接簿</span>
     <span class="nav-user" id="navUser">LOADING…</span>
@@ -681,7 +681,7 @@ function applyPerms() {
   const p = currentUser?.permissions;
   if (_handoverHasSession && p?.handover === false) {
     const dest = p.inspector !== false ? 'app.html'
-               : p.maintenance !== false ? 'maintenance.html'
+               : p.maintenance !== false ? 'workorder.html'
                : 'login.html';
     window.location.replace(dest);
     return;
@@ -690,7 +690,7 @@ function applyPerms() {
   if (p.inspector === false)
     document.querySelectorAll('a[href="app.html"]').forEach(el => el.style.display = 'none');
   if (p.maintenance === false)
-    document.querySelectorAll('a[href="maintenance.html"]').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('a[href="workorder.html"]').forEach(el => el.style.display = 'none');
 }
 
 // ── CLOCK ──────────────────────────────────────────
