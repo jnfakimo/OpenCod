@@ -122,7 +122,7 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
     <div class="modal-h"><span class="t">＋ 新增報修</span><button class="x" onclick="closeM('m-create')">✕</button></div>
     <div class="modal-b">
       <div class="row2">
-        <div class="field"><label>報修人</label><input id="c-reporter" readonly></div>
+        <div class="field"><label>報修人</label><select id="c-reporter"></select></div>
         <div class="field"><label>聯絡電話</label><input id="c-phone"></div>
       </div>
       <div class="row2">
@@ -189,17 +189,48 @@ function readLoginCache(){
   return {
     user_id:sessionStorage.getItem('user_id') || null,
     name:(sessionStorage.getItem('user_name') || '').trim() || DEFAULT_OPERATOR_NAME,
+    departmentName:(sessionStorage.getItem('user_department') || '').trim(),
     role:sessionStorage.getItem('user_role') || 'inspector',
     rbac_role:sessionStorage.getItem('user_rbac_role') || 'reporter',
     permissions:{}
   };
 }
+function operatorDepartment(){
+  return (me_?.departmentName || me_?.department || me_?.dep || sessionStorage.getItem('user_department') || '').trim();
+}
 function operatorName(){
   return (me_?.name || sessionStorage.getItem('user_name') || DEFAULT_OPERATOR_NAME).trim() || DEFAULT_OPERATOR_NAME;
 }
+function operatorLabel(){
+  const dept=operatorDepartment();
+  return dept ? `${dept} / ${operatorName()}` : operatorName();
+}
 function setOperatorDisplay(){
   const el=document.getElementById('navUser');
-  if(el) el.textContent=operatorName();
+  if(el) el.textContent=operatorLabel();
+}
+async function hydrateOperatorDepartment(){
+  const explicit=operatorDepartment();
+  if(explicit){me_.departmentName=explicit;sessionStorage.setItem('user_department',explicit);return;}
+  if(!me_?.dept_id)return;
+  try{
+    const {data}=await db.from('departments').select('dept_id,name,parent_id').limit(1000);
+    const map=Object.fromEntries((data||[]).map(d=>[d.dept_id,d]));
+    const path=[];let cur=map[me_.dept_id],guard=0;
+    while(cur&&guard++<8){path.unshift(cur.name);cur=cur.parent_id?map[cur.parent_id]:null;}
+    me_.departmentName=path.filter(Boolean).join(' / ');
+    if(me_.departmentName)sessionStorage.setItem('user_department',me_.departmentName);
+  }catch(e){}
+}
+function setReporterSelect(){
+  const el=document.getElementById('c-reporter');
+  if(!el)return;
+  el.innerHTML='';
+  const opt=document.createElement('option');
+  opt.value=operatorLabel();
+  opt.textContent=operatorLabel();
+  el.appendChild(opt);
+  el.value=operatorLabel();
 }
 
 let me_=readLoginCache();
@@ -215,6 +246,7 @@ async function init(){
       if(me_.rbac_role) sessionStorage.setItem('user_rbac_role',me_.rbac_role);
     }}
   }catch(e){}
+  await hydrateOperatorDepartment();
   setOperatorDisplay();
   const addBtn=document.querySelector('.btn-add'); if(addBtn) addBtn.style.display=hasPerm('create')?'':'none';
   await Promise.all([loadCases(),loadRefs()]);
@@ -304,7 +336,7 @@ function fmt(t){if(!t)return'—';const d=new Date(t);return `${(d.getMonth()+1)
 
 // ─── Create ───
 function openCreate(){if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}['c-reporter','c-phone','c-dept','c-desc','c-ftype'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('c-reporter').value=operatorName(); document.getElementById('c-msg').textContent='';
+  setReporterSelect(); document.getElementById('c-dept').value=operatorDepartment(); document.getElementById('c-msg').textContent='';
   document.getElementById('c-files').value=''; show('m-create');}
 function onEqp(){const e=equip.find(x=>x.equipment_id===document.getElementById('c-eqp').value);
   if(e&&!document.getElementById('c-ftype').value){} }
@@ -315,9 +347,9 @@ async function submitCreate(){
   if(!eqId||!desc){msg.textContent='請選擇設備並填寫故障描述';msg.className='msg err';return;}
   msg.textContent='送出中…';msg.className='msg';
   const e=equip.find(x=>x.equipment_id===eqId);
-  document.getElementById('c-reporter').value=operatorName();
-  const rec={source:'direct',equipment_id:eqId,reporter:operatorName(),
-    phone:document.getElementById('c-phone').value.trim()||null, department:document.getElementById('c-dept').value.trim()||null,
+  setReporterSelect();
+  const rec={source:'direct',equipment_id:eqId,reporter:operatorLabel(),
+    phone:document.getElementById('c-phone').value.trim()||null, department:document.getElementById('c-dept').value.trim()||operatorDepartment()||null,
     equipment_category:e?.category||null, location_id:document.getElementById('c-loc').value||null,
     fault_type:document.getElementById('c-ftype').value.trim()||null, fault_desc:desc,
     impact_level:document.getElementById('c-impact').value, urgency:document.getElementById('c-urg').value,
@@ -340,7 +372,7 @@ function kindOf(f){const t=f.type;if(t.startsWith('image'))return'photo';if(t.st
 
 // ─── Status log ───
 async function logStatus(reqId,ordId,from,to,note){
-  await db.from('case_status_log').insert({request_id:reqId,order_id:ordId,from_status:from,to_status:to,note:note||null,operator_id:me_.user_id||null,operator_name:operatorName()});
+  await db.from('case_status_log').insert({request_id:reqId,order_id:ordId,from_status:from,to_status:to,note:note||null,operator_id:me_.user_id||null,operator_name:operatorLabel()});
 }
 
 // ─── Detail ───
