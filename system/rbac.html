@@ -67,8 +67,24 @@ const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 const PERMS=[['create','新增'],['update','修改'],['delete','刪除'],['read','查詢'],['dispatch','派工'],['close','結案'],['sign','簽核'],['export','匯出'],['admin','後台管理']];
+const LEGACY_ROLE_BY_RBAC={reporter:'inspector',duty:'maintenance',dispatcher:'maintenance',technician:'maintenance',unit_supervisor:'supervisor',mgmt_supervisor:'supervisor',sysadmin:'admin'};
+const MENU_PRESETS={
+  reporter:{maintenance:true,repair:true},
+  duty:{maintenance:true,handover:true,repair:true},
+  dispatcher:{maintenance:true,repair:true},
+  technician:{maintenance:true},
+  unit_supervisor:{maintenance:true,handover:true,repair:true},
+  mgmt_supervisor:{maintenance:true,handover:true},
+  sysadmin:{inspector:true,maintenance:true,handover:true,repair:true}
+};
 let roles=[],perms={};
 function tab(i){document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('on',n===i));document.querySelectorAll('.pane').forEach((p,n)=>p.classList.toggle('on',n===i));}
+function permissionsForRole(role){
+  const out={inspector:false,maintenance:false,handover:false,repair:false};
+  Object.assign(out,MENU_PRESETS[role]||{});
+  PERMS.forEach(p=>{out[p[0]]=perms[role+'|'+p[0]]===true;});
+  return out;
+}
 
 async function init(){
   const [{data:r,error:re},{data:rp}]=await Promise.all([
@@ -105,7 +121,8 @@ async function renderUsers(){
       </select></td></tr>`).join('')+'</table>';
 }
 async function setUserRole(uid,role){
-  const {error}=await db.from('users').update({rbac_role:role||null}).eq('user_id',uid);
+  const updates = role ? { rbac_role:role, role:LEGACY_ROLE_BY_RBAC[role] || 'inspector', permissions:permissionsForRole(role) } : { rbac_role:null };
+  const {error}=await db.from('users').update(updates).eq('user_id',uid);
   toast(error?('儲存失敗：'+error.message):'已指派角色',!!error);
 }
 let _tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=err?'var(--red)':'var(--border-hi)';el.style.color=err?'var(--red)':'var(--text)';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2200);}

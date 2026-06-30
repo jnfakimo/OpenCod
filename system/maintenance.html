@@ -528,11 +528,28 @@ const STATUS_LABEL = { pending:'待處理', in_progress:'處理中', pending_rev
 const STATUS_NEXT = { pending:'in_progress', in_progress:'pending_review', pending_review:'completed', completed:'closed' };
 const STATUS_NEXT_LABEL = { pending:'開始處理', in_progress:'送交驗收', pending_review:'驗收通過', completed:'結案' };
 
+const LEGACY_TO_RBAC = { admin:'sysadmin', supervisor:'unit_supervisor', maintenance:'technician', inspector:'reporter' };
+const RBAC_PRESETS = {
+  reporter:{ maintenance:true, repair:true, read:true, create:true },
+  duty:{ maintenance:true, handover:true, repair:true, read:true, create:true, dispatch:true },
+  dispatcher:{ maintenance:true, repair:true, read:true, create:true, update:true, dispatch:true, export:true },
+  technician:{ maintenance:true, read:true, update:true },
+  unit_supervisor:{ maintenance:true, handover:true, repair:true, read:true, create:true, close:true, sign:true, export:true },
+  mgmt_supervisor:{ maintenance:true, handover:true, read:true, close:true, sign:true, export:true },
+  sysadmin:{ inspector:true, maintenance:true, handover:true, repair:true, read:true, create:true, update:true, delete:true, dispatch:true, close:true, sign:true, export:true, admin:true }
+};
+function normalizeRoleId(u) { return u?.rbac_role || LEGACY_TO_RBAC[u?.role] || 'reporter'; }
+function hasPagePerm(key) {
+  const p = currentUser?.permissions || {};
+  if (typeof p[key] === 'boolean') return p[key];
+  return RBAC_PRESETS[normalizeRoleId(currentUser)]?.[key] === true;
+}
+function canAssign(u) { return u?.role === 'maintenance' || u?.role === 'admin' || ['technician','sysadmin'].includes(u?.rbac_role); }
+
 function applyPerms(hasSession) {
-  const p = currentUser?.permissions;
-  if (hasSession && p?.maintenance === false) {
-    const dest = p.inspector !== false ? 'app.html'
-               : p.handover !== false ? 'handover.html'
+  if (hasSession && !hasPagePerm('maintenance')) {
+    const dest = hasPagePerm('inspector') ? 'app.html'
+               : hasPagePerm('handover') ? 'handover.html'
                : 'login.html';
     window.location.replace(dest);
   }
@@ -555,7 +572,8 @@ const COST_TYPE_LABEL = { purchase:'購置費', outsource:'委外維修', parts:
     profile = data;
   }
   if (!profile) {
-    let { data } = await db.from('users').select('*').eq('role', 'maintenance').eq('status', 'active').limit(1).maybeSingle();
+    let { data } = await db.from('users').select('*').eq('rbac_role', 'technician').eq('status', 'active').limit(1).maybeSingle();
+    if (!data) ({ data } = await db.from('users').select('*').eq('role', 'maintenance').eq('status', 'active').limit(1).maybeSingle());
     if (!data) ({ data } = await db.from('users').select('*').eq('status', 'active').limit(1).maybeSingle());
     profile = data;
   }
@@ -685,8 +703,8 @@ async function openOrder(orderId) {
   const req = order.repair_requests || {};
   const assignee = userMap[order.assignee_id];
 
-  const { data: maintUsers } = await db.from('users').select('*').in('role', ['maintenance', 'admin']);
-  const assigneeOpts = (maintUsers || []).map(u => `<option value="${u.user_id}" ${u.user_id === order.assignee_id ? 'selected' : ''}>${u.name}</option>`).join('');
+  const { data: maintUsers } = await db.from('users').select('*').eq('status','active');
+  const assigneeOpts = (maintUsers || []).filter(canAssign).map(u => `<option value="${u.user_id}" ${u.user_id === order.assignee_id ? 'selected' : ''}>${u.name}</option>`).join('');
 
   const nextStatus = STATUS_NEXT[order.status];
   const nextLabel = STATUS_NEXT_LABEL[order.status];

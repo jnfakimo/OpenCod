@@ -95,23 +95,64 @@ const ROLE_ROUTES = {
   inspector:   'app.html',
   maintenance: 'workorder.html',
 };
+const RBAC_ROLES = {
+  reporter:'一般報修人員',
+  duty:'值班人員',
+  dispatcher:'派工管理員',
+  technician:'維修技術人員',
+  unit_supervisor:'單位主管',
+  mgmt_supervisor:'管理部主管',
+  sysadmin:'系統管理員'
+};
+const LEGACY_TO_RBAC = { admin:'sysadmin', supervisor:'unit_supervisor', maintenance:'technician', inspector:'reporter' };
+const ROLE_PERMISSION_PRESETS = {
+  reporter:{ maintenance:true, repair:true, read:true, create:true },
+  duty:{ maintenance:true, handover:true, repair:true, read:true, create:true, dispatch:true },
+  dispatcher:{ maintenance:true, repair:true, read:true, create:true, update:true, dispatch:true, export:true },
+  technician:{ maintenance:true, read:true, update:true },
+  unit_supervisor:{ maintenance:true, handover:true, repair:true, read:true, create:true, close:true, sign:true, export:true },
+  mgmt_supervisor:{ maintenance:true, handover:true, read:true, close:true, sign:true, export:true },
+  sysadmin:{ inspector:true, maintenance:true, handover:true, repair:true, read:true, create:true, update:true, delete:true, dispatch:true, close:true, sign:true, export:true, admin:true }
+};
+
+function normalizeRoleId(profile) {
+  const role = profile?.rbac_role || profile?.role;
+  if (RBAC_ROLES[role]) return role;
+  return LEGACY_TO_RBAC[role] || 'reporter';
+}
+
+function hasPermission(profile, key) {
+  const p = profile.permissions || {};
+  if (typeof p[key] === 'boolean') return p[key];
+  return ROLE_PERMISSION_PRESETS[normalizeRoleId(profile)]?.[key] === true;
+}
 
 function getLoginRoute(profile) {
-  const p = profile.permissions || {};
-  if (profile.role === 'admin' || profile.role === 'supervisor') return 'admin.html';
-  if (profile.role === 'inspector') {
-    if (p.inspector !== false) return 'app.html';
-    if (p.handover !== false) return 'handover.html';
-    if (p.maintenance !== false) return 'workorder.html';
-    return 'app.html';
+  if (!profile.rbac_role) {
+    const p = profile.permissions || {};
+    if (profile.role === 'admin' || profile.role === 'supervisor') return 'admin.html';
+    if (profile.role === 'inspector') {
+      if (p.inspector !== false) return 'app.html';
+      if (p.handover !== false) return 'handover.html';
+      if (p.maintenance !== false) return 'workorder.html';
+      return 'app.html';
+    }
+    if (profile.role === 'maintenance') {
+      if (p.maintenance !== false) return 'workorder.html';
+      if (p.inspector !== false) return 'app.html';
+      if (p.handover !== false) return 'handover.html';
+      return 'workorder.html';
+    }
+    return ROLE_ROUTES[profile.role] || 'app.html';
   }
-  if (profile.role === 'maintenance') {
-    if (p.maintenance !== false) return 'workorder.html';
-    if (p.inspector !== false) return 'app.html';
-    if (p.handover !== false) return 'handover.html';
-    return 'workorder.html';
-  }
-  return ROLE_ROUTES[profile.role] || 'app.html';
+
+  const roleId = normalizeRoleId(profile);
+  if (roleId === 'sysadmin' || hasPermission(profile, 'admin')) return 'admin.html';
+  if (roleId === 'unit_supervisor' || roleId === 'mgmt_supervisor') return 'admin.html';
+  if (hasPermission(profile, 'maintenance') || hasPermission(profile, 'dispatch') || hasPermission(profile, 'update') || hasPermission(profile, 'create') || hasPermission(profile, 'repair')) return 'workorder.html';
+  if (hasPermission(profile, 'handover')) return 'handover.html';
+  if (hasPermission(profile, 'inspector')) return 'app.html';
+  return ROLE_ROUTES[profile.role] || 'workorder.html';
 }
 
 // ── Handle password-reset link (#type=recovery) ───────────────────────────────
@@ -126,7 +167,7 @@ function getLoginRoute(profile) {
   // Already logged in?
   const { data: { session } } = await db.auth.getSession();
   if (session) {
-    const { data: profile } = await db.from('users').select('role,permissions').eq('auth_id', session.user.id).single();
+    const { data: profile } = await db.from('users').select('role,rbac_role,permissions').eq('auth_id', session.user.id).single();
     if (profile) { window.location.href = getLoginRoute(profile); return; }
   }
 })();
@@ -159,7 +200,7 @@ async function doLogin() {
     return;
   }
 
-  const { data: profile } = await db.from('users').select('role,name,permissions').eq('auth_id', data.user.id).single();
+  const { data: profile } = await db.from('users').select('role,rbac_role,name,permissions').eq('auth_id', data.user.id).single();
   if (!profile) {
     err.textContent = '找不到使用者資料，請聯絡管理員';
     btn.disabled = false; btn.textContent = '登入';
@@ -168,6 +209,7 @@ async function doLogin() {
   }
 
   sessionStorage.setItem('user_role', profile.role);
+  sessionStorage.setItem('user_rbac_role', profile.rbac_role || '');
   sessionStorage.setItem('user_name', profile.name);
   window.location.href = getLoginRoute(profile);
 }

@@ -570,7 +570,8 @@ body{
       <h1>⬡ 後台管理系統</h1>
     </div>
     <nav class="sidebar-nav">
-      <div class="nav-item active" data-page="dashboard"><span class="nav-icon">◈</span> 總覽</div>
+      <div class="nav-item active" data-page="dashboard"><span class="nav-icon">◫</span> 戰情儀表板</div>
+      <div class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> 系統設定</div>
       <div class="nav-item" data-page="users"><span class="nav-icon">◉</span> 帳號管理</div>
       <div class="nav-item" data-page="equipment"><span class="nav-icon">◧</span> 設備管理</div>
       <div class="nav-item" data-page="inspections"><span class="nav-icon">◫</span> 巡檢記錄</div>
@@ -579,7 +580,6 @@ body{
       <div class="nav-item" data-page="audit"><span class="nav-icon">◭</span> 稽核記錄</div>
       <div class="nav-item" data-page="cycles"><span class="nav-icon">↻</span> 巡檢週期</div>
       <div class="nav-item" data-page="locanalysis"><span class="nav-icon">⊞</span> 位置分析</div>
-      <div class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> 系統設定</div>
       <a href="handover.html" style="display:flex;align-items:center;gap:10px;padding:11px 22px;color:var(--text-dim);text-decoration:none;font-size:.88rem;letter-spacing:.04em;transition:color .2s" onmouseover="this.style.color='#b48aff'" onmouseout="this.style.color='var(--text-dim)'"><span class="nav-icon">◈</span> 電子交接簿</a>
       <a href="locations.html" style="display:flex;align-items:center;gap:10px;padding:11px 22px;color:var(--text-dim);text-decoration:none;font-size:.88rem;letter-spacing:.04em;transition:color .2s" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)'"><span class="nav-icon">⊕</span> 場域位置管理</a>
     </nav>
@@ -597,7 +597,7 @@ body{
     <div class="page-section active" id="page-dashboard">
       <div class="page-header" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
         <div>
-          <h2>◈ 系統總覽</h2>
+          <h2>◫ 戰情儀表板</h2>
           <p>SYSTEM STATUS — 上次更新：<span id="lastRefresh" style="color:var(--cyan)">—</span></p>
         </div>
         <button onclick="loadDashboard()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'">↻ 重新整理</button>
@@ -629,22 +629,20 @@ body{
           <div class="field"><label>第一層部門</label><select id="u-dept-l1" onchange="onAdminDeptL1Change()"><option value="">-- 選擇第一層 --</option></select></div>
           <div class="field"><label>第二層（課）</label><select id="u-dept-l2" disabled><option value="">-- 無下級單位 --</option></select></div>
           <div class="field"><label>角色</label>
-            <select id="u-role">
-              <option value="inspector">巡檢人員</option>
-              <option value="maintenance">維修人員</option>
-              <option value="supervisor">主管／查詢</option>
-              <option value="admin">系統管理者</option>
+            <select id="u-role" onchange="applyRolePreset('c')">
+              <option value="reporter">一般報修人員</option>
+              <option value="duty">值班人員</option>
+              <option value="dispatcher">派工管理員</option>
+              <option value="technician">維修技術人員</option>
+              <option value="unit_supervisor">單位主管</option>
+              <option value="mgmt_supervisor">管理部主管</option>
+              <option value="sysadmin">系統管理員</option>
             </select>
           </div>
         </div>
         <div class="field" style="grid-column:1/-1;margin-top:4px">
           <label>可使用系統（功能選單）</label>
-          <div style="display:flex;gap:20px;flex-wrap:wrap;padding:8px 0">
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)"><input type="checkbox" id="perm-c-inspector" checked style="accent-color:var(--cyan)"> 巡檢系統</label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)"><input type="checkbox" id="perm-c-maintenance" checked style="accent-color:var(--cyan)"> 維修系統</label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)"><input type="checkbox" id="perm-c-handover" checked style="accent-color:var(--cyan)"> 電子交接簿</label>
-            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)"><input type="checkbox" id="perm-c-repair" checked style="accent-color:var(--cyan)"> 報修系統</label>
-          </div>
+          <div id="perm-c-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:10px 14px;padding:8px 0"></div>
         </div>
         <div style="margin-top:14px"><button class="btn btn-primary" onclick="createUser()">+ 建立帳號</button></div>
       </div>
@@ -668,10 +666,13 @@ body{
           </select>
           <select id="filterRole" onchange="filterUsers()" style="padding:7px 10px;background:rgba(2,8,20,.85);border:1px solid var(--border);border-radius:2px;color:var(--text-hi);font-family:var(--font-mono);font-size:.8rem;outline:none;min-width:110px">
             <option value="">全部角色</option>
-            <option value="inspector">巡檢人員</option>
-            <option value="maintenance">維修人員</option>
-            <option value="supervisor">主管／查詢</option>
-            <option value="admin">系統管理者</option>
+            <option value="reporter">一般報修人員</option>
+            <option value="duty">值班人員</option>
+            <option value="dispatcher">派工管理員</option>
+            <option value="technician">維修技術人員</option>
+            <option value="unit_supervisor">單位主管</option>
+            <option value="mgmt_supervisor">管理部主管</option>
+            <option value="sysadmin">系統管理員</option>
           </select>
           <input class="search-input" id="userSearch" placeholder="搜尋姓名或帳號…" oninput="filterUsers()" style="flex:1;min-width:140px">
           <button class="btn btn-sm" style="background:rgba(12,40,64,.5);border:1px solid var(--border);color:var(--text-dim);white-space:nowrap" onclick="clearUserFilters()">✕ 清除</button>
@@ -690,7 +691,7 @@ body{
           <span>批次匯入帳號（CSV）</span>
           <button class="btn btn-sm" style="background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:var(--text-dim);font-size:.72rem" onclick="downloadImportTemplate()">↓ 下載範本</button>
         </div>
-        <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:12px">支援匯出格式（12欄）或範本格式（姓名, 帳號, Email, 密碼, 電話, 角色）。帳號/Email已存在則自動跳過。</p>
+        <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:12px">支援匯出格式或範本格式（姓名, 帳號, Email, 密碼, 電話, 角色）。帳號/Email已存在則自動跳過。</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <input type="file" id="csvImportFile" accept=".csv" style="flex:1;padding:8px;background:rgba(2,8,20,.8);border:1px solid var(--border);border-radius:2px;color:var(--text-hi);font-size:.8rem;outline:none;min-width:200px">
           <button class="btn btn-primary btn-sm" onclick="importUsersCsv()">↑ 開始匯入</button>
@@ -1155,21 +1156,19 @@ body{
         </select>
       </div>
       <div class="field"><label>角色</label>
-        <select id="edit-u-role">
-          <option value="inspector">巡檢人員</option>
-          <option value="maintenance">維修人員</option>
-          <option value="supervisor">主管／查詢</option>
-          <option value="admin">系統管理者</option>
+        <select id="edit-u-role" onchange="applyRolePreset('e')">
+          <option value="reporter">一般報修人員</option>
+          <option value="duty">值班人員</option>
+          <option value="dispatcher">派工管理員</option>
+          <option value="technician">維修技術人員</option>
+          <option value="unit_supervisor">單位主管</option>
+          <option value="mgmt_supervisor">管理部主管</option>
+          <option value="sysadmin">系統管理員</option>
         </select>
       </div>
       <div class="field" style="grid-column:1/-1">
         <label>可使用系統（功能選單）</label>
-        <div style="display:flex;gap:20px;flex-wrap:wrap;padding:6px 0">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)"><input type="checkbox" id="perm-e-inspector" checked style="accent-color:var(--cyan)"> 巡檢系統</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)"><input type="checkbox" id="perm-e-maintenance" checked style="accent-color:var(--cyan)"> 維修系統</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)"><input type="checkbox" id="perm-e-handover" checked style="accent-color:var(--cyan)"> 電子交接簿</label>
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)"><input type="checkbox" id="perm-e-repair" checked style="accent-color:var(--cyan)"> 報修系統</label>
-        </div>
+        <div id="perm-e-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:10px 14px;padding:6px 0"></div>
       </div>
     </div>
     <div class="modal-actions">
@@ -1285,10 +1284,120 @@ let allUsers = [], allEquipment = [], allDepts = [], userMap = {}, eqMap = {}, d
 let userTab = 'active';
 let userPage = 1;
 const USER_PAGE_SIZE = 15;
-const ROLE_LABEL = { admin:'管理者', inspector:'巡檢人員', maintenance:'維修人員', supervisor:'主管' };
+const RBAC_ROLES = {
+  reporter:'一般報修人員',
+  duty:'值班人員',
+  dispatcher:'派工管理員',
+  technician:'維修技術人員',
+  unit_supervisor:'單位主管',
+  mgmt_supervisor:'管理部主管',
+  sysadmin:'系統管理員'
+};
+const LEGACY_ROLE_LABEL = { admin:'管理者', inspector:'巡檢人員', maintenance:'維修人員', supervisor:'主管' };
+const ROLE_LABEL = { ...LEGACY_ROLE_LABEL, ...RBAC_ROLES };
+const LEGACY_TO_RBAC = { admin:'sysadmin', supervisor:'unit_supervisor', maintenance:'technician', inspector:'reporter' };
+const LEGACY_ROLE_BY_RBAC = {
+  reporter:'inspector',
+  duty:'maintenance',
+  dispatcher:'maintenance',
+  technician:'maintenance',
+  unit_supervisor:'supervisor',
+  mgmt_supervisor:'supervisor',
+  sysadmin:'admin'
+};
+const PERMISSION_DEFS = [
+  { key:'inspector', label:'巡檢系統' },
+  { key:'maintenance', label:'報修派工' },
+  { key:'handover', label:'電子交接簿' },
+  { key:'repair', label:'報修入口' },
+  { key:'read', label:'查詢' },
+  { key:'create', label:'新增' },
+  { key:'update', label:'修改' },
+  { key:'delete', label:'刪除' },
+  { key:'dispatch', label:'派工' },
+  { key:'close', label:'結案' },
+  { key:'sign', label:'簽核' },
+  { key:'export', label:'匯出' },
+  { key:'admin', label:'權限管理' }
+];
+const ROLE_PERMISSION_PRESETS = {
+  reporter:{ maintenance:true, repair:true, read:true, create:true },
+  duty:{ maintenance:true, handover:true, repair:true, read:true, create:true, dispatch:true },
+  dispatcher:{ maintenance:true, repair:true, read:true, create:true, update:true, dispatch:true, export:true },
+  technician:{ maintenance:true, read:true, update:true },
+  unit_supervisor:{ maintenance:true, handover:true, repair:true, read:true, create:true, close:true, sign:true, export:true },
+  mgmt_supervisor:{ maintenance:true, handover:true, read:true, close:true, sign:true, export:true },
+  sysadmin:Object.fromEntries(PERMISSION_DEFS.map(p => [p.key, true]))
+};
 const STATUS_LABEL = { pending:'待處理', transferred:'已轉維修', closed:'已結案' };
 const ORDER_STATUS_LABEL = { pending:'待處理', in_progress:'處理中', pending_review:'待驗收', completed:'已完成', closed:'結案' };
 const COST_TYPE_LABEL = { purchase:'購置費', outsource:'委外維修', parts:'零件費', labor:'工時費', other:'其他' };
+const ADMIN_PAGE_KEY = 'tcfm.admin.activePage';
+
+function normalizeRoleId(userOrRole) {
+  const role = typeof userOrRole === 'string' ? userOrRole : (userOrRole?.rbac_role || userOrRole?.role);
+  if (RBAC_ROLES[role]) return role;
+  return LEGACY_TO_RBAC[role] || 'reporter';
+}
+
+function legacyRoleForRbac(roleId) {
+  return LEGACY_ROLE_BY_RBAC[normalizeRoleId(roleId)] || 'inspector';
+}
+
+function defaultPermsForRole(roleId) {
+  const base = Object.fromEntries(PERMISSION_DEFS.map(p => [p.key, false]));
+  return { ...base, ...(ROLE_PERMISSION_PRESETS[normalizeRoleId(roleId)] || {}) };
+}
+
+function normalizePermissions(permissions, roleId) {
+  const merged = defaultPermsForRole(roleId);
+  if (!permissions) return merged;
+  PERMISSION_DEFS.forEach(({ key }) => {
+    if (typeof permissions[key] === 'boolean') merged[key] = permissions[key];
+  });
+  return merged;
+}
+
+function permissionEnabled(permissions, key, roleId) {
+  return normalizePermissions(permissions, roleId)[key] === true;
+}
+
+function permissionSelectId(prefix) {
+  return prefix === 'e' ? 'edit-u-role' : 'u-role';
+}
+
+function renderPermissionList(prefix, permissions) {
+  const box = document.getElementById(`perm-${prefix}-list`);
+  if (!box) return;
+  box.innerHTML = PERMISSION_DEFS.map(({ key, label }) => `
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:.85rem;color:var(--text-hi)">
+      <input type="checkbox" id="perm-${prefix}-${key}" style="accent-color:var(--cyan)"> ${label}
+    </label>
+  `).join('');
+  setPermissionValues(prefix, permissions);
+}
+
+function setPermissionValues(prefix, permissions) {
+  const roleId = document.getElementById(permissionSelectId(prefix))?.value || 'reporter';
+  const normalized = normalizePermissions(permissions, roleId);
+  PERMISSION_DEFS.forEach(({ key }) => {
+    const el = document.getElementById(`perm-${prefix}-${key}`);
+    if (el) el.checked = normalized[key] === true;
+  });
+}
+
+function collectPermissionValues(prefix) {
+  const values = {};
+  PERMISSION_DEFS.forEach(({ key }) => {
+    values[key] = document.getElementById(`perm-${prefix}-${key}`)?.checked === true;
+  });
+  return values;
+}
+
+function applyRolePreset(prefix) {
+  const roleId = document.getElementById(permissionSelectId(prefix))?.value || 'reporter';
+  renderPermissionList(prefix, defaultPermsForRole(roleId));
+}
 
 function fmtLoc(loc) {
   if (!loc) return '—';
@@ -1298,11 +1407,14 @@ function fmtLoc(loc) {
 }
 
 function applyPerms() {
-  const p = currentUser?.permissions;
-  if (!p) return;
+  if (!currentUser) return;
+  const p = normalizePermissions(currentUser.permissions, normalizeRoleId(currentUser));
   if (p.handover === false)
     document.querySelectorAll('a[href="handover.html"]').forEach(el => el.style.display = 'none');
 }
+
+renderPermissionList('c', defaultPermsForRole('reporter'));
+renderPermissionList('e', defaultPermsForRole('reporter'));
 
 (async () => {
   // 登入驗證已關閉：有 session 用 session 帳號，否則自動套用預設管理者帳號
@@ -1318,7 +1430,7 @@ function applyPerms() {
     profile = data;
   }
   currentUser = profile || { user_id: null, name: '系統管理者', role: 'admin', status: 'active' };
-  document.getElementById('sidebarUser').textContent = `${currentUser.name} [${ROLE_LABEL[currentUser.role] || 'ADMIN'}]`;
+  document.getElementById('sidebarUser').textContent = `${currentUser.name} [${ROLE_LABEL[normalizeRoleId(currentUser)] || 'ADMIN'}]`;
   applyPerms();
   setupNav();
   checkFirstLogin();
@@ -1328,7 +1440,7 @@ function applyPerms() {
   DTP.init('cost-date-dtp','date');
   DTP.init('edit-eq-date-dtp','date');
   await loadAll();
-  loadDashboard();
+  activateAdminPage(getAdminInitialPage(), { persist:false });
   // 載入系統設定並套用名稱
   db.from('system_settings').select('key,value').then(({ data }) => {
     if (data) { data.forEach(s => sysSettings[s.key] = s.value); applySystemName(); }
@@ -1345,24 +1457,38 @@ function applyPerms() {
 
 function setupNav() {
   document.querySelectorAll('.nav-item').forEach(item => {
-    item.addEventListener('click', () => {
-      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-      item.classList.add('active');
-      document.getElementById('page-' + item.dataset.page).classList.add('active');
-      const page = item.dataset.page;
-      if (page === 'users') loadUsers();
-      else if (page === 'equipment') loadEquipmentList();
-      else if (page === 'inspections') { populateEqFilter('inspEqFilter'); loadInspections(); }
-      else if (page === 'repairs') loadRepairs();
-      else if (page === 'costs') { populateEqFilter('costEqFilter'); populateEqFilter('cost-eq'); loadCostAdmin(); loadCostByEq(); }
-      else if (page === 'audit') loadAudit();
-      else if (page === 'cycles') loadCycles();
-      else if (page === 'locanalysis') loadLocationAnalysis();
-      else if (page === 'settings') loadSettings();
-      else if (page === 'dashboard') loadDashboard();
-    });
+    item.addEventListener('click', () => activateAdminPage(item.dataset.page));
   });
+}
+
+function getAdminInitialPage() {
+  const fromHash = (location.hash || '').replace(/^#/, '');
+  if (fromHash && document.getElementById('page-' + fromHash)) return fromHash;
+  const saved = sessionStorage.getItem(ADMIN_PAGE_KEY);
+  return saved && document.getElementById('page-' + saved) ? saved : 'dashboard';
+}
+
+function activateAdminPage(page, opts = {}) {
+  const persist = opts.persist !== false;
+  const item = document.querySelector(`.nav-item[data-page="${page}"]`);
+  const section = document.getElementById('page-' + page);
+  if (!item || !section) page = 'dashboard';
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.page === page));
+  document.querySelectorAll('.page-section').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+  if (persist) {
+    sessionStorage.setItem(ADMIN_PAGE_KEY, page);
+    history.replaceState(null, '', `${location.pathname}#${page}`);
+  }
+  if (page === 'users') loadUsers();
+  else if (page === 'equipment') loadEquipmentList();
+  else if (page === 'inspections') { populateEqFilter('inspEqFilter'); loadInspections(); }
+  else if (page === 'repairs') loadRepairs();
+  else if (page === 'costs') { populateEqFilter('costEqFilter'); populateEqFilter('cost-eq'); loadCostAdmin(); loadCostByEq(); }
+  else if (page === 'audit') loadAudit();
+  else if (page === 'cycles') loadCycles();
+  else if (page === 'locanalysis') loadLocationAnalysis();
+  else if (page === 'settings') loadSettings();
+  else loadDashboard();
 }
 
 async function loadAll() {
@@ -1474,13 +1600,10 @@ function editUser(userId) {
   document.getElementById('edit-u-id').value = u.user_id;
   document.getElementById('edit-u-name').value = u.name || '';
   document.getElementById('edit-u-phone').value = u.phone || '';
-  document.getElementById('edit-u-role').value = u.role || 'inspector';
+  const rbacRole = normalizeRoleId(u);
+  document.getElementById('edit-u-role').value = rbacRole;
   populateEditUserDeptSelects(u.dept_id || null);
-  const p = u.permissions || {};
-  document.getElementById('perm-e-inspector').checked   = p.inspector   !== false;
-  document.getElementById('perm-e-maintenance').checked = p.maintenance !== false;
-  document.getElementById('perm-e-handover').checked    = p.handover    !== false;
-  document.getElementById('perm-e-repair').checked      = p.repair      !== false;
+  renderPermissionList('e', normalizePermissions(u.permissions, rbacRole));
   document.getElementById('editUserModal').classList.add('show');
 }
 
@@ -1488,21 +1611,17 @@ async function saveEditUser() {
   const userId = document.getElementById('edit-u-id').value;
   const name   = document.getElementById('edit-u-name').value.trim();
   const phone  = document.getElementById('edit-u-phone').value.trim();
-  const role   = document.getElementById('edit-u-role').value;
+  const rbacRole = document.getElementById('edit-u-role').value;
+  const role   = legacyRoleForRbac(rbacRole);
   const deptId = document.getElementById('edit-u-dept-l2').value || document.getElementById('edit-u-dept-l1').value || null;
   if (!name) { showToast('請填寫姓名', true); return; }
   if (!/^[一-龥]{2,10}$/.test(name)) { showToast('姓名格式錯誤，請輸入 2~10 個中文字', true); return; }
-  const permissions = {
-    inspector:   document.getElementById('perm-e-inspector').checked,
-    maintenance: document.getElementById('perm-e-maintenance').checked,
-    handover:    document.getElementById('perm-e-handover').checked,
-    repair:      document.getElementById('perm-e-repair').checked,
-  };
+  const permissions = collectPermissionValues('e');
   const before = userMap[userId];
-  const updates = { name, phone: phone || null, role, dept_id: deptId, permissions };
+  const updates = { name, phone: phone || null, role, rbac_role: rbacRole, dept_id: deptId, permissions };
   const { error } = await db.from('users').update(updates).eq('user_id', userId);
   if (error) { showToast('儲存失敗：' + translateError(error.message), true); return; }
-  await writeAudit('users', userId, 'update', { name: before?.name, phone: before?.phone, role: before?.role, dept_id: before?.dept_id, permissions: before?.permissions }, updates);
+  await writeAudit('users', userId, 'update', { name: before?.name, phone: before?.phone, role: before?.role, rbac_role: before?.rbac_role, dept_id: before?.dept_id, permissions: before?.permissions }, updates);
   showToast(`使用者「${name}」已更新`);
   closeModal('editUserModal');
   await loadUsers();
@@ -1553,13 +1672,14 @@ async function loadUsers() {
   filterUsers();
 }
 
-function formatPerms(p) {
-  if (!p) return '<span style="font-size:.7rem;color:var(--text-dim)">全部</span>';
-  const map = { inspector:'巡檢', maintenance:'維修', handover:'交接', repair:'報修' };
-  const enabled = Object.entries(map).filter(([k]) => p[k] !== false).map(([,v]) => v);
+function formatPerms(p, roleId) {
+  const normalized = normalizePermissions(p, roleId);
+  const enabled = PERMISSION_DEFS.filter(({ key }) => normalized[key] === true).map(({ label }) => label.replace('系統',''));
   if (!enabled.length) return '<span style="font-size:.7rem;color:var(--red)">無</span>';
-  if (enabled.length === 4) return '<span style="font-size:.7rem;color:var(--text-dim)">全部</span>';
-  return enabled.map(v => `<span style="font-size:.68rem;padding:1px 5px;border:1px solid var(--border-hi);border-radius:2px;color:var(--cyan)">${v}</span>`).join(' ');
+  if (enabled.length === PERMISSION_DEFS.length) return '<span style="font-size:.7rem;color:var(--text-dim)">全部</span>';
+  const visible = enabled.slice(0, 6);
+  const more = enabled.length > visible.length ? `<span style="font-size:.68rem;color:var(--text-dim)">+${enabled.length - visible.length}</span>` : '';
+  return visible.map(v => `<span style="font-size:.68rem;padding:1px 5px;border:1px solid var(--border-hi);border-radius:2px;color:var(--cyan)">${v}</span>`).join(' ') + more;
 }
 
 function renderUsers(users) {
@@ -1567,8 +1687,8 @@ function renderUsers(users) {
     <td>${u.name}</td>
     <td style="font-family:var(--font-mono);font-size:.8rem">${u.username || '—'}</td>
     <td>${getDeptPath(u.dept_id)}</td>
-    <td><span class="role-badge">${ROLE_LABEL[u.role] || u.role}</span></td>
-    <td>${formatPerms(u.permissions)}</td>
+    <td><span class="role-badge">${ROLE_LABEL[normalizeRoleId(u)] || normalizeRoleId(u)}</span></td>
+    <td>${formatPerms(u.permissions, normalizeRoleId(u))}</td>
     <td><span class="badge ${u.status === 'active' ? 'badge-active' : 'badge-inactive'}">${u.status === 'active' ? 'ACTIVE' : 'INACTIVE'}</span></td>
     <td style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-primary btn-sm" onclick="editUser('${u.user_id}')">編輯</button>
@@ -1656,7 +1776,7 @@ function filterUsers() {
     const childIds = allDepts.filter(d => d.parent_id === l1Id).map(d => d.dept_id);
     filtered = filtered.filter(u => u.dept_id === l1Id || childIds.includes(u.dept_id));
   }
-  if (role)  filtered = filtered.filter(u => u.role === role);
+  if (role)  filtered = filtered.filter(u => normalizeRoleId(u) === role);
   if (q)     filtered = filtered.filter(u =>
     u.name.toLowerCase().includes(q) ||
     (u.username || '').toLowerCase().includes(q) ||
@@ -1668,18 +1788,15 @@ function filterUsers() {
 }
 
 function exportUsersCsv() {
-  const headers = ['姓名','帳號','Email','密碼','電話','部門','角色','狀態','巡檢系統','維修系統','電子交接簿','報修系統'];
+  const headers = ['姓名','帳號','Email','密碼','電話','部門','角色','狀態', ...PERMISSION_DEFS.map(p => p.label)];
   const rows = allUsers.map(u => {
-    const p = u.permissions || {};
+    const roleId = normalizeRoleId(u);
     return [
       u.name, u.username || '', u.email || '', '', // 密碼欄留空（Supabase Auth 加密儲存）
       u.phone || '',
-      getDeptPath(u.dept_id), ROLE_LABEL[u.role] || u.role,
+      getDeptPath(u.dept_id), ROLE_LABEL[roleId] || roleId,
       u.status === 'active' ? '啟用' : '停用',
-      p.inspector  !== false ? '是' : '否',
-      p.maintenance !== false ? '是' : '否',
-      p.handover   !== false ? '是' : '否',
-      p.repair     !== false ? '是' : '否',
+      ...PERMISSION_DEFS.map(({ key }) => permissionEnabled(u.permissions, key, roleId) ? '是' : '否'),
     ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
   });
   const csv = '﻿' + [headers.join(','), ...rows].join('\n');
@@ -1691,7 +1808,7 @@ function exportUsersCsv() {
 }
 
 function downloadImportTemplate() {
-  const csv = '﻿姓名,帳號,Email,密碼,電話,角色\n王小明,tcfm_wang,wang@example.com,Password123,0912345678,inspector\n';
+  const csv = '﻿姓名,帳號,Email,密碼,電話,角色\n王小明,tcfm_wang,wang@example.com,Password123,0912345678,一般報修人員\n';
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -1729,7 +1846,14 @@ async function importUsersCsv() {
   let success = 0, failed = 0, skipped = 0;
   const existingUsernames = new Set(allUsers.map(u => (u.username || '').toLowerCase()));
   const existingEmails    = new Set(allUsers.map(u => (u.email    || '').toLowerCase()));
-  const roleMap = {'巡檢人員':'inspector','維修人員':'maintenance','主管':'supervisor','管理者':'admin','inspector':'inspector','maintenance':'maintenance','supervisor':'supervisor','admin':'admin'};
+  const roleMap = {
+    '一般報修人員':'reporter','值班人員':'duty','派工管理員':'dispatcher','維修技術人員':'technician',
+    '單位主管':'unit_supervisor','管理部主管':'mgmt_supervisor','系統管理員':'sysadmin',
+    reporter:'reporter',duty:'duty',dispatcher:'dispatcher',technician:'technician',
+    unit_supervisor:'unit_supervisor',mgmt_supervisor:'mgmt_supervisor',sysadmin:'sysadmin',
+    '巡檢人員':'reporter','維修人員':'technician','主管':'unit_supervisor','管理者':'sysadmin',
+    inspector:'reporter',maintenance:'technician',supervisor:'unit_supervisor',admin:'sysadmin'
+  };
   for (let i = 0; i < dataLines.length; i++) {
     const cols = parseCSVLine(dataLines[i]);
     let name, username, email, password, phone, roleRaw;
@@ -1746,12 +1870,14 @@ async function importUsersCsv() {
       log.innerHTML += `<div style="color:var(--text-dim)">第 ${i+2} 行「${name}」（${username}）：帳號或Email已存在，跳過</div>`; skipped++; continue;
     }
     const pwd = password || genTempPassword();
-    const userRole = roleMap[roleRaw] || 'inspector';
+    const rbacRole = roleMap[roleRaw] || 'reporter';
+    const userRole = legacyRoleForRbac(rbacRole);
+    const permissions = defaultPermsForRole(rbacRole);
     const { data: authData, error: authErr } = await db.auth.signUp({ email, password: pwd });
     if (authErr) {
       log.innerHTML += `<div style="color:var(--red)">第 ${i+2} 行「${name}」：${translateError(authErr.message)}</div>`; failed++; continue;
     }
-    const profile = { auth_id: authData.user.id, name, username, email, phone: phone || null, role: userRole, status: 'active', created_by: currentUser?.user_id };
+    const profile = { auth_id: authData.user.id, name, username, email, phone: phone || null, role: userRole, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser?.user_id };
     const { error: profErr } = await db.from('users').insert(profile);
     if (profErr) {
       log.innerHTML += `<div style="color:var(--red)">第 ${i+2} 行「${name}」：${translateError(profErr.message)}</div>`; failed++; continue;
@@ -1773,7 +1899,8 @@ async function createUser() {
   const pass     = document.getElementById('u-pass').value;
   const phone    = document.getElementById('u-phone').value.trim();
   const deptId   = getAdminDeptId();
-  const role     = document.getElementById('u-role').value;
+  const rbacRole = document.getElementById('u-role').value;
+  const role     = legacyRoleForRbac(rbacRole);
   if (!name || !username || !email || !pass) { showToast('請填寫姓名、帳號、郵件與密碼', true); return; }
   if (!/^[一-龥]{2,10}$/.test(name)) { showToast('姓名格式錯誤，請輸入 2~10 個中文字', true); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Email 格式不正確', true); return; }
@@ -1789,13 +1916,8 @@ async function createUser() {
     return;
   }
 
-  const permissions = {
-    inspector:   document.getElementById('perm-c-inspector').checked,
-    maintenance: document.getElementById('perm-c-maintenance').checked,
-    handover:    document.getElementById('perm-c-handover').checked,
-    repair:      document.getElementById('perm-c-repair').checked,
-  };
-  const profile = { auth_id: authData.user.id, name, username, email, phone: phone || null, dept_id: deptId, role, permissions, status: 'active', created_by: currentUser.user_id };
+  const permissions = collectPermissionValues('c');
+  const profile = { auth_id: authData.user.id, name, username, email, phone: phone || null, dept_id: deptId, role, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser.user_id };
   const { error: profErr } = await db.from('users').insert(profile);
   if (profErr) { showToast('建立使用者資料失敗：' + translateError(profErr.message), true); return; }
 
@@ -1805,6 +1927,8 @@ async function createUser() {
   document.getElementById('u-dept-l1').value = '';
   document.getElementById('u-dept-l2').innerHTML = '<option value="">-- 無下級單位 --</option>';
   document.getElementById('u-dept-l2').disabled = true;
+  document.getElementById('u-role').value = 'reporter';
+  applyRolePreset('c');
   await loadUsers();
 }
 

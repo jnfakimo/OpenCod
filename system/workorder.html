@@ -104,7 +104,7 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
 
 <div class="wrap">
   <div class="toolbar">
-    <select id="fUrg"><option value="">全部緊急度</option><option value="urgent">緊急</option><option value="high">高</option><option value="normal">一般</option><option value="low">低</option></select>
+    <select id="fUrg" onchange="renderList()"><option value="">全部緊急度</option><option value="urgent">緊急</option><option value="high">高</option><option value="normal">一般</option><option value="low">低</option></select>
     <input id="fQ" placeholder="搜尋 報修單號 / 設備 / 單位…" style="width:220px" oninput="renderList()">
     <div class="tspace"></div>
     <button class="btn-add" onclick="openCreate()">＋ 新增報修</button>
@@ -168,6 +168,22 @@ const ST={pending:['待派工','#ffb300'],transferred:['已轉派','#1a7fff'],as
   closed:['已結案','#3a6a8a'],returned:['已退回','#ff3b3b'],rejected:['已拒絕','#ff3b3b'],cancelled:['已取消','#3a6a8a'],overdue:['逾期','#ff3b3b']};
 function badge(s){const x=ST[s]||[s,'#888'];return `<span class="badge" style="background:${x[1]}22;color:${x[1]};border:1px solid ${x[1]}66">${x[0]}</span>`;}
 
+const RBAC_ROLES={reporter:'一般報修人員',duty:'值班人員',dispatcher:'派工管理員',technician:'維修技術人員',unit_supervisor:'單位主管',mgmt_supervisor:'管理部主管',sysadmin:'系統管理員'};
+const LEGACY_TO_RBAC={admin:'sysadmin',supervisor:'unit_supervisor',maintenance:'technician',inspector:'reporter'};
+const ROLE_PERMISSION_PRESETS={
+  reporter:{maintenance:true,repair:true,read:true,create:true},
+  duty:{maintenance:true,handover:true,repair:true,read:true,create:true,dispatch:true},
+  dispatcher:{maintenance:true,repair:true,read:true,create:true,update:true,dispatch:true,export:true},
+  technician:{maintenance:true,read:true,update:true},
+  unit_supervisor:{maintenance:true,handover:true,repair:true,read:true,create:true,close:true,sign:true,export:true},
+  mgmt_supervisor:{maintenance:true,handover:true,read:true,close:true,sign:true,export:true},
+  sysadmin:{inspector:true,maintenance:true,handover:true,repair:true,read:true,create:true,update:true,delete:true,dispatch:true,close:true,sign:true,export:true,admin:true}
+};
+function normalizeRoleId(user){const role=user?.rbac_role||user?.role;if(RBAC_ROLES[role])return role;return LEGACY_TO_RBAC[role]||'reporter';}
+function hasPerm(key){const p=me_?.permissions||{};if(typeof p[key]==='boolean')return p[key];return ROLE_PERMISSION_PRESETS[normalizeRoleId(me_)]?.[key]===true;}
+function canAssign(user){return user?.role==='maintenance'||user?.role==='admin'||['technician','sysadmin'].includes(user?.rbac_role);}
+const WORKORDER_STATE_KEY='tcfm.workorder.state';
+
 let me_={user_id:null,name:'操作員'};
 let reqs=[],ordersByReq={},equip=[],locs=[],techs=[],filterStatus='';
 
@@ -176,7 +192,9 @@ async function init(){
     if(session){const {data}=await db.from('users').select('*').eq('auth_id',session.user.id).single();if(data)me_=data;}
   }catch(e){}
   document.getElementById('navUser').textContent=me_.name||'';
+  const addBtn=document.querySelector('.btn-add'); if(addBtn) addBtn.style.display=hasPerm('create')?'':'none';
   await Promise.all([loadCases(),loadRefs()]);
+  restoreWorkorderState();
   renderChips(); renderList();
 }
 
@@ -186,7 +204,7 @@ async function loadRefs(){
     db.from('locations').select('location_id,floor,area,detail,markets(name)').eq('status','active').limit(2000),
     db.from('users').select('user_id,name,role,rbac_role').eq('status','active')
   ]);
-  equip=e||[]; locs=l||[]; techs=(u||[]).filter(x=>x.role==='maintenance'||x.rbac_role==='technician'||x.role==='admin');
+  equip=e||[]; locs=l||[]; techs=(u||[]).filter(canAssign);
   // fill selects
   const eq=document.getElementById('c-eqp'); eq.innerHTML='<option value="">選擇設備…</option>'+equip.map(x=>`<option value="${x.equipment_id}">${x.name}${x.qr_code?' ('+x.qr_code+')':''}</option>`).join('');
   const lc=document.getElementById('c-loc'); lc.innerHTML='<option value="">（選填）</option>'+locs.map(x=>`<option value="${x.location_id}">${[x.markets?.name,x.floor,x.area,x.detail].filter(Boolean).join(' / ')}</option>`).join('');
@@ -219,6 +237,7 @@ function driver(r){const o=ordersByReq[r.request_id];return o?o.status:r.status;
 
 function renderList(){
   const urg=document.getElementById('fUrg').value, q=(document.getElementById('fQ').value||'').toLowerCase();
+  saveWorkorderState();
   let rows=reqs.filter(r=>{
     const s=driver(r);
     if(filterStatus && s!==filterStatus) return false;
@@ -240,15 +259,33 @@ function renderList(){
       <td style="color:var(--cyan)">檢視 ›</td></tr>`;
   }).join('');
 }
+
+function saveWorkorderState(){
+  sessionStorage.setItem(WORKORDER_STATE_KEY, JSON.stringify({
+    status:filterStatus,
+    urgency:document.getElementById('fUrg')?.value || '',
+    query:document.getElementById('fQ')?.value || ''
+  }));
+}
+
+function restoreWorkorderState(){
+  let state={};
+  try{state=JSON.parse(sessionStorage.getItem(WORKORDER_STATE_KEY)||'{}');}catch(e){}
+  filterStatus=state.status||'';
+  const urg=document.getElementById('fUrg'); if(urg) urg.value=state.urgency||'';
+  const q=document.getElementById('fQ'); if(q) q.value=state.query||'';
+}
+window.addEventListener('pagehide', saveWorkorderState);
 function fmt(t){if(!t)return'—';const d=new Date(t);return `${(d.getMonth()+1)}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 
 // ─── Create ───
-function openCreate(){['c-reporter','c-phone','c-dept','c-desc','c-ftype'].forEach(i=>document.getElementById(i).value='');
+function openCreate(){if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}['c-reporter','c-phone','c-dept','c-desc','c-ftype'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('c-reporter').value=me_.name||''; document.getElementById('c-msg').textContent='';
   document.getElementById('c-files').value=''; show('m-create');}
 function onEqp(){const e=equip.find(x=>x.equipment_id===document.getElementById('c-eqp').value);
   if(e&&!document.getElementById('c-ftype').value){} }
 async function submitCreate(){
+  if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}
   const eqId=document.getElementById('c-eqp').value, desc=document.getElementById('c-desc').value.trim();
   const msg=document.getElementById('c-msg');
   if(!eqId||!desc){msg.textContent='請選擇設備並填寫故障描述';msg.className='msg err';return;}
@@ -330,19 +367,20 @@ function attHtml(a){
 function renderActions(r,o){
   const s=driver(r); const box=document.getElementById('d-actions'); const sub=document.getElementById('d-sub'); sub.innerHTML='';
   const A=[];
-  if(s==='pending'||s==='transferred'){A.push(['派工','a-primary',()=>dispatchForm(r)]);A.push(['取消案件','a-danger',()=>act(()=>cancelCase(r))]);}
-  else if(s==='assigned'){A.push(['接單','a-ok',()=>act(()=>accept(r,o))]);A.push(['退回派工','a-warn',()=>act(()=>returnOrder(r,o))]);A.push(['拒絕','a-danger',()=>act(()=>rejectOrder(r,o))]);}
-  else if(s==='accepted'){A.push(['開始維修','a-primary',()=>act(()=>startWork(r,o))]);A.push(['退回派工','a-warn',()=>act(()=>returnOrder(r,o))]);}
-  else if(s==='in_progress'){A.push(['等待料件','a-warn',()=>act(()=>waitState(r,o,'waiting_parts'))]);A.push(['等待廠商','a-warn',()=>act(()=>waitState(r,o,'waiting_vendor'))]);A.push(['完成維修','a-ok',()=>completeForm(r,o)]);}
-  else if(s==='waiting_parts'||s==='waiting_vendor'){A.push(['繼續維修','a-primary',()=>act(()=>resume(r,o))]);A.push(['完成維修','a-ok',()=>completeForm(r,o)]);}
-  else if(s==='pending_review'||s==='completed'){A.push(['✓ 使用單位驗收','a-ok',()=>act(()=>confirmUnit(r,o))]);A.push(['⊚ 主管結案','a-primary',()=>act(()=>closeCase(r,o))]);A.push(['退回重修','a-warn',()=>act(()=>reopen(r,o))]);}
-  else if(s==='returned'||s==='rejected'){A.push(['重新派工','a-primary',()=>dispatchForm(r)]);A.push(['取消案件','a-danger',()=>act(()=>cancelCase(r))]);}
-  if(!A.length){box.innerHTML='<span style="color:var(--text-dim);font-size:.76rem">此案件已結束，僅供檢視</span>';return;}
+  if(s==='pending'||s==='transferred'){if(hasPerm('dispatch'))A.push(['派工','a-primary',()=>dispatchForm(r)]);if(hasPerm('delete'))A.push(['取消案件','a-danger',()=>act(()=>cancelCase(r))]);}
+  else if(s==='assigned'){if(hasPerm('update')){A.push(['接單','a-ok',()=>act(()=>accept(r,o))]);A.push(['退回派工','a-warn',()=>act(()=>returnOrder(r,o))]);A.push(['拒絕','a-danger',()=>act(()=>rejectOrder(r,o))]);}}
+  else if(s==='accepted'){if(hasPerm('update')){A.push(['開始維修','a-primary',()=>act(()=>startWork(r,o))]);A.push(['退回派工','a-warn',()=>act(()=>returnOrder(r,o))]);}}
+  else if(s==='in_progress'){if(hasPerm('update')){A.push(['等待料件','a-warn',()=>act(()=>waitState(r,o,'waiting_parts'))]);A.push(['等待廠商','a-warn',()=>act(()=>waitState(r,o,'waiting_vendor'))]);A.push(['完成維修','a-ok',()=>completeForm(r,o)]);}}
+  else if(s==='waiting_parts'||s==='waiting_vendor'){if(hasPerm('update')){A.push(['繼續維修','a-primary',()=>act(()=>resume(r,o))]);A.push(['完成維修','a-ok',()=>completeForm(r,o)]);}}
+  else if(s==='pending_review'||s==='completed'){if(hasPerm('sign'))A.push(['✓ 使用單位驗收','a-ok',()=>act(()=>confirmUnit(r,o))]);if(hasPerm('close'))A.push(['⊚ 主管結案','a-primary',()=>act(()=>closeCase(r,o))]);if(hasPerm('update'))A.push(['退回重修','a-warn',()=>act(()=>reopen(r,o))]);}
+  else if(s==='returned'||s==='rejected'){if(hasPerm('dispatch'))A.push(['重新派工','a-primary',()=>dispatchForm(r)]);if(hasPerm('delete'))A.push(['取消案件','a-danger',()=>act(()=>cancelCase(r))]);}
+  if(!A.length){box.innerHTML='<span style="color:var(--text-dim);font-size:.76rem">權限不足或案件已結束，僅供檢視</span>';return;}
   box.innerHTML=''; A.forEach(([t,c,fn])=>{const b=document.createElement('button');b.className='abtn '+c;b.textContent=t;b.onclick=fn;box.appendChild(b);});
 }
 function act(fn){ fn(); }
 
 function dispatchForm(r){
+  if(!hasPerm('dispatch')){toast('沒有派工權限',true);return;}
   const sub=document.getElementById('d-sub');
   sub.innerHTML=`<div class="subform show">
     <div class="row2">
@@ -362,6 +400,7 @@ function dispatchForm(r){
   </div>`;
 }
 async function doDispatch(reqId){
+  if(!hasPerm('dispatch')){toast('沒有派工權限',true);return;}
   const r=reqs.find(x=>x.request_id===reqId);
   const tech=document.getElementById('x-tech').value, vendor=document.getElementById('x-vendor').value.trim();
   if(!tech&&!vendor){toast('請選擇技師或填寫委外廠商',true);return;}
@@ -378,24 +417,25 @@ async function doDispatch(reqId){
     body:`${r.req_no||''}｜${r.equipment?.name||'設備'}｜${r.fault_desc||''}`,request_id:reqId,order_id:data.order_id}); }catch(e){} }
   await refreshAndReopen(reqId); toast('已派工');
 }
-async function accept(r,o){await db.from('maintenance_orders').update({status:'accepted',accept_status:'accepted'}).eq('order_id',o.order_id);
+async function accept(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:'accepted',accept_status:'accepted'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'assigned',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
   await logStatus(r.request_id,o.order_id,'assigned','accepted','技師接單');await refreshAndReopen(r.request_id);toast('已接單');}
-async function returnOrder(r,o){await db.from('maintenance_orders').update({status:'returned',accept_status:'returned'}).eq('order_id',o.order_id);
+async function returnOrder(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:'returned',accept_status:'returned'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'pending',assignee_id:null,updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
   await logStatus(r.request_id,o.order_id,driver(r),'returned','退回派工，待重新指派');await refreshAndReopen(r.request_id);toast('已退回');}
-async function rejectOrder(r,o){await db.from('maintenance_orders').update({status:'rejected',accept_status:'rejected'}).eq('order_id',o.order_id);
+async function rejectOrder(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:'rejected',accept_status:'rejected'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'pending',assignee_id:null,updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
   await logStatus(r.request_id,o.order_id,driver(r),'rejected','技師拒絕，待重新指派');await refreshAndReopen(r.request_id);toast('已拒絕');}
-async function startWork(r,o){const now=new Date().toISOString();
+async function startWork(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}const now=new Date().toISOString();
   await db.from('maintenance_orders').update({status:'in_progress',start_time:now,arrival_time:o.arrival_time||now}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'in_progress',updated_at:now}).eq('request_id',r.request_id);
   await logStatus(r.request_id,o.order_id,'accepted','in_progress','開始維修，到場時間 '+fmt(now));await refreshAndReopen(r.request_id);toast('開始維修');}
-async function waitState(r,o,st){await db.from('maintenance_orders').update({status:st}).eq('order_id',o.order_id);
+async function waitState(r,o,st){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:st}).eq('order_id',o.order_id);
   await logStatus(r.request_id,o.order_id,'in_progress',st,st==='waiting_parts'?'等待料件':'等待廠商');await refreshAndReopen(r.request_id);toast('狀態已更新');}
-async function resume(r,o){await db.from('maintenance_orders').update({status:'in_progress'}).eq('order_id',o.order_id);
+async function resume(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:'in_progress'}).eq('order_id',o.order_id);
   await logStatus(r.request_id,o.order_id,driver(r),'in_progress','繼續維修');await refreshAndReopen(r.request_id);toast('繼續維修');}
 function completeForm(r,o){
+  if(!hasPerm('update')){toast('沒有更新權限',true);return;}
   const sub=document.getElementById('d-sub');
   sub.innerHTML=`<div class="subform show">
     <div class="field"><label>故障原因</label><input id="x-cause" placeholder="例：軸承磨損"></div>
@@ -409,6 +449,7 @@ function completeForm(r,o){
   </div>`;
 }
 async function doComplete(reqId,ordId){
+  if(!hasPerm('update')){toast('沒有更新權限',true);return;}
   const now=new Date().toISOString();
   const upd={status:'pending_review',finish_time:now,fault_cause:document.getElementById('x-cause').value.trim()||null,
     handle_method:document.getElementById('x-method').value.trim()||null,parts_used:document.getElementById('x-parts').value.trim()||null,
@@ -418,15 +459,16 @@ async function doComplete(reqId,ordId){
   await logStatus(reqId,ordId,'in_progress','pending_review','維修完成，待驗收'+(upd.fault_cause?'（原因:'+upd.fault_cause+'）':''));
   await refreshAndReopen(reqId);toast('維修完成，待驗收');
 }
-async function confirmUnit(r,o){await logStatus(r.request_id,o?.order_id,'pending_review','pending_review','使用單位已驗收確認');await refreshAndReopen(r.request_id);toast('已記錄使用單位驗收');}
+async function confirmUnit(r,o){if(!hasPerm('sign')){toast('沒有簽核權限',true);return;}await logStatus(r.request_id,o?.order_id,'pending_review','pending_review','使用單位已驗收確認');await refreshAndReopen(r.request_id);toast('已記錄使用單位驗收');}
 async function closeCase(r,o){const now=new Date().toISOString();
+  if(!hasPerm('close')){toast('沒有結案權限',true);return;}
   if(o) await db.from('maintenance_orders').update({status:'closed'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'closed',updated_at:now}).eq('request_id',r.request_id);
   await logStatus(r.request_id,o?.order_id,'pending_review','closed','主管結案，案件完成');await refreshAndReopen(r.request_id);toast('已結案');}
-async function reopen(r,o){if(o)await db.from('maintenance_orders').update({status:'in_progress'}).eq('order_id',o.order_id);
+async function reopen(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}if(o)await db.from('maintenance_orders').update({status:'in_progress'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'in_progress',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
   await logStatus(r.request_id,o?.order_id,'pending_review','in_progress','驗收退回，重新維修');await refreshAndReopen(r.request_id);toast('已退回重修');}
-async function cancelCase(r){await db.from('repair_requests').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
+async function cancelCase(r){if(!hasPerm('delete')){toast('沒有刪除/取消權限',true);return;}await db.from('repair_requests').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
   await logStatus(r.request_id,null,driver(r),'cancelled','案件取消');await refreshAndReopen(r.request_id);toast('已取消');}
 
 async function refreshAndReopen(reqId){ await loadCases(); renderChips(); renderList(); openDetail(reqId); }
