@@ -53,6 +53,9 @@ alter table markets     enable row level security;
 alter table locations   enable row level security;
 alter table departments enable row level security;
 
+drop policy if exists "allow_all_for_now" on markets;
+drop policy if exists "allow_all_for_now" on locations;
+drop policy if exists "allow_all_for_now" on departments;
 create policy "allow_all_for_now" on markets     for all using (true);
 create policy "allow_all_for_now" on locations   for all using (true);
 create policy "allow_all_for_now" on departments for all using (true);
