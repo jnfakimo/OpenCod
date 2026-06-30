@@ -88,7 +88,10 @@ a{color:inherit;text-decoration:none}
   padding:2px 8px;border-radius:2px;cursor:pointer;font-size:.63rem;margin-left:6px;
   transition:all .2s}
 .add-sub:hover{border-color:var(--cyan);color:var(--cyan)}
-.collapsed .tree-area-row,.collapsed .tree-detail-row{display:none}
+.row-hidden{display:none!important}
+.caret{display:inline-block;width:14px;text-align:center;color:var(--cyan);cursor:pointer;user-select:none;font-size:.7rem}
+.caret.leaf{color:var(--text-dim);cursor:default}
+.tree-floor-row td,.tree-area-row td:first-child{cursor:pointer}
 
 /* DEPARTMENT TREE */
 .dept-tree{list-style:none;padding:0}
@@ -174,6 +177,8 @@ a{color:inherit;text-decoration:none}
         <option value="">所有樓層</option>
       </select>
       <input id="flt-q" placeholder="搜尋位置…" oninput="renderTree()" style="width:150px">
+      <button class="nav-back" onclick="expandAllLoc()" style="font-family:inherit;text-transform:none">▼ 全部展開</button>
+      <button class="nav-back" onclick="collapseAllLoc()" style="font-family:inherit;text-transform:none">▶ 全部收合</button>
       <div class="t-space"></div>
       <button class="btn-add" onclick="openAddModal()">＋ 新增位置</button>
     </div>
@@ -284,6 +289,7 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 
 // ─── State ───
 let allLocs=[], allMkts=[], allDepts=[];
+const collapsedFloors=new Set(), collapsedAreas=new Set(), collapsedDepts=new Set();
 
 // ─── Init ────────────────────────────────────────────────────
 async function init(){
@@ -387,13 +393,15 @@ function renderTree(){
     Object.entries(floors).sort((a,b)=>a[1].floor_order-b[1].floor_order).forEach(([fl,flData])=>{
       empty=false;
       const flKey=mkId+'_'+fl;
-      // Floor header row
+      const flCol=collapsedFloors.has(flKey);
+      // Floor header row (collapsible)
       const flTr=document.createElement('tr');
       flTr.className='tree-floor-row';
       flTr.dataset.key=flKey;
-      flTr.onclick=()=>flTr.parentElement.querySelectorAll(`[data-floor="${flKey}"]`).forEach(el=>el.classList.toggle('row-hidden'));
+      flTr.onclick=(e)=>{ if(e.target.closest('button'))return; toggleFloor(flKey); };
       flTr.innerHTML=`<td colspan="4">
-        ▼ ${mkt?.name||mkId} / ${fl}
+        <span class="caret">${flCol?'▶':'▼'}</span>
+        ${mkt?.name||mkId} / ${fl}
         <span style="font-size:.62rem;color:var(--text-dim);font-weight:400;margin-left:8px">
           ${Object.keys(flData.areas).length} 個區域
         </span>
@@ -403,20 +411,25 @@ function renderTree(){
 
       // Area and detail rows
       Object.entries(flData.areas).sort((a,b)=>a[1].area_order-b[1].area_order).forEach(([area,aData])=>{
+        const areaKey=flKey+'|'+area;
+        const aCol=collapsedAreas.has(areaKey);
+        const hasDet=aData.details.length>0;
         const aTr=document.createElement('tr');
-        aTr.className='tree-area-row'; aTr.dataset.floor=flKey;
+        aTr.className='tree-area-row'+(flCol?' row-hidden':''); aTr.dataset.floor=flKey;
+        const aCaret=hasDet?(aCol?'▶':'▼'):'·';
         aTr.innerHTML=`
-          <td colspan="3">${area}
+          <td colspan="3"><span class="caret${hasDet?'':' leaf'}">${aCaret}</span>${area}
             <span style="font-size:.62rem;color:var(--text-dim);margin-left:6px">${aData.details.length} 個細部位置</span>
-            <button class="add-sub" onclick="openAddModal('${mkId}','${fl}','${area.replace(/'/g,"\\'")}')">＋ 新增細部</button>
+            <button class="add-sub" onclick="event.stopPropagation();openAddModal('${mkId}','${fl}','${area.replace(/'/g,"\\'")}')">＋ 新增細部</button>
           </td>
           <td></td>`;
+        if(hasDet){ aTr.querySelector('td').onclick=(e)=>{ if(e.target.closest('button'))return; toggleArea(areaKey); }; }
         tbody.appendChild(aTr);
 
         aData.details.forEach(loc=>{
           const dTr=document.createElement('tr');
-          dTr.className='tree-detail-row'+(loc.status==='inactive'?' inactive':'');
-          dTr.dataset.floor=flKey;
+          dTr.className='tree-detail-row'+(loc.status==='inactive'?' inactive':'')+((flCol||aCol)?' row-hidden':'');
+          dTr.dataset.floor=flKey; dTr.dataset.area=areaKey;
           dTr.innerHTML=`
             <td>${loc.detail}
               <span class="badge ${loc.status==='active'?'badge-on':'badge-off'}">${loc.status==='active'?'啟用':'停用'}</span>
@@ -440,6 +453,16 @@ function renderTree(){
       ? '<tr><td colspan="4" class="empty">尚無位置資料<br><small>請點右上角「＋ 新增位置」，選擇市場後即可新增樓層 / 區域 / 細部位置</small></td></tr>'
       : '<tr><td colspan="4" class="empty" style="color:var(--amber)">尚未建立場域資料表<br><small>請先在 Supabase SQL Editor 執行 system/sql/locations_schema.sql 建立資料表</small></td></tr>';
   }
+}
+
+// ─── Tree collapse / expand ───────────────────────────────────
+function toggleFloor(k){ collapsedFloors.has(k)?collapsedFloors.delete(k):collapsedFloors.add(k); renderTree(); }
+function toggleArea(k){ collapsedAreas.has(k)?collapsedAreas.delete(k):collapsedAreas.add(k); renderTree(); }
+function expandAllLoc(){ collapsedFloors.clear(); collapsedAreas.clear(); renderTree(); }
+function collapseAllLoc(){
+  collapsedFloors.clear(); collapsedAreas.clear();
+  allLocs.forEach(r=>{ collapsedFloors.add(r.market_id+'_'+r.floor); });
+  renderTree();
 }
 
 // ─── Location CRUD ────────────────────────────────────────────
@@ -554,21 +577,29 @@ function buildDeptNode(dept){
   const li=document.createElement('li');
   li.className='dept-item';
   const children=allDepts.filter(d=>d.parent_id===dept.dept_id).sort((a,b)=>a.sort_order-b.sort_order);
+  const hasCh=children.length>0;
+  const col=collapsedDepts.has(dept.dept_id);
   li.innerHTML=`
     <div class="dept-row" style="margin-left:${(dept.level-1)*16}px">
+      <span class="caret${hasCh?'':' leaf'}">${hasCh?(col?'▶':'▼'):'·'}</span>
       <div class="dept-name">${dept.name}</div>
       <div class="dept-code">${dept.code||''}</div>
       <div class="dept-lvl">Lv${dept.level}</div>
       <span class="badge ${dept.status==='active'?'badge-on':'badge-off'}">${dept.status==='active'?'啟用':'停用'}</span>
-      <button class="act-btn" onclick="openEditDept('${dept.dept_id}')">✎</button>
-      <button class="act-btn ${dept.status==='active'?'danger':''}" onclick="toggleDept('${dept.dept_id}','${dept.status}')">
+      <button class="act-btn" onclick="event.stopPropagation();openEditDept('${dept.dept_id}')">✎</button>
+      <button class="act-btn ${dept.status==='active'?'danger':''}" onclick="event.stopPropagation();toggleDept('${dept.dept_id}','${dept.status}')">
         ${dept.status==='active'?'⊘':'●'}
       </button>
     </div>`;
-  if(children.length){
-    const ul=document.createElement('ul');ul.className='dept-children';
-    children.forEach(c=>ul.appendChild(buildDeptNode(c)));
-    li.appendChild(ul);
+  if(hasCh){
+    li.querySelector('.dept-row').style.cursor='pointer';
+    li.querySelector('.dept-row').onclick=(e)=>{ if(e.target.closest('button'))return;
+      collapsedDepts.has(dept.dept_id)?collapsedDepts.delete(dept.dept_id):collapsedDepts.add(dept.dept_id); renderDeptTree(); };
+    if(!col){
+      const ul=document.createElement('ul');ul.className='dept-children';
+      children.forEach(c=>ul.appendChild(buildDeptNode(c)));
+      li.appendChild(ul);
+    }
   }
   return li;
 }

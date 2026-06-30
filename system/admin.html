@@ -2188,9 +2188,13 @@ function renderDeptTree() {
   container.innerHTML = l1.map(d => buildL1Block(d)).join('');
 }
 
+const collapsedL1 = new Set();
+function toggleL1(id){ collapsedL1.has(id)?collapsedL1.delete(id):collapsedL1.add(id); renderDeptTree(); }
 function buildL1Block(d) {
   const children = allDepts.filter(c => c.parent_id === d.dept_id)
     .sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
+  const col = collapsedL1.has(d.dept_id);
+  const caret = children.length ? (col?'▶':'▼') : '·';
   const childRows = children.map(c => `
     <div class="dept-row" id="dr-${c.dept_id}">
       <span class="dept-indent">└</span>
@@ -2209,8 +2213,9 @@ function buildL1Block(d) {
     <div class="dept-block" id="dbl-${d.dept_id}">
       <div class="dept-l1">
         <div class="dept-row">
+          <span onclick="toggleL1('${d.dept_id}')" style="cursor:pointer;color:#00d4ff;width:16px;display:inline-block;text-align:center;user-select:none">${caret}</span>
           <span class="dept-l1-icon">◈</span>
-          <span class="dept-label">${escHtml(d.name)}</span>
+          <span class="dept-label" onclick="toggleL1('${d.dept_id}')" style="cursor:pointer">${escHtml(d.name)}</span>
           ${d.code ? `<span class="dept-code-badge">${escHtml(d.code)}</span>` : ''}
           <div class="dept-acts">
             <button class="dept-btn-edit" onclick="startEditDept('${d.dept_id}')">編輯</button>
@@ -2219,9 +2224,11 @@ function buildL1Block(d) {
         </div>
         <div id="edit-${d.dept_id}" style="display:none"></div>
       </div>
-      ${childRows}
-      <div id="addchild-${d.dept_id}" style="display:none"></div>
-      <button class="dept-btn-add" onclick="startAddDept('${d.dept_id}')">＋ 新增二級部門</button>
+      <div id="dch-${d.dept_id}" style="display:${col?'none':'block'}">
+        ${childRows}
+        <div id="addchild-${d.dept_id}" style="display:none"></div>
+        <button class="dept-btn-add" onclick="startAddDept('${d.dept_id}')">＋ 新增二級部門</button>
+      </div>
     </div>`;
 }
 
