@@ -49,7 +49,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 .ld-fill{height:100%;background:var(--cyan);width:0%;transition:width .25s}
 .ld-m{font-size:11px;color:var(--text2)}
 
-@media(max-width:600px){ .tb-title{display:none} .tbtn{width:36px;height:36px;font-size:15px} .fbtn{padding:8px 14px} }
+/* 整合標記（唯讀顯示，與整合標記系統同步）*/
+.pin{position:relative;transform:translate(-50%,-50%);pointer-events:auto;cursor:default}
+.pin .pdot{width:11px;height:11px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1.5px solid #fff;box-shadow:0 0 5px rgba(0,0,0,.6);margin:0 auto}
+.pin .plab{position:absolute;left:50%;top:-4px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:10px;padding:1px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.pin:hover .plab{opacity:1}
+#mklegend{position:fixed;left:14px;top:62px;z-index:150;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;display:flex;flex-wrap:wrap;gap:6px 12px;max-width:min(320px,calc(100vw - 28px))}
+#mklegend b{color:var(--cyan);width:100%;font-size:11px}
+#mklegend span{display:inline-flex;align-items:center;gap:5px;color:var(--text2)}
+#mklegend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+
+@media(max-width:600px){ .tb-title{display:none} .tbtn{width:36px;height:36px;font-size:15px} .fbtn{padding:8px 14px} #mklegend{font-size:10px;padding:6px 9px} }
 </style>
 </head>
 <body>
@@ -87,8 +97,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
   <div class="tbtn" id="t-zout" title="縮小">－</div>
   <div class="tbtn" id="t-rl"   title="逆時針旋轉 15°">↺</div>
   <div class="tbtn" id="t-rr"   title="順時針旋轉 15°">↻</div>
+  <div class="tbtn" id="t-mk"   title="標記顯示 / 隱藏">◈</div>
   <div class="tbtn" id="t-home" title="重置視角">⊡</div>
   <div class="tbtn" id="t-fs"   title="全螢幕">⛶</div>
+</div>
+
+<div id="mklegend">
+  <b>◈ 整合標記</b>
+  <span><i style="background:#00d4ff"></i>設備</span>
+  <span><i style="background:#00ff9d"></i>空間</span>
+  <span><i style="background:#ff5470"></i>報修點</span>
+  <span><i style="background:#ffb300"></i>一般</span>
+  <span style="color:var(--text)" id="mkNum">— 個</span>
 </div>
 
 <div id="hud">
@@ -154,7 +174,7 @@ function onLoad(){
   if(loaded<FLOORS.length) return;
   prog(100,'完成');
   setTimeout(()=>{ const l=document.getElementById('loading'); l.style.transition='opacity .4s'; l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); },150);
-  showFloor('B1'); updHud();
+  showFloor('B1'); updHud(); loadPlanMarkers();
 }
 
 function item(i){ return i==null?null:viewer.world.getItemAt(i); }
@@ -165,6 +185,31 @@ function showFloor(f){
   const cur=FLOORS.find(fl=>fl.id===f);
   document.getElementById('hudFloor').textContent=cur.label;
   document.getElementById('tbTitle').textContent=cur.label.replace('▣ ','')+' 平面圖';
+  drawPlanMarkers();
+}
+
+// ── 整合標記（唯讀，與整合標記系統 / 3D 同步）──────────────
+const MK_COL={equipment:'#00d4ff',space:'#00ff9d',repair:'#ff5470',note:'#ffb300'};
+let planMarkers=[], showMk=true;
+function escB(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function loadPlanMarkers(){
+  try{
+    const {data,error}=await db.from('plan_markers').select('floor_id,x,y,kind,label').eq('status','active');
+    if(!error) planMarkers=data||[];
+  }catch(e){}
+  drawPlanMarkers();
+}
+function drawPlanMarkers(){
+  if(!viewer.viewport) return;
+  viewer.clearOverlays();
+  const list=showMk?planMarkers.filter(m=>m.floor_id===curFloor):[];
+  list.forEach(m=>{
+    const el=document.createElement('div'); el.className='pin';
+    const col=MK_COL[m.kind]||'#ffb300';
+    el.innerHTML=`<div class="pdot" style="background:${col}"></div><div class="plab">${escB(m.label)}</div>`;
+    viewer.addOverlay({element:el, location:new OpenSeadragon.Point(m.x,m.y), placement:OpenSeadragon.Placement.CENTER, checkResize:false});
+  });
+  const n=document.getElementById('mkNum'); if(n) n.textContent=list.length+' 個'+(showMk?'':'（隱藏）');
 }
 
 function updHud(){
@@ -180,6 +225,7 @@ document.getElementById('t-zin').onclick =()=>{viewer.viewport.zoomBy(1.4);viewe
 document.getElementById('t-zout').onclick=()=>{viewer.viewport.zoomBy(0.71);viewer.viewport.applyConstraints();};
 document.getElementById('t-rl').onclick  =()=>setRot(rot-15);
 document.getElementById('t-rr').onclick  =()=>setRot(rot+15);
+document.getElementById('t-mk').onclick   =()=>{showMk=!showMk;document.getElementById('t-mk').style.color=showMk?'':'var(--text2)';drawPlanMarkers();};
 document.getElementById('t-home').onclick=()=>{viewer.viewport.goHome();setRot(0);};
 document.getElementById('t-fs').onclick   =()=>viewer.setFullScreen(!viewer.isFullPage());
 window.addEventListener('keydown',e=>{

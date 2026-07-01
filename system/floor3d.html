@@ -22,6 +22,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 #c3d canvas{display:block;touch-action:none}
 
 #floors{position:fixed;right:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+#mkpanel{position:fixed;right:14px;top:250px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:10px 13px;font-size:11px;line-height:1.9;min-width:150px;box-shadow:0 0 22px rgba(0,212,255,.12)}
+#mkpanel .p-t{color:var(--cyan);font-weight:700;font-size:12px}
+#mkpanel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
 .fbtn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;text-align:left;transition:all .15s;white-space:nowrap}
 .fbtn:last-child{border-bottom:none}
 .fbtn:hover{background:rgba(0,212,255,.08)}
@@ -61,6 +64,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
   body.controls-open #panelToggle{display:none}
   body.controls-open #floors{display:none}
   #floors{top:104px;right:10px}
+  #mkpanel{top:290px;right:10px;font-size:10px;padding:8px 10px}
+  body.controls-open #mkpanel{display:none}
   .fbtn{padding:9px 13px}
   #hint{left:10px;right:10px;bottom:10px;text-align:center;background:rgba(2,11,24,.72);border:1px solid rgba(10,58,90,.45);border-radius:4px;padding:5px 8px}
 }
@@ -125,14 +130,16 @@ body.controls-hidden #panelToggle{display:inline-flex}
     <button class="mini" onclick="topView()">⊤ 俯視</button>
     <button class="mini" onclick="setExplode(1)">真實比例</button>
   </div>
-  <div style="border-top:1px solid var(--border);margin-top:9px;padding-top:8px">
-    <div class="p-t" style="margin-bottom:5px">◈ 標記顯示</div>
-    <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備標記</label>
-    <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間標記</label>
-    <label><input type="checkbox" id="mk-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點標記</label>
-    <label><input type="checkbox" id="mk-note" checked onchange="toggleMarkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般標記</label>
-    <div class="h-r" style="color:var(--text2);margin-top:3px">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
-  </div>
+</div>
+
+<!-- 標記顯示（獨立面板，與立體控制分開）-->
+<div id="mkpanel">
+  <div class="p-t" style="margin-bottom:6px">◈ 標記顯示</div>
+  <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備標記</label>
+  <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間標記</label>
+  <label><input type="checkbox" id="mk-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點標記</label>
+  <label><input type="checkbox" id="mk-note" checked onchange="toggleMarkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般標記</label>
+  <div class="h-r" style="color:var(--text2);margin-top:4px">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
 </div>
 
 <div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
@@ -241,7 +248,7 @@ function addMarker3D(m){
   const stem=new THREE.Line(
     new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(0,MARK_H,0)]),
     new THREE.LineBasicMaterial({color:col,transparent:true,opacity:.55}));
-  const head=new THREE.Mesh(new THREE.SphereGeometry(3.4,16,12),new THREE.MeshBasicMaterial({color:col}));
+  const head=new THREE.Mesh(new THREE.SphereGeometry(1.7,14,10),new THREE.MeshBasicMaterial({color:col}));
   head.position.y=MARK_H;
   g.add(stem); g.add(head);
   g.position.set(x,0,z);
