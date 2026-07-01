@@ -11,14 +11,14 @@
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--green:#00ff88;--red:#ff3366;--yellow:#ffd700;--text:#b0d8f0;--text2:#5a8ab0}
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;overflow:hidden;height:100vh}
-#topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200}
+#topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200;overflow-x:auto;overflow-y:hidden}
 .tb-logo{font-size:13px;font-weight:700;color:var(--cyan);white-space:nowrap}
 .tb-sep{width:1px;height:24px;background:var(--border)}
-.tb-title{font-size:11px;color:var(--text2)}
-.tb-space{flex:1}
+.tb-title{font-size:11px;color:var(--text2);white-space:nowrap;flex:0 0 auto}
+.tb-space{flex:1 0 auto}
 .tb-btn{background:var(--border);border:1px solid var(--cyan2);color:var(--cyan);padding:4px 11px;border-radius:3px;cursor:pointer;font-size:11px;transition:background .2s}
 .tb-btn:hover{background:#0a3a5a}
-.tb-back{color:var(--text2);border-color:var(--border);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s}
+.tb-back{color:var(--text2);border-color:var(--border);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s;white-space:nowrap;flex:0 0 auto}
 .tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
 
 /* Floor nav */
@@ -102,14 +102,14 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;ov
   <div class="tb-sep"></div>
   <div class="tb-title" id="tb-mode">3D 建物巡檢地圖</div>
   <div class="tb-space"></div>
-  <a href="dashboard.html" class="tb-back">◫ 戰情儀表板</a>
-  <a href="workorder.html" class="tb-back">◪ 報修系統</a>
-  <a href="app.html" class="tb-back">◉ 巡檢</a>
-  <a href="admin.html" class="tb-back">⬡ 後台</a>
-  <a href="floor3d.html" class="tb-btn" style="text-decoration:none">⬡ 3D立體模型</a>
-  <a href="b1plan.html" class="tb-btn" style="text-decoration:none">▣ 樓層平面圖</a>
+  <a href="modeler.html" class="tb-back">3D建模系統</a>
+  <a href="b1plan.html" class="tb-back">開啟平面圖</a>
+  <a href="floor3d.html" class="tb-back">開啟3D模型</a>
+  <a href="arealist.html" class="tb-back">區域位置表</a>
+  <a href="b1_integrated_marker_system.html" class="tb-back">整合標記系統</a>
+  <a href="admin.html#modelhub" class="tb-back">後台</a>
   <button class="tb-btn" id="btn3d" onclick="switchTo3D()" style="display:none">⬡ 3D模式</button>
-  <button class="tb-btn" onclick="toggleFullscreen()">⛶ 全螢幕</button>
+  <button class="tb-btn" id="fullscreenBtn" onclick="toggleFullscreen()">⛶ 全螢幕</button>
 </div>
 
 <div id="floor-nav">
@@ -1033,8 +1033,9 @@ function closeInfo(){document.getElementById('infopanel').classList.remove('show
 function gotoInspect(){if(selectedEq)window.location.href=`app.html?eq=${encodeURIComponent(selectedEq.equipment_id)}`;}
 
 function toggleFullscreen(){
-  if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});document.querySelector('#topbar .tb-btn').textContent='⛶ 退出全螢幕';}
-  else{document.exitFullscreen();document.querySelector('#topbar .tb-btn').textContent='⛶ 全螢幕';}
+  const btn=document.getElementById('fullscreenBtn');
+  if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(()=>{});btn.textContent='⛶ 退出全螢幕';}
+  else{document.exitFullscreen();btn.textContent='⛶ 全螢幕';}
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
