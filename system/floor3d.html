@@ -75,7 +75,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 }
 </style>
 </head>
-<body>
+<body class="controls-hidden">
 
 <div id="loading">
   <div class="ld-t">載入 3D 樓層模型…</div>
@@ -124,7 +124,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
   </div>
 </div>
 
-<div id="hint">拖曳旋轉 &nbsp;|&nbsp; 滾輪/雙指縮放 &nbsp;|&nbsp; 滑鼠右鍵拖曳：水平 / 垂直移動</div>
+<div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -257,8 +257,8 @@ function setupOrbit(){
   addEventListener('mouseup',()=>{orb.down=false;orb.right=false;});
   addEventListener('mousemove',e=>{
     const dx=e.clientX-orb.sx, dy=e.clientY-orb.sy;
-    if(orb.down){ orb.theta-=dx*0.005; orb.phi=Math.max(orb.minPhi,Math.min(orb.maxPhi,orb.phi-dy*0.005)); }
-    else if(orb.right){ panView(dx,dy); }
+    if(orb.down){ panView(dx,dy); }                        // 左鍵：水平 / 垂直平移
+    else if(orb.right){ orb.theta-=dx*0.005; orb.phi=Math.max(orb.minPhi,Math.min(orb.maxPhi,orb.phi-dy*0.005)); } // 右鍵：旋轉環繞
     orb.sx=e.clientX;orb.sy=e.clientY;
   });
   el.addEventListener('wheel',e=>{ orb.r=Math.max(orb.minR,Math.min(orb.maxR,orb.r+e.deltaY*0.5)); e.preventDefault(); },{passive:false});
