@@ -160,6 +160,13 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
       </select>
       <input id="fltSearch" placeholder="搜尋清單…" oninput="renderList()">
     </div>
+    <div class="pn-filter">
+      <select id="fltPlaceStatus" onchange="renderList()">
+        <option value="">全部設置狀態</option>
+        <option value="placed">已設置</option>
+        <option value="unplaced">未設置</option>
+      </select>
+    </div>
   </div>
   <div class="pn-list" id="mkList"></div>
   <div class="pn-count" id="pnCount">—</div>
@@ -403,12 +410,14 @@ function findMarkerByLink(kind,id){
 function renderList(){
   const src=document.getElementById('fltKind').value||'markers';
   const q=document.getElementById('fltSearch').value.trim().toLowerCase();
+  const placeStatus=document.getElementById('fltPlaceStatus')?.value||'';
   const box=document.getElementById('mkList');
   const cf=canonicalFloor(curFloor);
   if(src==='markers'){
     let list=markers.filter(m=>m.floor_id===curFloor);
     const total=list.length;
     if(q) list=list.filter(m=>(m.label||'').toLowerCase().includes(q)||(m.note||'').toLowerCase().includes(q));
+    if(placeStatus==='unplaced') list=[];
     box.innerHTML=list.length?list.map(m=>{
       const col=m.color||KIND[m.kind]?.c||'#ffb300';
       return `<div class="mk-item" onclick="focusMarker('${m.marker_id}')">
@@ -420,7 +429,7 @@ function renderList(){
     return;
   }
   // ── 主資料清單瀏覽 ──
-  let items=[], kind=src, placedN=0;
+  let items=[], kind=src;
   if(src==='equipment'){
     items=equip.slice().map(x=>({id:x.equipment_id,name:x.name,sub:x.location||'',match:(x.location||'').toUpperCase().includes(curFloor.toUpperCase())}));
   }else if(src==='space'){
@@ -430,21 +439,30 @@ function renderList(){
   }
   let list=items;
   if(q) list=list.filter(it=>(it.name||'').toLowerCase().includes(q)||(it.sub||'').toLowerCase().includes(q));
+  let listed=list.map(it=>({...it,mk:findMarkerByLink(kind,it.id)}));
+  const baseTotal=listed.length;
+  const placedN=listed.filter(it=>it.mk).length;
+  const unplacedN=baseTotal-placedN;
+  if(placeStatus==='placed') listed=listed.filter(it=>it.mk);
+  if(placeStatus==='unplaced') listed=listed.filter(it=>!it.mk);
   // 相對應樓層優先置頂
-  list.sort((a,b)=>(a.match===b.match?0:a.match?-1:1)||(a.name||'').localeCompare(b.name||'','zh-Hant'));
+  listed.sort((a,b)=>(a.match===b.match?0:a.match?-1:1)||(a.name||'').localeCompare(b.name||'','zh-Hant'));
   const col=KIND[kind].c;
-  box.innerHTML=list.length?list.map(it=>{
-    const mk=findMarkerByLink(kind,it.id); if(mk)placedN++;
+  const emptyText=baseTotal
+    ? '查無符合目前篩選的項目。'
+    : (src==='space'?'本層（區域位置表）尚無空間資料。<br>可於「區域位置表」新增或匯入，或切換樓層。':'目前清單無資料或查無符合項目。');
+  box.innerHTML=listed.length?listed.map(it=>{
+    const mk=it.mk;
     return `<div class="mk-item" onclick="pickListItem('${kind}','${it.id}')">
       <span class="cdot" style="background:${col};${mk?'':'opacity:.35'}"></span>
       <span class="mk-name">${esc(it.name)}${it.sub?` <small style="color:var(--text2)">· ${esc(it.sub)}</small>`:''}</span>
-      <span class="mk-kind" style="${mk?'border-color:'+col+';color:'+col:''}">${mk?'已放置':'放置'}</span></div>`;
-  }).join(''):`<div class="pn-empty">${src==='space'?'本層（區域位置表）尚無空間資料。<br>可於「區域位置表」新增或匯入，或切換樓層。':'目前清單無資料或查無符合項目。'}</div>`;
+      <span class="mk-kind" style="${mk?'border-color:'+col+';color:'+col:''}">${mk?'已設置':'未設置'}</span></div>`;
+  }).join(''):`<div class="pn-empty">${emptyText}</div>`;
   const nm={equipment:'設備',space:'空間',repair:'報修案件'}[kind];
-  document.getElementById('pnCount').textContent=`${nm}清單：${list.length} 項（本層已放置 ${placedN}）`;
+  document.getElementById('pnCount').textContent=`${nm}清單：${baseTotal} 項（已設置 ${placedN}，未設置 ${unplacedN}`+(listed.length!==baseTotal?`，篩選後 ${listed.length}`:'')+'）';
 }
 
-// 點清單項目：已放置 → 定位該標記；未放置 → 進入放置模式（自動帶入連結與名稱）
+// 點清單項目：已設置 → 定位該標記；未設置 → 進入放置模式（自動帶入連結與名稱）
 function pickListItem(kind,id){
   const mk=findMarkerByLink(kind,id);
   if(mk){focusMarker(mk.marker_id);return;}
