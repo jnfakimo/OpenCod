@@ -75,10 +75,12 @@ a{color:inherit;text-decoration:none}
 .space-row .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:var(--cyan-glow);flex:none}
 .space-row .sname{flex:1;font-size:.85rem;color:var(--text)}
 .space-head{display:flex;align-items:center;gap:10px;padding:6px 8px;color:var(--text-dim);font-size:.68rem;border-bottom:1px solid rgba(12,40,64,.55);margin-bottom:4px}
-.space-head .h-name{flex:1}
+.space-head .h-name{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .space-head .h-use,.space-row .use-col{width:132px;flex:none;text-align:center}
 .space-head .h-use{display:flex;flex-direction:column;align-items:center;gap:4px}
 .space-head .h-act{width:92px;flex:none}
+.name-filter{width:220px;max-width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
+.name-filter:focus{border-color:var(--cyan)}
 .use-filter{width:126px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
 .use-filter:focus{border-color:var(--cyan)}
 .use-pill{display:inline-flex;align-items:center;justify-content:center;min-width:58px;border:1px solid var(--border);border-radius:10px;padding:2px 8px;font-size:.66rem;color:var(--text-dim);background:rgba(58,106,138,.1)}
@@ -159,7 +161,7 @@ a{color:inherit;text-decoration:none}
       <option value="used">已使用</option>
       <option value="unused">未使用</option>
     </select>
-    <input id="flt-search" placeholder="搜尋空間名稱…" oninput="render()" style="width:180px">
+    <input id="flt-search" placeholder="搜尋空間名稱…" oninput="syncNameFilter(this.value)" style="width:180px">
     <div class="t-space"></div>
     <button class="btn btn-add" onclick="openAdd()">＋ 新增空間</button>
     <button class="btn" onclick="document.getElementById('importFile').click()">⭳ 匯入</button>
@@ -281,11 +283,23 @@ function syncUseFilter(value){
   document.querySelectorAll('.use-filter').forEach(el=>{el.value=v;});
   render();
 }
+function syncNameFilter(value){
+  const v=value||'';
+  const fromHeader=document.activeElement?.classList?.contains('name-filter');
+  const top=document.getElementById('flt-search');
+  if(top)top.value=v;
+  document.querySelectorAll('.name-filter').forEach(el=>{el.value=v;});
+  render();
+  if(fromHeader&&top){
+    setTimeout(()=>{top.focus();top.setSelectionRange(v.length,v.length);},0);
+  }
+}
 
 function render(){
   const fFloor=document.getElementById('flt-floor').value;
   const fUse=document.getElementById('flt-use').value;
   const q=document.getElementById('flt-search').value.trim().toLowerCase();
+  const filterActive=Boolean(fFloor||fUse||q);
   let list=rows.slice();
   if(fFloor) list=list.filter(r=>r.floor===fFloor);
   if(fUse==='used') list=list.filter(r=>isSpaceUsed(r.space_id));
@@ -304,7 +318,7 @@ function render(){
 
   box.innerHTML=floors.map(f=>{
     const items=byFloor[f].sort((a,b)=>(a.sort_order-b.sort_order)||a.space_name.localeCompare(b.space_name,'zh-Hant'));
-    const isC=collapsed.has(f);
+    const isC=!filterActive&&collapsed.has(f);
     return `<div class="floor-block">
       <div class="floor-head${isC?' collapsed':''}" onclick="toggleFloor('${esc(f)}')">
         <span class="caret">▼</span>
@@ -313,7 +327,7 @@ function render(){
       </div>
       <div class="floor-body">
         <div class="space-head">
-          <span class="h-name">空間名稱</span>
+          <span class="h-name"><span>空間名稱</span><input class="name-filter" value="${esc(document.getElementById('flt-search').value)}" placeholder="篩選空間名稱…" oninput="syncNameFilter(this.value)"></span>
           <span class="h-use"><span>空間是否使用</span><select class="use-filter" onchange="syncUseFilter(this.value)">${useFilterOptions(fUse)}</select></span>
           <span class="h-act"></span>
         </div>
