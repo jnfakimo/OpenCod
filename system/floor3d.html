@@ -44,6 +44,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 #panel .p-t{color:var(--cyan);font-weight:700;font-size:12px}
 .panel-close{display:inline-flex;background:none;border:1px solid var(--border);color:var(--text2);border-radius:3px;padding:3px 8px;font-size:10px;cursor:pointer}
 .panel-close:hover{border-color:var(--cyan);color:var(--cyan)}
+.panel-close.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.12)}
 #panel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
 #panel input[type=range]{width:100%;accent-color:var(--cyan)}
 .ctrl-val{color:var(--text);font-family:monospace}
@@ -146,7 +147,10 @@ body.controls-hidden #panelToggle{display:inline-flex}
 <div id="mkpanel">
   <div class="panel-head">
     <div class="p-t">◈ 標記顯示</div>
-    <button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button>
+    <span style="display:flex;gap:6px">
+      <button class="panel-close" id="mkPinBtn" onclick="toggleMkPin()" title="釘住後點空白處不會自動收合">📌 釘住</button>
+      <button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button>
+    </span>
   </div>
   <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備標記</label>
   <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間標記</label>
@@ -308,14 +312,14 @@ function toggleFloorsMenu(){
   f.style.display=open?'block':'none';
   b.classList.toggle('open',open);
 }
-// 左鍵點 3D 空白處 → 收合所有選單（立體控制 / 標記顯示 / 樓層）
+// 左鍵點 3D 空白處 → 收合選單（立體控制 / 樓層；標記面板已釘住則保留）
 function closeMenus3D(){
   togglePanel(false);
-  document.getElementById('mkpanel').style.display='none';
-  document.getElementById('mkToggle').style.display='inline-flex';
+  if(!mkPinned3D){ document.getElementById('mkpanel').style.display='none'; document.getElementById('mkToggle').style.display='inline-flex'; }
   const f=document.getElementById('floors'), b=document.getElementById('floorsToggle');
   if(f)f.style.display='none'; if(b)b.classList.remove('open');
 }
+let mkPinned3D=false;
 function toggleMkPanel(open){
   if(open){ // 開啟標記面板時，先收合立體控制面板，避免重疊
     document.body.classList.add('controls-hidden');
@@ -324,7 +328,10 @@ function toggleMkPanel(open){
   }
   document.getElementById('mkpanel').style.display=open?'block':'none';
   document.getElementById('mkToggle').style.display=open?'none':'inline-flex';
+  if(!open){ mkPinned3D=false; syncMkPin3D(); }
 }
+function toggleMkPin(){ mkPinned3D=!mkPinned3D; if(mkPinned3D) toggleMkPanel(true); syncMkPin3D(); }
+function syncMkPin3D(){ const b=document.getElementById('mkPinBtn'); if(b){ b.classList.toggle('on',mkPinned3D); b.textContent=mkPinned3D?'📌 已釘住':'📌 釘住'; } }
 
 function finishLoad(){
   prog(100,'完成');
@@ -423,7 +430,7 @@ function togglePanel(open){
   if(btn)btn.setAttribute('aria-expanded',String(expanded));
   // 開啟立體控制時收合標記面板；關閉時恢復標記按鈕
   const mkT=document.getElementById('mkToggle');
-  if(expanded){ document.getElementById('mkpanel').style.display='none'; if(mkT)mkT.style.display='none'; }
+  if(expanded){ document.getElementById('mkpanel').style.display='none'; if(mkT)mkT.style.display='none'; mkPinned3D=false; syncMkPin3D(); }
   else if(mkT){ mkT.style.display='inline-flex'; }
 }
 function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'×'; layoutFloors(); orb.ty=viewY(); syncYPanUI(); }
