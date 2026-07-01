@@ -15,8 +15,9 @@ create table if not exists plan_markers (
   kind         text not null default 'note'
                check (kind in ('equipment','space','repair','note')),
   label        text not null,                          -- 標記名稱（顯示文字）
-  equipment_id uuid references equipment(equipment_id) on delete set null,
-  space_id     uuid references floor_spaces(space_id)  on delete set null,
+  equipment_id uuid references equipment(equipment_id)       on delete set null,
+  space_id     uuid references floor_spaces(space_id)         on delete set null,
+  repair_id    uuid references repair_requests(request_id)    on delete set null,
   color        text,                                   -- 選填自訂色，null 則依 kind
   note         text,
   status       text not null default 'active' check (status in ('active','inactive')),
@@ -24,6 +25,9 @@ create table if not exists plan_markers (
   updated_at   timestamptz default now(),
   created_by   uuid references users(user_id)
 );
+
+-- 若資料表已存在，補上後續新增欄位（idempotent）
+alter table plan_markers add column if not exists repair_id uuid references repair_requests(request_id) on delete set null;
 
 create index if not exists idx_plan_markers_floor on plan_markers(floor_id);
 

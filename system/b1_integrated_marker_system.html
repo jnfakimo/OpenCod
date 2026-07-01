@@ -217,8 +217,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
         <select id="mkEqp" onchange="onLinkEqp()"><option value="">— 不連結 —</option></select>
       </div>
       <div class="fld" id="fldSpace" style="display:none">
-        <label>連結空間（選填，選後自動帶入名稱）</label>
+        <label>連結空間（來自區域位置表，選後自動帶入名稱）</label>
         <select id="mkSpace" onchange="onLinkSpace()"><option value="">— 不連結 —</option></select>
+      </div>
+      <div class="fld" id="fldRepair" style="display:none">
+        <label>連結報修案件（來自報修系統，選後自動帶入名稱）</label>
+        <select id="mkRepair" onchange="onLinkRepair()"><option value="">— 不連結 —</option></select>
       </div>
       <div class="fld"><label>標記名稱</label><input id="mkLabel" placeholder="顯示於平面圖上的名稱"></div>
       <div class="fld"><label>備註（選填）</label><textarea id="mkNote" placeholder="說明 / 狀態…"></textarea></div>
@@ -253,7 +257,17 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 prog(15,'建立檢視器…');
 
 let rot=0, loaded=0, curFloor='B1', placeMode=false, showLabels=false;
-let markers=[], equip=[], spaces=[], editId=null, curKind='note', detailId=null;
+let markers=[], equip=[], spaces=[], repairs=[], editId=null, curKind='note', detailId=null;
+
+// 樓層正規化，讓「B1 / B1F」、「1F / 1」等視為同一層（區域位置表與平面圖命名不一致時仍能對應）
+function canonicalFloor(f){
+  const s=String(f||'').trim().toUpperCase().replace(/\s+/g,'').replace(/樓|F$/g,m=>m==='F'?'':'');
+  const raw=String(f||'').trim().toUpperCase().replace(/\s+/g,'');
+  const b=raw.match(/^B(\d+)F?$/);   if(b) return 'B'+b[1];      // B1 / B1F → B1
+  if(raw==='RF'||raw==='R'||raw==='頂樓') return 'RF';
+  const n=raw.match(/^(\d+)F?$/);    if(n) return n[1]+'F';       // 1 / 1F → 1F
+  return raw;
+}
 
 const FLOORS=[
   {id:'B1', label:'▣ B1 地下一層', dzi:'plans/b1.dzi', idx:null},
@@ -313,22 +327,54 @@ function showFloor(f){
 
 // ── Data ───────────────────────────────────────────────────
 async function loadData(){
-  const [mk,eq,sp]=await Promise.all([
+  const [mk,eq,sp,rp]=await Promise.all([
     db.from('plan_markers').select('*').eq('status','active'),
-    db.from('equipment').select('equipment_id,name,location').limit(2000),
-    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').limit(3000)
+    db.from('equipment').select('equipment_id,name,location').limit(3000),
+    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').limit(5000),
+    db.from('repair_requests').select('request_id,req_no,fault_type,fault_desc,status').order('created_at',{ascending:false}).limit(500)
   ]);
-  markers=mk.data||[]; equip=eq.data||[]; spaces=sp.data||[];
+  markers=mk.data||[]; equip=eq.data||[]; spaces=sp.data||[]; repairs=(rp.data||[]).filter(r=>!['done','closed','completed','已完成','已結案'].includes(r.status));
   fillLinkSelects();
   drawMarkers(); renderList();
 }
 
+const STAT_LABEL={pending:'待處理',dispatched:'已派工',processing:'處理中',accepted:'已受理',repairing:'維修中'};
+// 依主資料清單整理各下拉選單（設備 / 空間 / 報修點），並與區域位置表同步
 function fillLinkSelects(){
+  // 設備：依所在位置整理
   const e=document.getElementById('mkEqp');
-  e.innerHTML='<option value="">— 不連結 —</option>'+equip.map(x=>`<option value="${x.equipment_id}">${esc(x.name)}${x.location?' ('+esc(x.location)+')':''}</option>`).join('');
+  const eqByLoc={};
+  equip.slice().sort((a,b)=>(a.name||'').localeCompare(b.name||'','zh-Hant'))
+    .forEach(x=>{const g=x.location||'未分類';(eqByLoc[g]=eqByLoc[g]||[]).push(x);});
+  e.innerHTML='<option value="">— 不連結 —</option>'+Object.keys(eqByLoc).sort((a,b)=>a.localeCompare(b,'zh-Hant'))
+    .map(g=>`<optgroup label="${esc(g)}">`+eqByLoc[g].map(x=>`<option value="${x.equipment_id}">${esc(x.name)}</option>`).join('')+`</optgroup>`).join('');
+
+  // 空間：來自「區域位置表」，依樓層分組；當前樓層優先置頂（樓層命名不一致亦可對應）
   const s=document.getElementById('mkSpace');
-  const sp=spaces.filter(x=>!curFloor||x.floor===curFloor);
-  s.innerHTML='<option value="">— 不連結 —</option>'+sp.map(x=>`<option value="${x.space_id}">${esc(x.floor)} · ${esc(x.space_name)}</option>`).join('');
+  const byFloor={};
+  spaces.forEach(x=>{(byFloor[x.floor]=byFloor[x.floor]||[]).push(x);});
+  const cf=canonicalFloor(curFloor);
+  const floors=Object.keys(byFloor).sort((a,b)=>{
+    const ac=canonicalFloor(a)===cf?0:1, bc=canonicalFloor(b)===cf?0:1;
+    return ac-bc || a.localeCompare(b,'zh-Hant');
+  });
+  s.innerHTML='<option value="">— 不連結 —</option>'+floors.map(f=>{
+    const tag=canonicalFloor(f)===cf?'（本層）':'';
+    const items=byFloor[f].sort((a,b)=>(a.space_name||'').localeCompare(b.space_name||'','zh-Hant'));
+    return `<optgroup label="${esc(f)}${tag}">`+items.map(x=>`<option value="${x.space_id}">${esc(x.space_name)}</option>`).join('')+`</optgroup>`;
+  }).join('');
+
+  // 報修點：來自報修系統未結案案件，依狀態整理
+  const r=document.getElementById('mkRepair');
+  if(r){
+    const byStat={};
+    repairs.forEach(x=>{const g=STAT_LABEL[x.status]||x.status||'其他';(byStat[g]=byStat[g]||[]).push(x);});
+    r.innerHTML='<option value="">— 不連結 —</option>'+Object.keys(byStat)
+      .map(g=>`<optgroup label="${esc(g)}">`+byStat[g].map(x=>{
+        const t=(x.req_no?x.req_no+' ':'')+(x.fault_type?'['+x.fault_type+'] ':'')+((x.fault_desc||'').replace(/\n/g,' ').slice(0,24));
+        return `<option value="${x.request_id}">${esc(t)}</option>`;
+      }).join('')+`</optgroup>`).join('');
+  }
 }
 
 // ── Draw overlays ──────────────────────────────────────────
@@ -419,6 +465,7 @@ function openMkEdit(id){
   fillLinkSelects();
   document.getElementById('mkEqp').value=m.equipment_id||'';
   document.getElementById('mkSpace').value=m.space_id||'';
+  document.getElementById('mkRepair').value=m.repair_id||'';
   document.getElementById('mkLabel').value=m.label||'';
   document.getElementById('mkNote').value=m.note||'';
   document.getElementById('mkMsg').textContent='';
@@ -434,11 +481,15 @@ function pickKind(k){
   });
   document.getElementById('fldEqp').style.display=(k==='equipment')?'block':'none';
   document.getElementById('fldSpace').style.display=(k==='space')?'block':'none';
+  document.getElementById('fldRepair').style.display=(k==='repair')?'block':'none';
 }
 function onLinkEqp(){const o=document.getElementById('mkEqp');const t=o.options[o.selectedIndex]?.textContent||'';
   if(o.value&&!document.getElementById('mkLabel').value.trim())document.getElementById('mkLabel').value=t.replace(/\s*\(.*\)$/,'');}
 function onLinkSpace(){const o=document.getElementById('mkSpace');
   if(o.value&&!document.getElementById('mkLabel').value.trim()){const s=spaces.find(x=>x.space_id===o.value);if(s)document.getElementById('mkLabel').value=s.space_name;}}
+function onLinkRepair(){const o=document.getElementById('mkRepair');
+  if(o.value&&!document.getElementById('mkLabel').value.trim()){const r=repairs.find(x=>x.request_id===o.value);
+    if(r)document.getElementById('mkLabel').value=(r.req_no?r.req_no+' ':'')+(r.fault_type||'報修');}}
 
 async function saveMk(){
   const label=document.getElementById('mkLabel').value.trim();
@@ -448,6 +499,7 @@ async function saveMk(){
     x:pendX, y:pendY, kind:curKind, label,
     equipment_id:(curKind==='equipment'?(document.getElementById('mkEqp').value||null):null),
     space_id:(curKind==='space'?(document.getElementById('mkSpace').value||null):null),
+    repair_id:(curKind==='repair'?(document.getElementById('mkRepair').value||null):null),
     note:document.getElementById('mkNote').value.trim()||null};
   let error;
   if(editId){({error}=await db.from('plan_markers').update(rec).eq('marker_id',editId));}
@@ -474,6 +526,7 @@ function openDetailByEl(m,el){
   let extra='';
   if(m.equipment_id){const e=equip.find(x=>x.equipment_id===m.equipment_id);if(e)extra+=`<div class="r">設備：<b>${esc(e.name)}</b></div>`;}
   if(m.space_id){const s=spaces.find(x=>x.space_id===m.space_id);if(s)extra+=`<div class="r">空間：<b>${esc(s.floor)} · ${esc(s.space_name)}</b></div>`;}
+  if(m.repair_id){const rp=repairs.find(x=>x.request_id===m.repair_id);if(rp)extra+=`<div class="r">報修：<b>${esc((rp.req_no||'')+' '+(rp.fault_type||''))}</b></div>`;}
   document.getElementById('dtBody').innerHTML=
     `<div class="r">類型：<b>${KIND[m.kind]?.n||m.kind}</b></div>`+
     `<div class="r">樓層：<b>${esc(m.floor_id)}</b></div>`+extra+
