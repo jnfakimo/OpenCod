@@ -24,6 +24,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 /* Left panel（可收合，預設隱藏，覆蓋在圖面上）*/
 #panel{position:fixed;left:0;top:50px;bottom:0;width:300px;background:rgba(4,20,40,.97);border-right:1px solid var(--border);z-index:180;display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .25s;box-shadow:0 0 30px rgba(0,0,0,.55)}
 body.panel-open #panel{transform:translateX(0)}
+/* 釘住：面板固定顯示，圖面右移不被遮住 */
+body.panel-pinned #osd{left:300px}
+#pinBtn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.12)}
 #panelToggle{position:fixed;left:14px;top:60px;z-index:170;display:inline-flex;align-items:center;gap:6px;padding:8px 13px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
 #panelToggle:hover{border-color:var(--cyan)}
 body.panel-open #panelToggle{display:none}
@@ -121,7 +124,7 @@ body.panel-open #panelToggle{display:none}
 
 @media(max-width:720px){
   #panel{width:100%;bottom:auto;max-height:70%;border-right:none;border-bottom:1px solid var(--border)}
-  #osd{inset:50px 0 0 0}
+  #osd,body.panel-pinned #osd{left:0;inset:50px 0 0 0}
   .pn-list{max-height:38vh}
   #floors{top:auto;bottom:14px;left:14px;right:auto;flex-direction:row}
   #tools{top:auto;bottom:64px;left:14px;right:auto;flex-direction:row}
@@ -155,7 +158,10 @@ body.panel-open #panelToggle{display:none}
       <div class="pn-title">◈ 整合標記</div>
       <div class="pn-sub" id="pnFloor">B1 地下一層</div>
     </div>
-    <button class="btn" style="padding:4px 11px" onclick="togglePanel(false)">✕ 隱藏</button>
+    <div style="display:flex;gap:6px;flex:none">
+      <button class="btn" id="pinBtn" style="padding:4px 10px" onclick="togglePin()" title="釘住後點空白處不會自動收合">📌 釘住</button>
+      <button class="btn" style="padding:4px 11px" onclick="togglePanel(false)">✕ 隱藏</button>
+    </div>
   </div>
   <div class="pn-tools">
     <button class="btn btn-place" id="btnPlace" onclick="togglePlace()">＋ 放置標記模式</button>
@@ -509,7 +515,20 @@ function togglePlace(){
   viewer.setMouseNavEnabled(true);
 }
 
-function togglePanel(open){ document.body.classList.toggle('panel-open',open); }
+function togglePanel(open){
+  document.body.classList.toggle('panel-open',open);
+  if(!open){ document.body.classList.remove('panel-pinned'); syncPinBtn(false); }
+}
+function togglePin(){
+  const pinned=!document.body.classList.contains('panel-pinned');
+  document.body.classList.toggle('panel-pinned',pinned);
+  if(pinned) document.body.classList.add('panel-open');
+  syncPinBtn(pinned);
+}
+function syncPinBtn(pinned){
+  const b=document.getElementById('pinBtn'); if(!b)return;
+  b.classList.toggle('on',pinned); b.textContent=pinned?'📌 已釘住':'📌 釘住';
+}
 
 viewer.addHandler('canvas-click',ev=>{
   if(ev.originalEvent.target.closest && ev.originalEvent.target.closest('.pin')) return; // 點標記交給標記自身
@@ -521,8 +540,8 @@ viewer.addHandler('canvas-click',ev=>{
     if(link) applyPendingLink(link);
     return;
   }
-  // 非放置模式：左鍵點圖面空白處 → 收合選單並關閉彈窗
-  if(ev.quick){ hideDetail(); togglePanel(false); }
+  // 非放置模式：左鍵點圖面空白處 → 關閉彈窗；未釘住時才收合選單
+  if(ev.quick){ hideDetail(); if(!document.body.classList.contains('panel-pinned')) togglePanel(false); }
 });
 // 從清單帶入的連結套用到新增標記表單
 function applyPendingLink(link){
