@@ -21,7 +21,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 #c3d{position:fixed;inset:50px 0 0 0}
 #c3d canvas{display:block;touch-action:none}
 
-#floors{position:fixed;right:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+#floorsToggle{position:fixed;right:14px;top:62px;z-index:150;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
+#floorsToggle:hover{border-color:var(--cyan)}
+#floorsToggle .cv{transition:transform .2s}
+#floorsToggle.open .cv{transform:rotate(180deg)}
+#floors{position:fixed;right:14px;top:104px;z-index:160;background:rgba(4,20,40,.97);border:1px solid var(--border);border-radius:6px;overflow:hidden;display:none;box-shadow:0 0 22px rgba(0,212,255,.15)}
 #mkpanel{position:fixed;left:14px;top:106px;z-index:151;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:10px 13px;font-size:11px;line-height:1.9;min-width:150px;box-shadow:0 0 22px rgba(0,212,255,.12);display:none}
 #mkpanel .p-t{color:var(--cyan);font-weight:700;font-size:12px}
 #mkpanel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
@@ -65,8 +69,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
   #panel{display:none;top:104px;left:10px;right:auto}
   body.controls-open #panel{display:block}
   body.controls-open #panelToggle{display:none}
-  body.controls-open #floors{display:none}
-  #floors{top:104px;right:10px}
+  #floorsToggle{top:104px;right:10px}
+  #floors{top:146px;right:10px}
   #mkpanel{left:10px;top:150px;font-size:10px;padding:8px 10px}
   #mkToggle{left:10px;top:150px}
   .fbtn{padding:9px 13px}
@@ -78,7 +82,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
   .tb-back{font-size:10px;padding:5px 8px}
   #panel{top:96px}
   #panelToggle{left:10px;top:62px}
-  #floors{top:96px}
+  #floorsToggle{top:96px}
+  #floors{top:138px}
   .fbtn{font-size:11px;padding:8px 11px}
 }
 </style>
@@ -106,6 +111,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 <div id="c3d"></div>
 <button id="panelToggle" onclick="togglePanel(true)" aria-controls="panel" aria-expanded="false">⬡ 立體控制</button>
 
+<button id="floorsToggle" onclick="toggleFloorsMenu()">▤ 樓層顯示 <span class="cv">▾</span></button>
 <div id="floors">
   <button class="fbtn on" id="t-3F" onclick="toggleFloor('3F')"><span class="dot"></span>3F 三樓</button>
   <button class="fbtn on" id="t-2F" onclick="toggleFloor('2F')"><span class="dot"></span>2F 二樓</button>
@@ -295,6 +301,12 @@ function toggleMarkKind(k,on){
 function toggleMarkLabels(on){
   showLabels3D=on;
   markerObjs.forEach(mk=>{ if(mk.label) mk.label.visible=on; });
+}
+function toggleFloorsMenu(){
+  const f=document.getElementById('floors'), b=document.getElementById('floorsToggle');
+  const open=f.style.display!=='block';
+  f.style.display=open?'block':'none';
+  b.classList.toggle('open',open);
 }
 function toggleMkPanel(open){
   if(open){ // 開啟標記面板時，先收合立體控制面板，避免重疊
