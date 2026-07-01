@@ -535,6 +535,15 @@ function clientReqNo(){
   const d=new Date(), y=d.getFullYear(), m=two(d.getMonth()+1), day=two(d.getDate());
   return `RP${y}${m}${day}-${String(Date.now()).slice(-6)}`;
 }
+function fileExt(file){
+  const byName=(file?.name||'').match(/\.([A-Za-z0-9]{1,8})$/)?.[0]?.toLowerCase();
+  if(byName)return byName;
+  const map={'image/jpeg':'.jpg','image/png':'.png','image/gif':'.gif','image/webp':'.webp','video/mp4':'.mp4','application/pdf':'.pdf'};
+  return map[file?.type]||'.bin';
+}
+function storagePath(requestId,file,prefix){
+  return `${requestId}/${Date.now()}_${prefix}_${clientUuid().slice(0,8)}${fileExt(file)}`;
+}
 async function insertRepairRequest(rec){
   let payload={...rec};
   let triedWithoutEquipment=false;
@@ -592,13 +601,13 @@ async function submitCreate(){
   const {data,error}=await insertRepairRequest(rec);
   if(error){msg.textContent=repairRequestErrorMessage(error);msg.className='msg err';return;}
   // attachments
-  const photoPath=`${data.request_id}/${Date.now()}_location_${locationPhoto.name}`;
+  const photoPath=storagePath(data.request_id,locationPhoto,'location');
   const photoUp=await db.storage.from('repair-files').upload(photoPath,locationPhoto,{upsert:true});
   if(photoUp.error){msg.textContent='案件已建立，但故障位置照片上傳失敗：'+photoUp.error.message;msg.className='msg err';return;}
   await db.from('repair_attachments').insert({request_id:data.request_id,kind:'location_photo',file_path:photoPath,file_name:locationPhoto.name,uploaded_by:me_.user_id});
   const files=document.getElementById('c-files').files;
   for(const f of files){
-    const path=`${data.request_id}/${Date.now()}_${f.name}`;
+    const path=storagePath(data.request_id,f,kindOf(f));
     const up=await db.storage.from('repair-files').upload(path,f,{upsert:true});
     if(!up.error){ await db.from('repair_attachments').insert({request_id:data.request_id,kind:kindOf(f),file_path:path,file_name:f.name,uploaded_by:me_.user_id}); }
   }
