@@ -60,6 +60,26 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
 .field textarea{min-height:64px;resize:vertical}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.date-field{position:relative}
+.date-field input[readonly]{cursor:pointer;color:var(--text-hi)}
+.date-picker{display:none;width:268px;max-width:calc(100vw - 24px);padding:12px;background:#02101d;border:1px solid var(--border-hi);box-shadow:0 16px 36px rgba(0,0,0,.38);position:fixed;left:12px;top:12px;z-index:260}
+.date-picker.show{display:block}
+.date-head{display:grid;grid-template-columns:34px 1fr 34px;align-items:center;margin-bottom:8px}
+.date-title{text-align:center;color:var(--text-hi);font-size:.8rem;font-weight:700;letter-spacing:.04em}
+.date-nav{height:30px;border:0;background:transparent;color:var(--cyan);font-size:1.05rem;cursor:pointer}
+.date-nav:hover{background:rgba(0,212,255,.08)}
+.date-week,.date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.date-week span{height:25px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:.68rem}
+.date-cell{height:29px;border:0;background:transparent;color:var(--text);font-family:var(--font-mono);font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.date-cell:hover{background:rgba(0,212,255,.12);color:var(--cyan)}
+.date-cell.today{box-shadow:inset 0 0 0 1px rgba(0,212,255,.4)}
+.date-cell.selected{background:var(--cyan);color:#001521;font-weight:700;box-shadow:0 0 14px rgba(0,212,255,.42)}
+.date-cell.empty{cursor:default;pointer-events:none}
+.date-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.date-actions button{height:34px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-family:var(--font-head);font-weight:700;letter-spacing:.04em;cursor:pointer}
+.date-actions button:hover{border-color:var(--cyan);color:var(--cyan)}
+.date-actions .confirm{background:var(--cyan);border-color:var(--cyan);color:#001521}
+.date-actions .confirm:hover{color:#001521;filter:brightness(1.06)}
 .btn-primary{padding:10px 16px;background:rgba(0,212,255,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:2px;cursor:pointer;font-size:.8rem;font-family:var(--font-head);letter-spacing:.05em;transition:all .2s}
 .btn-primary:hover{background:rgba(0,212,255,.22)}
 .msg{font-size:.72rem;text-align:center;padding:5px;min-height:1.3em}
@@ -140,7 +160,24 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
         <div class="field"><label>緊急程度</label><select id="c-urg"><option value="low">低</option><option value="normal" selected>一般</option><option value="high">高</option><option value="urgent">緊急</option></select></div>
         <div class="field"><label>是否影響營運</label><select id="c-affect"><option value="false">否</option><option value="true">是</option></select></div>
       </div>
-      <div class="field"><label>希望完成日期</label><input id="c-desired" type="date"></div>
+      <div class="field date-field" id="desiredDateField">
+        <label>希望完成日期</label>
+        <input id="c-desired-view" readonly placeholder="yyyy/mm/dd" onclick="openDesiredCalendar()" onfocus="openDesiredCalendar()">
+        <input id="c-desired" type="hidden">
+        <div class="date-picker" id="desiredPicker">
+          <div class="date-head">
+            <button type="button" class="date-nav" onclick="shiftDesiredMonth(-1)" aria-label="上一個月">◀</button>
+            <div class="date-title" id="desiredMonthTitle">2026 年 7 月</div>
+            <button type="button" class="date-nav" onclick="shiftDesiredMonth(1)" aria-label="下一個月">▶</button>
+          </div>
+          <div class="date-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
+          <div class="date-grid" id="desiredDateGrid"></div>
+          <div class="date-actions">
+            <button type="button" onclick="clearDesiredDate()">清除</button>
+            <button type="button" class="confirm" onclick="confirmDesiredDate()">確認</button>
+          </div>
+        </div>
+      </div>
       <div class="field"><label>其他附件（照片/影片/PDF/Word/Excel，可多選）</label><input id="c-files" type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"></div>
       <div id="c-msg" class="msg"></div>
       <button class="btn-primary" style="width:100%" onclick="submitCreate()">送出報修</button>
@@ -392,12 +429,90 @@ function restoreWorkorderState(){
 window.addEventListener('pagehide', saveWorkorderState);
 function fmt(t){if(!t)return'—';const d=new Date(t);return `${(d.getMonth()+1)}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function fmtDate(t){if(!t)return'—';const m=String(t).match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return `${Number(m[1])}/${Number(m[2])}/${Number(m[3])}`;const d=new Date(t);return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;}
+let desiredViewDate=new Date(), desiredDraft='';
+function two(n){return String(n).padStart(2,'0');}
+function dateValue(d){return `${d.getFullYear()}-${two(d.getMonth()+1)}-${two(d.getDate())}`;}
+function parseDateValue(v){
+  const m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return m?new Date(Number(m[1]),Number(m[2])-1,Number(m[3])):null;
+}
+function dateText(v){const d=parseDateValue(v);return d?`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`:'';}
+function syncDesiredDateView(){
+  const hidden=document.getElementById('c-desired'), view=document.getElementById('c-desired-view');
+  if(view) view.value=dateText(hidden?.value||'');
+}
+function openDesiredCalendar(){
+  const picker=document.getElementById('desiredPicker'), hidden=document.getElementById('c-desired');
+  if(!picker||!hidden)return;
+  const base=parseDateValue(hidden.value)||new Date();
+  desiredViewDate=new Date(base.getFullYear(),base.getMonth(),1);
+  desiredDraft=hidden.value||dateValue(base);
+  renderDesiredCalendar();
+  picker.classList.add('show');
+  placeDesiredCalendar();
+}
+function closeDesiredCalendar(){document.getElementById('desiredPicker')?.classList.remove('show');}
+function placeDesiredCalendar(){
+  const picker=document.getElementById('desiredPicker'), input=document.getElementById('c-desired-view');
+  if(!picker||!input||!picker.classList.contains('show'))return;
+  const margin=12, rect=input.getBoundingClientRect();
+  const width=Math.min(268,window.innerWidth-(margin*2));
+  picker.style.width=`${width}px`;
+  const height=picker.offsetHeight;
+  let left=Math.min(Math.max(rect.left,margin),window.innerWidth-width-margin);
+  let top=rect.top-height-7;
+  if(top<margin)top=rect.bottom+7;
+  if(top+height>window.innerHeight-margin)top=Math.max(margin,window.innerHeight-height-margin);
+  picker.style.left=`${left}px`;
+  picker.style.top=`${top}px`;
+}
+function shiftDesiredMonth(delta){
+  desiredViewDate=new Date(desiredViewDate.getFullYear(),desiredViewDate.getMonth()+delta,1);
+  renderDesiredCalendar();
+  placeDesiredCalendar();
+}
+function selectDesiredDate(v){desiredDraft=v;renderDesiredCalendar();placeDesiredCalendar();}
+function clearDesiredDate(){
+  const hidden=document.getElementById('c-desired');
+  if(hidden)hidden.value='';
+  desiredDraft='';
+  syncDesiredDateView();
+  closeDesiredCalendar();
+}
+function confirmDesiredDate(){
+  const hidden=document.getElementById('c-desired');
+  if(hidden)hidden.value=desiredDraft||'';
+  syncDesiredDateView();
+  closeDesiredCalendar();
+}
+function renderDesiredCalendar(){
+  const title=document.getElementById('desiredMonthTitle'), grid=document.getElementById('desiredDateGrid');
+  if(!title||!grid)return;
+  const y=desiredViewDate.getFullYear(), m=desiredViewDate.getMonth();
+  title.textContent=`${y} 年 ${m+1} 月`;
+  const first=new Date(y,m,1), last=new Date(y,m+1,0).getDate(), today=dateValue(new Date());
+  let html='';
+  for(let i=0;i<first.getDay();i++) html+='<span class="date-cell empty"></span>';
+  for(let d=1;d<=last;d++){
+    const v=dateValue(new Date(y,m,d));
+    const cls=['date-cell',v===today?'today':'',v===desiredDraft?'selected':''].filter(Boolean).join(' ');
+    html+=`<button type="button" class="${cls}" onclick="selectDesiredDate('${v}')">${d}</button>`;
+  }
+  grid.innerHTML=html;
+}
+document.addEventListener('click',e=>{
+  const field=document.getElementById('desiredDateField');
+  if(field&&!field.contains(e.target))closeDesiredCalendar();
+});
+document.getElementById('desiredPicker')?.addEventListener('click',e=>e.stopPropagation());
+addEventListener('resize',placeDesiredCalendar);
+addEventListener('scroll',placeDesiredCalendar,true);
 
 // ─── Create ───
-function openCreate(){if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}['c-reporter','c-phone','c-mobile','c-dept','c-desc','c-ftype','c-location-desc','c-desired'].forEach(i=>document.getElementById(i).value='');
+function openCreate(){if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}['c-reporter','c-phone','c-mobile','c-dept','c-desc','c-ftype','c-location-desc','c-desired','c-desired-view'].forEach(i=>document.getElementById(i).value='');
   setReporterSelect(); document.getElementById('c-phone').value=operatorPhone(); document.getElementById('c-mobile').value=''; document.getElementById('c-dept').value=operatorDepartment(); document.getElementById('c-msg').textContent='';
   const d=defaultEquipment(); if(d)document.getElementById('c-eqp').value=d.equipment_id;
-  document.getElementById('c-location-photo').value=''; document.getElementById('c-files').value=''; show('m-create');}
+  document.getElementById('c-location-photo').value=''; document.getElementById('c-files').value=''; closeDesiredCalendar(); show('m-create');}
 function onEqp(){const e=equip.find(x=>x.equipment_id===document.getElementById('c-eqp').value);
   if(e&&!document.getElementById('c-ftype').value){} }
 async function insertRepairRequest(rec){
@@ -626,7 +741,7 @@ async function refreshAndReopen(reqId){ await loadCases(); renderChips(); render
 
 // ─── UI helpers ───
 function show(id){document.getElementById(id).classList.add('show');}
-function closeM(id){document.getElementById(id).classList.remove('show');}
+function closeM(id){document.getElementById(id).classList.remove('show');if(id==='m-create')closeDesiredCalendar();}
 let _tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=err?'var(--red)':'var(--border-hi)';el.style.color=err?'var(--red)':'var(--text)';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400);}
 
 init().catch(e=>{document.getElementById('list').innerHTML=`<tr><td colspan="7" class="empty" style="color:var(--red)">載入失敗：${e.message}<br><small>請確認已執行 work_order_schema.sql</small></td></tr>`;});
