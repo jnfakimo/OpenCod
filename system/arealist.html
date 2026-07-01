@@ -303,22 +303,52 @@ async function saveSpace(){
   closeModal('m-edit');toast(editId?'已更新':'已新增');await load();
 }
 
+// 查詢某空間是否已於整合標記系統被標記 → 回傳被標記的樓層陣列（防呆用）
+async function markedFloorsOf(spaceId){
+  const {data,error}=await db.from('plan_markers').select('floor_id').eq('space_id',spaceId);
+  if(error) return [];                       // 標記表不存在或查詢失敗 → 視為未被標記
+  return [...new Set((data||[]).map(x=>x.floor_id))];
+}
+
 async function delSpace(id){
   const r=rows.find(x=>x.space_id===id);if(!r)return;
+  // 防呆：已被整合標記系統標記者不可刪除
+  const mf=await markedFloorsOf(id);
+  if(mf.length){
+    alert(`無法刪除「${r.floor} · ${r.space_name}」\n\n此空間已於「整合標記系統」被標記（樓層：${mf.join('、')}）。\n請先至整合標記系統刪除該標記後，再回來刪除。`);
+    return;
+  }
   if(!confirm(`確定刪除「${r.floor} · ${r.space_name}」？`))return;
   const {error}=await db.from('floor_spaces').delete().eq('space_id',id);
   if(error){toast('刪除失敗：'+error.message,true);return;}
   toast('已刪除');await load();
 }
 
-// ── Clear all ──────────────────────────────────────────────
+// ── Clear all（含防呆：跳過已被整合標記系統標記的空間）──────
 async function clearAll(){
   if(!rows.length){toast('目前沒有資料');return;}
-  if(!confirm(`確定要清除全部 ${rows.length} 筆空間資料嗎？此動作無法復原。`))return;
-  if(!confirm('再次確認：將刪除所有樓層的所有平面空間名稱。確定清除？'))return;
-  const {error}=await db.from('floor_spaces').delete().eq('market_id',MARKET);
+  // 找出被整合標記系統引用的空間及其樓層
+  const {data:mk}=await db.from('plan_markers').select('space_id,floor_id').not('space_id','is',null);
+  const refFloors={};
+  (mk||[]).forEach(x=>{(refFloors[x.space_id]=refFloors[x.space_id]||new Set()).add(x.floor_id);});
+  const refIds=Object.keys(refFloors);
+  const delRows=rows.filter(r=>!refIds.includes(r.space_id));
+  const keepRows=rows.filter(r=>refIds.includes(r.space_id));
+  if(!delRows.length){
+    alert('所有空間都已於「整合標記系統」被標記，無法清除。\n請先於整合標記系統移除標記後再清除。');
+    return;
+  }
+  let msg=`將清除 ${delRows.length} 筆空間。`;
+  if(keepRows.length){
+    const sample=keepRows.slice(0,8).map(r=>`・${r.floor} · ${r.space_name}（${[...refFloors[r.space_id]].join('、')}）`).join('\n');
+    msg+=`\n\n以下 ${keepRows.length} 筆因已被整合標記系統標記，將被保留：\n${sample}${keepRows.length>8?'\n…等':''}`;
+  }
+  if(!confirm(msg+'\n\n確定清除？'))return;
+  if(!confirm('再次確認：此動作無法復原。確定清除？'))return;
+  const {error}=await db.from('floor_spaces').delete().in('space_id',delRows.map(r=>r.space_id));
   if(error){toast('清除失敗：'+error.message,true);return;}
-  toast('已全部清除');await load();
+  toast(`已清除 ${delRows.length} 筆`+(keepRows.length?`，保留 ${keepRows.length} 筆（已被標記）`:''));
+  await load();
 }
 
 // ── Export ─────────────────────────────────────────────────

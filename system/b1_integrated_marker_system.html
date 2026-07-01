@@ -68,8 +68,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 
 /* Marker pins on the plan */
 .pin{position:relative;cursor:pointer;transform:translate(-50%,-50%);pointer-events:auto}
-.pin .pdot{width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,.6);margin:0 auto}
-.pin .plab{position:absolute;left:50%;top:-6px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:11px;padding:2px 7px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.pin .pdot{width:11px;height:11px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1.5px solid #fff;box-shadow:0 0 5px rgba(0,0,0,.6);margin:0 auto}
+.pin .plab{position:absolute;left:50%;top:-4px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:10px;padding:1px 6px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
 .pin:hover .plab,.pin.show-lab .plab{opacity:1}
 .pin.sel .pdot{outline:3px solid rgba(255,255,255,.5);outline-offset:2px}
 

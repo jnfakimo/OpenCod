@@ -125,6 +125,14 @@ body.controls-hidden #panelToggle{display:inline-flex}
     <button class="mini" onclick="topView()">⊤ 俯視</button>
     <button class="mini" onclick="setExplode(1)">真實比例</button>
   </div>
+  <div style="border-top:1px solid var(--border);margin-top:9px;padding-top:8px">
+    <div class="p-t" style="margin-bottom:5px">◈ 標記顯示</div>
+    <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備標記</label>
+    <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間標記</label>
+    <label><input type="checkbox" id="mk-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點標記</label>
+    <label><input type="checkbox" id="mk-note" checked onchange="toggleMarkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般標記</label>
+    <div class="h-r" style="color:var(--text2);margin-top:3px">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
+  </div>
 </div>
 
 <div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
@@ -206,12 +214,56 @@ function layoutFloors(){
     if(fl.mesh){ fl.mesh.position.y=y; fl.mesh.visible=fl.visible; }
     if(fl.frame){ fl.frame.position.y=y; fl.frame.visible=fl.visible; }
   });
+  layoutMarkers();
+}
+
+// ── 整合標記系統 → 3D 拋轉 ──────────────────────────────────
+const MARK_H=7;                                  // 標記懸浮高度 (m)
+const MARK_COL={equipment:0x00d4ff,space:0x00ff9d,repair:0xff5470,note:0xffb300};
+const kindVis={equipment:true,space:true,repair:true,note:true};
+let markerObjs=[];                               // {group,fl,kind}
+async function loadMarkers(){
+  try{
+    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,kind,label').eq('status','active');
+    if(error) return;
+    (data||[]).forEach(addMarker3D);
+    document.getElementById('mkCount').textContent=markerObjs.length;
+    layoutMarkers();
+  }catch(e){}
+}
+function addMarker3D(m){
+  const fl=FLOORS.find(f=>f.id===m.floor_id); if(!fl)return;
+  const col=(m.kind in MARK_COL)?MARK_COL[m.kind]:0xffb300;
+  // 2D viewport 座標 → 3D 平面座標（與樓層貼圖共用同一 DXF frame）
+  const x=(m.x-0.5)*FRAME_W;
+  const z=m.y*FRAME_W - FRAME_H/2;
+  const g=new THREE.Group();
+  const stem=new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0),new THREE.Vector3(0,MARK_H,0)]),
+    new THREE.LineBasicMaterial({color:col,transparent:true,opacity:.55}));
+  const head=new THREE.Mesh(new THREE.SphereGeometry(3.4,16,12),new THREE.MeshBasicMaterial({color:col}));
+  head.position.y=MARK_H;
+  g.add(stem); g.add(head);
+  g.position.set(x,0,z);
+  scene.add(g);
+  markerObjs.push({group:g,fl,kind:m.kind});
+}
+function layoutMarkers(){
+  markerObjs.forEach(mk=>{
+    mk.group.position.y=mk.fl.level*FLOOR_GAP*EXPLODE;
+    mk.group.visible=mk.fl.visible && kindVis[mk.kind];
+  });
+}
+function toggleMarkKind(k,on){
+  kindVis[k]=on;
+  markerObjs.forEach(mk=>{ if(mk.kind===k) mk.group.visible=mk.fl.visible && on; });
 }
 
 function finishLoad(){
   prog(100,'完成');
   setTimeout(()=>{const l=document.getElementById('loading');l.style.transition='opacity .4s';l.style.opacity='0';setTimeout(()=>l.style.display='none',400);},150);
   resetView(); animate();
+  loadMarkers();
 }
 
 // ── Orbit controls ──
@@ -281,6 +333,7 @@ function animate(){ requestAnimationFrame(animate); updateCam(); renderer.render
 function toggleFloor(id){
   const fl=FLOORS.find(f=>f.id===id); fl.visible=!fl.visible;
   if(fl.mesh)fl.mesh.visible=fl.visible; if(fl.frame)fl.frame.visible=fl.visible;
+  markerObjs.forEach(mk=>{ if(mk.fl===fl) mk.group.visible=fl.visible && kindVis[mk.kind]; });
   document.getElementById('t-'+id).classList.toggle('on',fl.visible);
   document.getElementById('t-'+id).classList.toggle('off',!fl.visible);
 }
