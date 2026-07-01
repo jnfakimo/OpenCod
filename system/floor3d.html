@@ -308,6 +308,14 @@ function toggleFloorsMenu(){
   f.style.display=open?'block':'none';
   b.classList.toggle('open',open);
 }
+// 左鍵點 3D 空白處 → 收合所有選單（立體控制 / 標記顯示 / 樓層）
+function closeMenus3D(){
+  togglePanel(false);
+  document.getElementById('mkpanel').style.display='none';
+  document.getElementById('mkToggle').style.display='inline-flex';
+  const f=document.getElementById('floors'), b=document.getElementById('floorsToggle');
+  if(f)f.style.display='none'; if(b)b.classList.remove('open');
+}
 function toggleMkPanel(open){
   if(open){ // 開啟標記面板時，先收合立體控制面板，避免重疊
     document.body.classList.add('controls-hidden');
@@ -367,8 +375,10 @@ function panView(dx,dy){
 function touchMid(t){return {x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2};}
 function setupOrbit(){
   const el=renderer.domElement;
-  el.addEventListener('mousedown',e=>{ if(e.button===0){orb.down=true;}else if(e.button===2){orb.right=true;e.preventDefault();} orb.sx=e.clientX;orb.sy=e.clientY; });
+  let dnX=0,dnY=0;
+  el.addEventListener('mousedown',e=>{ if(e.button===0){orb.down=true;dnX=e.clientX;dnY=e.clientY;}else if(e.button===2){orb.right=true;e.preventDefault();} orb.sx=e.clientX;orb.sy=e.clientY; });
   addEventListener('mouseup',()=>{orb.down=false;orb.right=false;});
+  el.addEventListener('click',e=>{ if(Math.hypot(e.clientX-dnX,e.clientY-dnY)<5) closeMenus3D(); }); // 左鍵點空白處收合選單
   addEventListener('mousemove',e=>{
     const dx=e.clientX-orb.sx, dy=e.clientY-orb.sy;
     if(orb.down){ panView(dx,dy); }                        // 左鍵：水平 / 垂直平移

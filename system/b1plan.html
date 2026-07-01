@@ -229,6 +229,8 @@ function toggleMkPanel(open){
   document.getElementById('mkpanel').style.display=open?'block':'none';
   document.getElementById('mkToggle').style.display=open?'none':'inline-flex';
 }
+// 左鍵點圖面空白處 → 收合標記選單
+viewer.addHandler('canvas-click',ev=>{ if(ev.quick) toggleMkPanel(false); });
 
 function updHud(){
   if(!viewer.viewport) return;
