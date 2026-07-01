@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>臺北農產 第一果菜市場 — 整合標記系統</title>
+<style>
+:root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0;
+  --eq:#00d4ff;--sp:#00ff9d;--rp:#ff5470;--nt:#ffb300}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
+
+#topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200}
+.tb-logo{font-size:13px;font-weight:700;color:var(--cyan);white-space:nowrap}
+.tb-sep{width:1px;height:24px;background:var(--border)}
+.tb-title{font-size:11px;color:var(--text2);white-space:nowrap}
+.tb-space{flex:1}
+.tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s}
+.tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
+
+#osd{position:fixed;inset:50px 0 0 300px;background:#04101f}
+
+/* Left panel */
+#panel{position:fixed;left:0;top:50px;bottom:0;width:300px;background:rgba(4,20,40,.97);border-right:1px solid var(--border);z-index:180;display:flex;flex-direction:column}
+.pn-head{padding:12px 14px;border-bottom:1px solid var(--border)}
+.pn-title{font-size:14px;font-weight:700;color:var(--cyan)}
+.pn-sub{font-size:10px;color:var(--text2);margin-top:2px}
+.pn-tools{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.btn{padding:8px 12px;border-radius:4px;border:1px solid var(--border);background:none;color:var(--text2);cursor:pointer;font-size:12px;transition:all .15s;text-align:center}
+.btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-place{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.08);font-weight:700}
+.btn-place.on{background:var(--cyan);color:#022;box-shadow:0 0 14px rgba(0,212,255,.5)}
+.pn-filter{display:flex;gap:6px}
+.pn-filter select,.pn-filter input{flex:1;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:6px 8px;border-radius:3px;font-size:12px;outline:none;min-width:0}
+.pn-list{flex:1;overflow-y:auto;padding:8px 10px}
+.pn-list::-webkit-scrollbar{width:5px}.pn-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.mk-item{display:flex;align-items:center;gap:9px;padding:8px 9px;border:1px solid var(--border);border-radius:4px;margin-bottom:6px;cursor:pointer;transition:all .15s;background:rgba(2,11,24,.5)}
+.mk-item:hover{border-color:var(--cyan);background:rgba(0,212,255,.06)}
+.mk-item .cdot{width:9px;height:9px;border-radius:50%;flex:none}
+.mk-item .mk-name{flex:1;font-size:12.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mk-item .mk-kind{font-size:9.5px;color:var(--text2);border:1px solid var(--border);border-radius:8px;padding:1px 6px;white-space:nowrap}
+.pn-empty{text-align:center;color:var(--text2);font-size:12px;padding:40px 10px}
+.pn-legend{padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px 14px;font-size:11px;color:var(--text2)}
+.pn-legend span{display:inline-flex;align-items:center;gap:5px}
+.pn-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.pn-count{padding:8px 14px;font-size:11px;color:var(--text2);border-top:1px solid var(--border)}
+
+/* Floor switch */
+#floors{position:fixed;right:14px;top:62px;display:flex;flex-direction:column;gap:0;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.fbtn{padding:9px 20px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:12px;text-align:center;transition:all .15s;white-space:nowrap}
+.fbtn:last-child{border-bottom:none}
+.fbtn:hover{background:rgba(0,212,255,.08);color:var(--cyan)}
+.fbtn.active{background:rgba(0,212,255,.18);color:var(--cyan);font-weight:700}
+
+/* Tools */
+#tools{position:fixed;right:14px;top:210px;display:flex;flex-direction:column;gap:6px;z-index:150}
+.tbtn{width:40px;height:40px;background:rgba(4,20,40,.95);border:1px solid var(--border);color:var(--cyan2);border-radius:5px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
+.tbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.1)}
+
+/* HUD */
+#hud{position:fixed;right:14px;bottom:14px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;z-index:150;font-size:11px;line-height:1.6}
+#hud .h-t{color:var(--cyan);font-weight:700;margin-bottom:2px}
+#hud span{color:var(--text)}
+
+#placehint{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:rgba(0,212,255,.15);border:1px solid var(--cyan);color:var(--cyan);padding:6px 16px;border-radius:20px;font-size:12px;z-index:190;display:none}
+#placehint.on{display:block}
+
+/* Marker pins on the plan */
+.pin{position:relative;cursor:pointer;transform:translate(-50%,-50%);pointer-events:auto}
+.pin .pdot{width:16px;height:16px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,.6);margin:0 auto}
+.pin .plab{position:absolute;left:50%;top:-6px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:11px;padding:2px 7px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.pin:hover .plab,.pin.show-lab .plab{opacity:1}
+.pin.sel .pdot{outline:3px solid rgba(255,255,255,.5);outline-offset:2px}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(1,6,14,.8);z-index:300;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--cyan);border-radius:6px;width:100%;max-width:400px;box-shadow:0 0 40px rgba(0,212,255,.2)}
+.md-head{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.md-head .mt{font-size:14px;font-weight:700;color:var(--cyan)}
+.md-head .x{margin-left:auto;cursor:pointer;color:var(--text2);font-size:18px}
+.md-head .x:hover{color:var(--rp)}
+.md-body{padding:16px}
+.fld{margin-bottom:12px}
+.fld label{display:block;font-size:11px;color:var(--text2);margin-bottom:5px}
+.fld input,.fld select,.fld textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:3px;font-size:13px;outline:none;font-family:inherit}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--cyan)}
+.fld textarea{resize:vertical;min-height:52px}
+.kind-row{display:flex;gap:6px}
+.kind-row .kbtn{flex:1;padding:8px 4px;border:1px solid var(--border);border-radius:4px;background:none;color:var(--text2);cursor:pointer;font-size:11.5px;transition:all .15s}
+.kind-row .kbtn.on{color:#022;font-weight:700}
+.md-actions{display:flex;gap:8px;margin-top:6px}
+.btn-primary{flex:1;background:rgba(0,212,255,.14);border:1px solid var(--cyan);color:var(--cyan);padding:10px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700}
+.btn-primary:hover{background:rgba(0,212,255,.24)}
+.btn-danger{background:rgba(255,84,112,.12);border:1px solid var(--rp);color:var(--rp);padding:10px 14px;border-radius:4px;cursor:pointer;font-size:13px}
+.btn-danger:hover{background:rgba(255,84,112,.22)}
+.md-msg{font-size:12px;min-height:15px;color:var(--rp)}
+
+/* Detail popup */
+#detail{display:none;position:fixed;z-index:260;background:var(--panel);border:1px solid var(--cyan);border-radius:6px;width:250px;box-shadow:0 0 26px rgba(0,0,0,.6)}
+#detail.show{display:block}
+.dt-head{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.dt-head .cdot{width:10px;height:10px;border-radius:50%;flex:none}
+.dt-head .dt-name{font-size:13px;font-weight:700;color:var(--text);flex:1}
+.dt-head .x{cursor:pointer;color:var(--text2)}
+.dt-body{padding:10px 12px;font-size:12px;line-height:1.7}
+.dt-body .r{color:var(--text2)}.dt-body .r b{color:var(--text);font-weight:400}
+.dt-acts{display:flex;gap:6px;padding:0 12px 12px}
+.dt-acts .btn{flex:1;padding:6px}
+
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:400;gap:12px}
+.ld-t{font-size:13px;color:var(--cyan);letter-spacing:.1em}
+.ld-bar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:var(--cyan);width:0%;transition:width .25s}
+.ld-m{font-size:11px;color:var(--text2)}
+
+@media(max-width:720px){
+  #panel{width:100%;bottom:auto;height:auto;max-height:44%;border-right:none;border-bottom:1px solid var(--border)}
+  #osd{inset:auto 0 0 0;top:auto;height:56%}
+  .pn-list{max-height:130px}
+  #floors{top:auto;bottom:14px;left:14px;right:auto;flex-direction:row}
+  #tools{top:auto;bottom:64px;left:14px;right:auto;flex-direction:row}
+  #hud{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-t">載入整合標記系統…</div>
+  <div class="ld-bar"><div class="ld-fill" id="ldfill"></div></div>
+  <div class="ld-m" id="ldmsg">初始化…</div>
+</div>
+
+<div id="topbar">
+  <div class="tb-logo">臺北農產 第一果菜市場</div>
+  <div class="tb-sep"></div>
+  <div class="tb-title">整合標記系統</div>
+  <div class="tb-space"></div>
+  <a href="b1plan.html" class="tb-back">▣ 平面圖</a>
+  <a href="workorder.html" class="tb-back">◪ 報修系統</a>
+  <a href="admin.html" class="tb-back">⬡ 後台</a>
+  <a href="floor3d.html" class="tb-back" style="border-color:var(--cyan);color:var(--cyan)">⬡ 3D立體</a>
+</div>
+
+<div id="panel">
+  <div class="pn-head">
+    <div class="pn-title">◈ 整合標記</div>
+    <div class="pn-sub" id="pnFloor">B1 地下一層</div>
+  </div>
+  <div class="pn-tools">
+    <button class="btn btn-place" id="btnPlace" onclick="togglePlace()">＋ 放置標記模式</button>
+    <div class="pn-filter">
+      <select id="fltKind" onchange="renderList()">
+        <option value="">全部類型</option>
+        <option value="equipment">設備</option>
+        <option value="space">空間</option>
+        <option value="repair">報修點</option>
+        <option value="note">一般</option>
+      </select>
+      <input id="fltSearch" placeholder="搜尋…" oninput="renderList()">
+    </div>
+  </div>
+  <div class="pn-list" id="mkList"></div>
+  <div class="pn-count" id="pnCount">—</div>
+  <div class="pn-legend">
+    <span><i style="background:var(--eq)"></i>設備</span>
+    <span><i style="background:var(--sp)"></i>空間</span>
+    <span><i style="background:var(--rp)"></i>報修點</span>
+    <span><i style="background:var(--nt)"></i>一般</span>
+  </div>
+</div>
+
+<div id="osd"></div>
+
+<div id="placehint">點選平面圖任一位置放置標記　·　再按一次退出放置模式</div>
+
+<div id="floors">
+  <button class="fbtn" id="f-3F" onclick="showFloor('3F')">3F 三樓</button>
+  <button class="fbtn" id="f-2F" onclick="showFloor('2F')">2F 二樓</button>
+  <button class="fbtn" id="f-1F" onclick="showFloor('1F')">1F 一樓</button>
+  <button class="fbtn active" id="f-B1" onclick="showFloor('B1')">B1 地下一層</button>
+</div>
+
+<div id="tools">
+  <div class="tbtn" id="t-zin"  title="放大">＋</div>
+  <div class="tbtn" id="t-zout" title="縮小">－</div>
+  <div class="tbtn" id="t-rl"   title="逆時針旋轉">↺</div>
+  <div class="tbtn" id="t-rr"   title="順時針旋轉">↻</div>
+  <div class="tbtn" id="t-lab"  title="顯示/隱藏標籤">🏷</div>
+  <div class="tbtn" id="t-home" title="重置視角">⊡</div>
+  <div class="tbtn" id="t-fs"   title="全螢幕">⛶</div>
+</div>
+
+<div id="hud">
+  <div class="h-t" id="hudFloor">▣ B1 地下一層</div>
+  <div>縮放：<span id="h-zoom">100%</span>　旋轉：<span id="h-rot">0°</span></div>
+</div>
+
+<!-- Marker create/edit modal -->
+<div class="modal-bg" id="m-mk">
+  <div class="modal">
+    <div class="md-head"><span class="mt" id="mkTitle">新增標記</span><span class="x" onclick="closeMk()">✕</span></div>
+    <div class="md-body">
+      <div class="fld">
+        <label>類型</label>
+        <div class="kind-row" id="kindRow">
+          <button type="button" class="kbtn" data-k="equipment" style="--c:var(--eq)" onclick="pickKind('equipment')">設備</button>
+          <button type="button" class="kbtn" data-k="space" style="--c:var(--sp)" onclick="pickKind('space')">空間</button>
+          <button type="button" class="kbtn" data-k="repair" style="--c:var(--rp)" onclick="pickKind('repair')">報修點</button>
+          <button type="button" class="kbtn" data-k="note" style="--c:var(--nt)" onclick="pickKind('note')">一般</button>
+        </div>
+      </div>
+      <div class="fld" id="fldEqp" style="display:none">
+        <label>連結設備（選填，選後自動帶入名稱）</label>
+        <select id="mkEqp" onchange="onLinkEqp()"><option value="">— 不連結 —</option></select>
+      </div>
+      <div class="fld" id="fldSpace" style="display:none">
+        <label>連結空間（選填，選後自動帶入名稱）</label>
+        <select id="mkSpace" onchange="onLinkSpace()"><option value="">— 不連結 —</option></select>
+      </div>
+      <div class="fld"><label>標記名稱</label><input id="mkLabel" placeholder="顯示於平面圖上的名稱"></div>
+      <div class="fld"><label>備註（選填）</label><textarea id="mkNote" placeholder="說明 / 狀態…"></textarea></div>
+      <div class="md-msg" id="mkMsg"></div>
+      <div class="md-actions">
+        <button class="btn-danger" id="mkDel" style="display:none" onclick="deleteMk()">刪除</button>
+        <button class="btn-primary" onclick="saveMk()">儲存標記</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail popup -->
+<div id="detail">
+  <div class="dt-head"><span class="cdot" id="dtDot"></span><span class="dt-name" id="dtName"></span><span class="x" onclick="hideDetail()">✕</span></div>
+  <div class="dt-body" id="dtBody"></div>
+  <div class="dt-acts">
+    <button class="btn" onclick="editFromDetail()">編輯</button>
+    <button class="btn" style="border-color:var(--rp);color:var(--rp)" onclick="delFromDetail()">刪除</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+const KIND={equipment:{c:'#00d4ff',n:'設備'},space:{c:'#00ff9d',n:'空間'},repair:{c:'#ff5470',n:'報修點'},note:{c:'#ffb300',n:'一般'}};
+function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+prog(15,'建立檢視器…');
+
+let rot=0, loaded=0, curFloor='B1', placeMode=false, showLabels=false;
+let markers=[], equip=[], spaces=[], editId=null, curKind='note', detailId=null;
+
+const FLOORS=[
+  {id:'B1', label:'▣ B1 地下一層', dzi:'plans/b1.dzi', idx:null},
+  {id:'1F', label:'▣ 1F 一樓',     dzi:'plans/f1.dzi', idx:null},
+  {id:'2F', label:'▣ 2F 二樓',     dzi:'plans/f2.dzi', idx:null},
+  {id:'3F', label:'▣ 3F 三樓',     dzi:'plans/f3.dzi', idx:null},
+];
+
+const viewer = OpenSeadragon({
+  id:'osd', prefixUrl:'', showNavigationControl:false,
+  showNavigator:true, navigatorPosition:'TOP_RIGHT', navigatorHeight:100, navigatorWidth:130,
+  navigatorAutoFade:false, navigatorBackground:'#041428', navigatorBorderColor:'#0a3a5a', navigatorDisplayRegionColor:'#00d4ff',
+  backgroundColor:'#04101f', degrees:0, minZoomLevel:0.2, maxZoomPixelRatio:4, zoomPerScroll:1.3,
+  animationTime:0.5, springStiffness:7,
+  panHorizontal:true, panVertical:true, constrainDuringPan:false, visibilityRatio:0, flickEnabled:true,
+  gestureSettingsMouse:{ clickToZoom:false, dblClickToZoom:true, dragToPan:true },
+  gestureSettingsTouch:{ pinchRotate:true, dragToPan:true }
+});
+
+async function buildSources(){
+  try{
+    const {data}=await db.from('floor_models').select('*');
+    if(data&&data.length){
+      data.forEach(m=>{ const fl=FLOORS.find(f=>f.id===m.floor_id);
+        if(fl&&m.image_path){ const t=encodeURIComponent(m.updated_at||'');
+          fl.src={type:'image', url:`${SUPA_URL}/storage/v1/object/public/floorplans/${m.image_path}?t=${t}`}; } });
+    }
+  }catch(e){}
+  FLOORS.forEach(fl=>{
+    viewer.addTiledImage({ tileSource: fl.src||fl.dzi, x:0, y:0, width:1, opacity:(fl.id==='B1'?1:0),
+      success:e=>{ fl.idx=viewer.world.getIndexOfItem(e.item); onLoad(); },
+      error:()=>{ onLoad(); } });
+  });
+}
+
+function onLoad(){
+  loaded++; prog(20+loaded*15,'載入平面圖…');
+  if(loaded<FLOORS.length) return;
+  prog(100,'完成');
+  setTimeout(()=>{ const l=document.getElementById('loading'); l.style.transition='opacity .4s'; l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); },150);
+  showFloor('B1'); updHud();
+}
+
+function item(i){ return i==null?null:viewer.world.getItemAt(i); }
+
+// ── Floor switching ────────────────────────────────────────
+function showFloor(f){
+  curFloor=f;
+  FLOORS.forEach(fl=>{ const it=item(fl.idx); if(it) it.setOpacity(fl.id===f?1:0); });
+  FLOORS.forEach(fl=>{ const b=document.getElementById('f-'+fl.id); if(b) b.classList.toggle('active',fl.id===f); });
+  const cur=FLOORS.find(fl=>fl.id===f);
+  document.getElementById('hudFloor').textContent=cur.label;
+  document.getElementById('pnFloor').textContent=cur.label.replace('▣ ','');
+  hideDetail();
+  drawMarkers(); renderList();
+}
+
+// ── Data ───────────────────────────────────────────────────
+async function loadData(){
+  const [mk,eq,sp]=await Promise.all([
+    db.from('plan_markers').select('*').eq('status','active'),
+    db.from('equipment').select('equipment_id,name,location').limit(2000),
+    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').limit(3000)
+  ]);
+  markers=mk.data||[]; equip=eq.data||[]; spaces=sp.data||[];
+  fillLinkSelects();
+  drawMarkers(); renderList();
+}
+
+function fillLinkSelects(){
+  const e=document.getElementById('mkEqp');
+  e.innerHTML='<option value="">— 不連結 —</option>'+equip.map(x=>`<option value="${x.equipment_id}">${esc(x.name)}${x.location?' ('+esc(x.location)+')':''}</option>`).join('');
+  const s=document.getElementById('mkSpace');
+  const sp=spaces.filter(x=>!curFloor||x.floor===curFloor);
+  s.innerHTML='<option value="">— 不連結 —</option>'+sp.map(x=>`<option value="${x.space_id}">${esc(x.floor)} · ${esc(x.space_name)}</option>`).join('');
+}
+
+// ── Draw overlays ──────────────────────────────────────────
+function drawMarkers(){
+  viewer.clearOverlays();
+  markers.filter(m=>m.floor_id===curFloor).forEach(m=>{
+    const el=document.createElement('div');
+    el.className='pin'+(showLabels?' show-lab':'');
+    el.dataset.id=m.marker_id;
+    const col=m.color||KIND[m.kind]?.c||'#ffb300';
+    el.innerHTML=`<div class="pdot" style="background:${col}"></div><div class="plab">${esc(m.label)}</div>`;
+    el.addEventListener('click',ev=>{ ev.stopPropagation(); openDetail(m.marker_id,ev); });
+    viewer.addOverlay({element:el, location:new OpenSeadragon.Point(m.x,m.y), placement:OpenSeadragon.Placement.CENTER, checkResize:false});
+  });
+  markLoadedSelection();
+}
+function markLoadedSelection(){
+  document.querySelectorAll('.pin').forEach(p=>p.classList.toggle('sel',p.dataset.id===detailId));
+}
+
+// ── List panel ─────────────────────────────────────────────
+function renderList(){
+  const k=document.getElementById('fltKind').value;
+  const q=document.getElementById('fltSearch').value.trim().toLowerCase();
+  let list=markers.filter(m=>m.floor_id===curFloor);
+  const total=list.length;
+  if(k) list=list.filter(m=>m.kind===k);
+  if(q) list=list.filter(m=>(m.label||'').toLowerCase().includes(q)||(m.note||'').toLowerCase().includes(q));
+  const box=document.getElementById('mkList');
+  if(!list.length){box.innerHTML='<div class="pn-empty">此樓層尚無標記。<br>按「放置標記模式」後點選平面圖新增。</div>';}
+  else{
+    box.innerHTML=list.map(m=>{
+      const col=m.color||KIND[m.kind]?.c||'#ffb300';
+      return `<div class="mk-item" onclick="focusMarker('${m.marker_id}')">
+        <span class="cdot" style="background:${col}"></span>
+        <span class="mk-name">${esc(m.label)}</span>
+        <span class="mk-kind">${KIND[m.kind]?.n||''}</span>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('pnCount').textContent=`本層標記：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
+}
+
+function focusMarker(id){
+  const m=markers.find(x=>x.marker_id===id); if(!m)return;
+  if(m.floor_id!==curFloor) showFloor(m.floor_id);
+  viewer.viewport.panTo(new OpenSeadragon.Point(m.x,m.y));
+  viewer.viewport.zoomTo(Math.max(viewer.viewport.getZoom(),2));
+  detailId=id; markLoadedSelection();
+  setTimeout(()=>{const el=document.querySelector('.pin[data-id="'+id+'"]');if(el)openDetailByEl(m,el);},350);
+}
+
+// ── Place mode ─────────────────────────────────────────────
+function togglePlace(){
+  placeMode=!placeMode;
+  document.getElementById('btnPlace').classList.toggle('on',placeMode);
+  document.getElementById('placehint').classList.toggle('on',placeMode);
+  document.getElementById('btnPlace').textContent=placeMode?'✓ 放置中（點圖新增 / 再按退出）':'＋ 放置標記模式';
+  viewer.setMouseNavEnabled(true);
+}
+
+viewer.addHandler('canvas-click',ev=>{
+  if(!placeMode) return;
+  if(!ev.quick) return;                                   // ignore drags
+  if(ev.originalEvent.target.closest && ev.originalEvent.target.closest('.pin')) return;
+  const vp=viewer.viewport.pointFromPixel(ev.position);
+  openMkCreate(vp.x,vp.y);
+});
+
+// ── Create / Edit modal ────────────────────────────────────
+let pendX=0, pendY=0;
+function openMkCreate(x,y){
+  editId=null; pendX=x; pendY=y;
+  document.getElementById('mkTitle').textContent='新增標記（'+curFloor+'）';
+  document.getElementById('mkDel').style.display='none';
+  fillLinkSelects();
+  document.getElementById('mkEqp').value=''; document.getElementById('mkSpace').value='';
+  document.getElementById('mkLabel').value=''; document.getElementById('mkNote').value='';
+  document.getElementById('mkMsg').textContent='';
+  pickKind('note');
+  document.getElementById('m-mk').classList.add('show');
+}
+function openMkEdit(id){
+  const m=markers.find(x=>x.marker_id===id); if(!m)return;
+  editId=id; pendX=m.x; pendY=m.y;
+  document.getElementById('mkTitle').textContent='編輯標記（'+m.floor_id+'）';
+  document.getElementById('mkDel').style.display='block';
+  fillLinkSelects();
+  document.getElementById('mkEqp').value=m.equipment_id||'';
+  document.getElementById('mkSpace').value=m.space_id||'';
+  document.getElementById('mkLabel').value=m.label||'';
+  document.getElementById('mkNote').value=m.note||'';
+  document.getElementById('mkMsg').textContent='';
+  pickKind(m.kind||'note');
+  document.getElementById('m-mk').classList.add('show');
+}
+function closeMk(){document.getElementById('m-mk').classList.remove('show');}
+function pickKind(k){
+  curKind=k;
+  document.querySelectorAll('#kindRow .kbtn').forEach(b=>{
+    const on=b.dataset.k===k; b.classList.toggle('on',on);
+    b.style.background=on?(KIND[k].c):'none'; b.style.borderColor=on?KIND[k].c:'';
+  });
+  document.getElementById('fldEqp').style.display=(k==='equipment')?'block':'none';
+  document.getElementById('fldSpace').style.display=(k==='space')?'block':'none';
+}
+function onLinkEqp(){const o=document.getElementById('mkEqp');const t=o.options[o.selectedIndex]?.textContent||'';
+  if(o.value&&!document.getElementById('mkLabel').value.trim())document.getElementById('mkLabel').value=t.replace(/\s*\(.*\)$/,'');}
+function onLinkSpace(){const o=document.getElementById('mkSpace');
+  if(o.value&&!document.getElementById('mkLabel').value.trim()){const s=spaces.find(x=>x.space_id===o.value);if(s)document.getElementById('mkLabel').value=s.space_name;}}
+
+async function saveMk(){
+  const label=document.getElementById('mkLabel').value.trim();
+  const msg=document.getElementById('mkMsg');
+  if(!label){msg.textContent='請輸入標記名稱';return;}
+  const rec={floor_id:editId?markers.find(m=>m.marker_id===editId).floor_id:curFloor,
+    x:pendX, y:pendY, kind:curKind, label,
+    equipment_id:(curKind==='equipment'?(document.getElementById('mkEqp').value||null):null),
+    space_id:(curKind==='space'?(document.getElementById('mkSpace').value||null):null),
+    note:document.getElementById('mkNote').value.trim()||null};
+  let error;
+  if(editId){({error}=await db.from('plan_markers').update(rec).eq('marker_id',editId));}
+  else{({error}=await db.from('plan_markers').insert(rec));}
+  if(error){msg.textContent='儲存失敗：'+error.message;return;}
+  closeMk(); await loadData();
+}
+async function deleteMk(){
+  if(!editId)return;
+  if(!confirm('確定刪除此標記？'))return;
+  const {error}=await db.from('plan_markers').delete().eq('marker_id',editId);
+  if(error){document.getElementById('mkMsg').textContent='刪除失敗：'+error.message;return;}
+  closeMk(); detailId=null; await loadData();
+}
+
+// ── Detail popup ───────────────────────────────────────────
+function openDetail(id,ev){const m=markers.find(x=>x.marker_id===id);if(!m)return;
+  const el=ev.currentTarget||document.querySelector('.pin[data-id="'+id+'"]');openDetailByEl(m,el);}
+function openDetailByEl(m,el){
+  detailId=m.marker_id; markLoadedSelection();
+  const col=m.color||KIND[m.kind]?.c||'#ffb300';
+  document.getElementById('dtDot').style.background=col;
+  document.getElementById('dtName').textContent=m.label;
+  let extra='';
+  if(m.equipment_id){const e=equip.find(x=>x.equipment_id===m.equipment_id);if(e)extra+=`<div class="r">設備：<b>${esc(e.name)}</b></div>`;}
+  if(m.space_id){const s=spaces.find(x=>x.space_id===m.space_id);if(s)extra+=`<div class="r">空間：<b>${esc(s.floor)} · ${esc(s.space_name)}</b></div>`;}
+  document.getElementById('dtBody').innerHTML=
+    `<div class="r">類型：<b>${KIND[m.kind]?.n||m.kind}</b></div>`+
+    `<div class="r">樓層：<b>${esc(m.floor_id)}</b></div>`+extra+
+    (m.note?`<div class="r">備註：<b>${esc(m.note)}</b></div>`:'');
+  const dt=document.getElementById('detail');dt.classList.add('show');
+  const r=el.getBoundingClientRect();
+  let left=r.right+10, top=r.top-10;
+  if(left+250>window.innerWidth) left=r.left-260;
+  if(top+160>window.innerHeight) top=window.innerHeight-170;
+  if(left<306) left=306; if(top<56) top=56;
+  dt.style.left=left+'px'; dt.style.top=top+'px';
+}
+function hideDetail(){document.getElementById('detail').classList.remove('show');detailId=null;markLoadedSelection();}
+function editFromDetail(){if(detailId){const id=detailId;hideDetail();openMkEdit(id);}}
+function delFromDetail(){if(detailId){editId=detailId;deleteMk();hideDetail();}}
+// keep detail popup positioned while panning
+viewer.addHandler('animation',()=>{ if(detailId){const el=document.querySelector('.pin[data-id="'+detailId+'"]');const m=markers.find(x=>x.marker_id===detailId);if(el&&m)openDetailByEl(m,el);} });
+
+// ── Tools ──────────────────────────────────────────────────
+function updHud(){
+  if(!viewer.viewport) return;
+  const z=Math.round(viewer.viewport.getZoom(true)/viewer.viewport.getHomeZoom()*100);
+  document.getElementById('h-zoom').textContent=z+'%';
+  document.getElementById('h-rot').textContent=(((rot%360)+360)%360)+'°';
+}
+function setRot(d){ rot=d; viewer.viewport.setRotation(((rot%360)+360)%360); updHud(); }
+viewer.addHandler('zoom',updHud); viewer.addHandler('animation',updHud);
+document.getElementById('t-zin').onclick =()=>{viewer.viewport.zoomBy(1.4);viewer.viewport.applyConstraints();};
+document.getElementById('t-zout').onclick=()=>{viewer.viewport.zoomBy(0.71);viewer.viewport.applyConstraints();};
+document.getElementById('t-rl').onclick  =()=>setRot(rot-15);
+document.getElementById('t-rr').onclick  =()=>setRot(rot+15);
+document.getElementById('t-lab').onclick =()=>{showLabels=!showLabels;document.querySelectorAll('.pin').forEach(p=>p.classList.toggle('show-lab',showLabels));};
+document.getElementById('t-home').onclick=()=>{viewer.viewport.goHome();setRot(0);};
+document.getElementById('t-fs').onclick   =()=>viewer.setFullScreen(!viewer.isFullPage());
+document.getElementById('m-mk').addEventListener('click',e=>{if(e.target.id==='m-mk')closeMk();});
+window.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT')return;
+  if(e.key==='+'||e.key==='='){viewer.viewport.zoomBy(1.4);viewer.viewport.applyConstraints();}
+  else if(e.key==='-'){viewer.viewport.zoomBy(0.71);viewer.viewport.applyConstraints();}
+  else if(e.key==='['){setRot(rot-15);} else if(e.key===']'){setRot(rot+15);}
+  else if(e.key==='0'){viewer.viewport.goHome();setRot(0);}
+  else if(e.key==='1'){showFloor('1F');} else if(e.key==='2'){showFloor('2F');}
+  else if(e.key==='3'){showFloor('3F');} else if(e.key==='b'||e.key==='B'){showFloor('B1');}
+  else if(e.key==='Escape'){if(placeMode)togglePlace();hideDetail();closeMk();}
+});
+
+buildSources();
+loadData();
+</script>
+</body>
+</html>
