@@ -19,7 +19,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 .tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s}
 .tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
 #c3d{position:fixed;inset:50px 0 0 0}
-#c3d canvas{display:block}
+#c3d canvas{display:block;touch-action:none}
 
 #floors{position:fixed;right:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;overflow:hidden}
 .fbtn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;text-align:left;transition:all .15s;white-space:nowrap}
@@ -29,10 +29,16 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 .fbtn.on .dot{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
 .fbtn.off{color:var(--text2)}
 
-#panel{position:fixed;left:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:11px 13px;font-size:11px;line-height:1.9;min-width:165px}
-#panel .p-t{color:var(--cyan);font-weight:700;font-size:12px;margin-bottom:5px}
+#panel{position:fixed;left:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:11px 13px;font-size:11px;line-height:1.9;min-width:165px;max-width:min(280px,calc(100vw - 28px));box-shadow:0 0 22px rgba(0,212,255,.12)}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px}
+#panel .p-t{color:var(--cyan);font-weight:700;font-size:12px}
+.panel-close{display:none;background:none;border:1px solid var(--border);color:var(--text2);border-radius:3px;padding:3px 8px;font-size:10px;cursor:pointer}
+.panel-close:hover{border-color:var(--cyan);color:var(--cyan)}
 #panel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
 #panel input[type=range]{width:100%;accent-color:var(--cyan)}
+.ctrl-val{color:var(--text);font-family:monospace}
+#panelToggle{display:none;position:fixed;left:14px;top:62px;z-index:155;align-items:center;gap:6px;padding:8px 12px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
+#panelToggle:hover{border-color:var(--cyan)}
 .btnrow{display:flex;gap:6px;margin-top:8px}
 .mini{flex:1;padding:5px;background:rgba(0,212,255,.08);border:1px solid var(--border);color:var(--cyan2);border-radius:3px;cursor:pointer;font-size:10px;transition:all .15s}
 .mini:hover{border-color:var(--cyan);color:var(--cyan)}
@@ -43,7 +49,29 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 .ld-bar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
 .ld-fill{height:100%;background:var(--cyan);width:0%;transition:width .25s}
 .ld-m{font-size:11px;color:var(--text2)}
-@media(max-width:600px){.tb-title{display:none}}
+@media(max-width:1024px){
+  .tb-title{display:none}
+  .tb-logo{max-width:46vw;overflow:hidden;text-overflow:ellipsis}
+  .tb-back{padding:5px 9px}
+  #panelToggle{display:inline-flex}
+  #panel{display:none;top:104px;left:10px;right:auto}
+  body.controls-open #panel{display:block}
+  body.controls-open #panelToggle{display:none}
+  body.controls-open #floors{display:none}
+  .panel-close{display:inline-flex}
+  #floors{top:104px;right:10px}
+  .fbtn{padding:9px 13px}
+  #hint{left:10px;right:10px;bottom:10px;text-align:center;background:rgba(2,11,24,.72);border:1px solid rgba(10,58,90,.45);border-radius:4px;padding:5px 8px}
+}
+@media(max-width:480px){
+  #topbar{gap:8px;padding:0 10px}
+  .tb-logo{max-width:38vw}
+  .tb-back{font-size:10px;padding:5px 8px}
+  #panel{top:96px}
+  #panelToggle{left:10px;top:62px}
+  #floors{top:96px}
+  .fbtn{font-size:11px;padding:8px 11px}
+}
 </style>
 </head>
 <body>
@@ -64,6 +92,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 </div>
 
 <div id="c3d"></div>
+<button id="panelToggle" onclick="togglePanel(true)" aria-controls="panel" aria-expanded="false">⬡ 立體控制</button>
 
 <div id="floors">
   <button class="fbtn on" id="t-3F" onclick="toggleFloor('3F')"><span class="dot"></span>3F 三樓</button>
@@ -73,11 +102,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 </div>
 
 <div id="panel">
-  <div class="p-t">⬡ 立體控制</div>
+  <div class="panel-head">
+    <div class="p-t">⬡ 立體控制</div>
+    <button class="panel-close" onclick="togglePanel(false)">隱藏</button>
+  </div>
   <label>樓層間距（視覺）</label>
   <input type="range" id="explode" min="1" max="20" value="6" step="0.5" oninput="setExplode(this.value)">
+  <label>Y 軸平移（上下）</label>
+  <input type="range" id="yPan" min="-160" max="160" value="0" step="2" oninput="setYPan(this.value)">
   <div class="h-r" style="color:var(--text2)">實際樓高：<span style="color:var(--text)">4000 mm（固定）</span></div>
   <div class="h-r" style="color:var(--text2)">放大倍率：<span style="color:var(--text)" id="exVal">6×</span></div>
+  <div class="h-r" style="color:var(--text2)">Y 軸位置：<span class="ctrl-val" id="yPanVal">0 m</span></div>
   <div class="btnrow">
     <button class="mini" onclick="resetView()">⊡ 重置</button>
     <button class="mini" onclick="topView()">⊤ 俯視</button>
@@ -85,7 +120,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
   </div>
 </div>
 
-<div id="hint">拖曳 旋轉環繞 &nbsp;|&nbsp; 滾輪 縮放 &nbsp;|&nbsp; 右鍵 平移</div>
+<div id="hint">拖曳旋轉 &nbsp;|&nbsp; 滾輪/雙指縮放 &nbsp;|&nbsp; 右鍵或雙指拖曳平移 Y 軸</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -100,6 +135,8 @@ const FRAME_W = 326466/1000;   // 326.5 m
 const FRAME_H = 320094/1000;   // 320.1 m
 const FLOOR_GAP = 4.0;         // real floor height (m): fixed 4000 mm
 let EXPLODE = 6;               // visual vertical exaggeration
+const YPAN_MIN = -160, YPAN_MAX = 160;
+let yOffset = 0;                // model target Y-axis offset (m)
 
 // floor definitions (bottom → up)
 const FLOORS = [
@@ -177,6 +214,28 @@ function updateCam(){
   const z=orb.tz+orb.r*Math.sin(orb.phi)*Math.cos(orb.theta);
   camera.position.set(x,y,z); camera.lookAt(orb.tx,orb.ty,orb.tz);
 }
+function clamp(n,min,max){return Math.max(min,Math.min(max,n));}
+function midY(){ return (FLOORS.length-1)*FLOOR_GAP*EXPLODE*0.5; }
+function viewY(){ return midY()+yOffset; }
+function syncYPanUI(){
+  const r=document.getElementById('yPan'), v=document.getElementById('yPanVal');
+  if(r) r.value=yOffset;
+  if(v) v.textContent=`${Math.round(yOffset)} m`;
+}
+function setYPan(v){
+  yOffset=clamp(parseFloat(v)||0,YPAN_MIN,YPAN_MAX);
+  orb.ty=viewY();
+  syncYPanUI();
+}
+function panView(dx,dy){
+  const ct=Math.cos(orb.theta), st=Math.sin(orb.theta), s=orb.r*0.0016;
+  orb.tx-=(ct*dx)*s;
+  orb.tz-=(st*dx)*s;
+  yOffset=clamp(yOffset+dy*s,YPAN_MIN,YPAN_MAX);
+  orb.ty=viewY();
+  syncYPanUI();
+}
+function touchMid(t){return {x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2};}
 function setupOrbit(){
   const el=renderer.domElement;
   el.addEventListener('mousedown',e=>{ if(e.button===0){orb.down=true;}else if(e.button===2){orb.right=true;} orb.sx=e.clientX;orb.sy=e.clientY; });
@@ -184,18 +243,18 @@ function setupOrbit(){
   addEventListener('mousemove',e=>{
     const dx=e.clientX-orb.sx, dy=e.clientY-orb.sy;
     if(orb.down){ orb.theta-=dx*0.005; orb.phi=Math.max(orb.minPhi,Math.min(orb.maxPhi,orb.phi-dy*0.005)); }
-    else if(orb.right){ const ct=Math.cos(orb.theta),st=Math.sin(orb.theta); const s=orb.r*0.0016; orb.tx-=(ct*dx)*s; orb.tz-=(st*dx)*s; orb.ty+=dy*s; }
+    else if(orb.right){ panView(dx,dy); }
     orb.sx=e.clientX;orb.sy=e.clientY;
   });
   el.addEventListener('wheel',e=>{ orb.r=Math.max(orb.minR,Math.min(orb.maxR,orb.r+e.deltaY*0.5)); e.preventDefault(); },{passive:false});
   // touch
-  let pd=0;
-  el.addEventListener('touchstart',e=>{const t=e.touches; if(t.length===1){orb.down=true;orb.sx=t[0].clientX;orb.sy=t[0].clientY;} if(t.length===2){orb.down=false;pd=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);}},{passive:true});
+  let pd=0, pm=null;
+  el.addEventListener('touchstart',e=>{const t=e.touches; if(t.length===1){orb.down=true;orb.sx=t[0].clientX;orb.sy=t[0].clientY;} if(t.length===2){orb.down=false;pd=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);pm=touchMid(t);}},{passive:true});
   el.addEventListener('touchmove',e=>{const t=e.touches;
     if(t.length===1&&orb.down){orb.theta-=(t[0].clientX-orb.sx)*0.005;orb.phi=Math.max(orb.minPhi,Math.min(orb.maxPhi,orb.phi-(t[0].clientY-orb.sy)*0.005));orb.sx=t[0].clientX;orb.sy=t[0].clientY;}
-    if(t.length===2){const d=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY);orb.r=Math.max(orb.minR,Math.min(orb.maxR,orb.r-(d-pd)*1.2));pd=d;}
+    if(t.length===2){const d=Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY),m=touchMid(t);orb.r=Math.max(orb.minR,Math.min(orb.maxR,orb.r-(d-pd)*1.2));if(pm)panView(m.x-pm.x,m.y-pm.y);pd=d;pm=m;}
     e.preventDefault();},{passive:false});
-  el.addEventListener('touchend',()=>{orb.down=false;});
+  el.addEventListener('touchend',()=>{orb.down=false;pm=null;});
 }
 
 function animate(){ requestAnimationFrame(animate); updateCam(); renderer.render(scene,camera); }
@@ -207,10 +266,15 @@ function toggleFloor(id){
   document.getElementById('t-'+id).classList.toggle('on',fl.visible);
   document.getElementById('t-'+id).classList.toggle('off',!fl.visible);
 }
-function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'×'; layoutFloors(); orb.ty=midY(); }
-function midY(){ return (FLOORS.length-1)*FLOOR_GAP*EXPLODE*0.5; }
-function resetView(){ orb.theta=-0.6;orb.phi=1.02;orb.r=640;orb.tx=0;orb.ty=midY();orb.tz=0; }
-function topView(){ orb.theta=0;orb.phi=0.06;orb.r=560;orb.tx=0;orb.ty=midY();orb.tz=0; }
+function togglePanel(open){
+  const next=open===undefined?!document.body.classList.contains('controls-open'):!!open;
+  document.body.classList.toggle('controls-open',next);
+  const btn=document.getElementById('panelToggle');
+  if(btn)btn.setAttribute('aria-expanded',String(next));
+}
+function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'×'; layoutFloors(); orb.ty=viewY(); syncYPanUI(); }
+function resetView(){ yOffset=0;orb.theta=-0.6;orb.phi=1.02;orb.r=640;orb.tx=0;orb.ty=viewY();orb.tz=0;syncYPanUI(); }
+function topView(){ orb.theta=0;orb.phi=0.06;orb.r=560;orb.tx=0;orb.ty=viewY();orb.tz=0; }
 
 // fetch any updated floor models from Storage (override static textures)
 async function applyCustomModels(){
