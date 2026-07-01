@@ -468,21 +468,69 @@ async function importAoa(aoa){
   let nameCol =head.findIndex(h=>/空間|名稱|space|name/i.test(h));
   let start=1;
   if(floorCol<0||nameCol<0){floorCol=0;nameCol=1;start=0;} // 無標題：預設第1欄樓層、第2欄空間名稱
-  const seen=new Set(), payload=[];
+  const seen=new Set(), parsed=[], fileDup=[];
+  let invalidCount=0;
   for(let i=start;i<aoa.length;i++){
     const row=aoa[i]||[];
     const floor=normFloor(row[floorCol]);
-    const name=String(row[nameCol]==null?'':row[nameCol]).trim();
-    if(!floor||!name)continue;
-    const key=floor+''+name;
-    if(seen.has(key))continue;seen.add(key);
-    payload.push({market_id:MARKET,floor,floor_order:floorOrder(floor),space_name:name});
+    const name=normSpaceName(row[nameCol]);
+    if(!floor||!name){invalidCount++;continue;}
+    const key=importKey(floor,name);
+    const item={line:i+1,floor,name,key,market_id:MARKET,floor_order:floorOrder(floor),space_name:name};
+    if(seen.has(key)){fileDup.push(item);continue;}
+    seen.add(key);
+    parsed.push(item);
   }
-  if(!payload.length){toast('未讀取到有效資料列',true);return;}
+  if(!parsed.length){toast('未讀取到有效資料列',true);return;}
+  const {data:latest,error:latestErr}=await db.from('floor_spaces')
+    .select('floor,space_name')
+    .eq('market_id',MARKET)
+    .limit(10000);
+  if(latestErr){toast('匯入前檢查失敗：'+latestErr.message,true);return;}
+
+  const existing=new Set((latest||[]).map(r=>importKey(r.floor,r.space_name)));
+  const existed=[], payload=[];
+  parsed.forEach(item=>{
+    if(existing.has(item.key)) existed.push(item);
+    else payload.push({
+      market_id:item.market_id,
+      floor:item.floor,
+      floor_order:item.floor_order,
+      space_name:item.space_name
+    });
+  });
+
+  const summary=[
+    '匯入前檢查結果',
+    '',
+    `檔案有效資料：${parsed.length+fileDup.length} 筆`,
+    `檢查後不重複資料：${parsed.length} 筆`,
+    `資料庫已存在（同樓層＋同空間名稱，不匯入）：${existed.length} 筆`,
+    `檔案內重複（不匯入）：${fileDup.length} 筆`,
+    `欄位空白或無效（不匯入）：${invalidCount} 筆`,
+    `本次可新增：${payload.length} 筆`
+  ];
+  if(existed.length) summary.push('', '已存在範例：', importSample(existed));
+  if(fileDup.length) summary.push('', '檔案內重複範例：', importSample(fileDup));
+  if(!payload.length){
+    alert(summary.concat('', '沒有可新增資料，已停止匯入。').join('\n'));
+    toast('沒有可新增資料，已停止匯入',true);
+    return;
+  }
+  summary.push('', `確認沒有問題後，才會匯入 ${payload.length} 筆新資料。`, '是否繼續？');
+  if(!confirm(summary.join('\n'))){toast('已取消匯入');return;}
+
   const {error}=await db.from('floor_spaces')
     .upsert(payload,{onConflict:'market_id,floor,space_name',ignoreDuplicates:true});
   if(error){toast('匯入失敗：'+error.message,true);return;}
-  toast(`已匯入 ${payload.length} 筆`);await load();
+  toast(`已匯入 ${payload.length} 筆，略過重複 ${existed.length+fileDup.length} 筆`);await load();
+}
+
+function normSpaceName(v){return String(v==null?'':v).trim().replace(/\s+/g,' ');}
+function importKey(floor,name){return normFloor(floor)+'||'+normSpaceName(name).toLocaleLowerCase('zh-TW');}
+function importSample(list){
+  const sample=list.slice(0,8).map(x=>`第 ${x.line} 列：${x.floor} / ${x.name}`).join('\n');
+  return sample+(list.length>8?`\n…等 ${list.length} 筆`:'');
 }
 
 // close modal on backdrop
