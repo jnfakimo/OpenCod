@@ -153,13 +153,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
     <button class="btn btn-place" id="btnPlace" onclick="togglePlace()">＋ 放置標記模式</button>
     <div class="pn-filter">
       <select id="fltKind" onchange="renderList()">
-        <option value="">全部類型</option>
-        <option value="equipment">設備</option>
-        <option value="space">空間</option>
-        <option value="repair">報修點</option>
-        <option value="note">一般</option>
+        <option value="markers">本層標記</option>
+        <option value="equipment">設備清單</option>
+        <option value="space">空間清單（區域位置表）</option>
+        <option value="repair">報修案件</option>
       </select>
-      <input id="fltSearch" placeholder="搜尋…" oninput="renderList()">
+      <input id="fltSearch" placeholder="搜尋清單…" oninput="renderList()">
     </div>
   </div>
   <div class="pn-list" id="mkList"></div>
@@ -257,7 +256,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;',
 prog(15,'建立檢視器…');
 
 let rot=0, loaded=0, curFloor='B1', placeMode=false, showLabels=false;
-let markers=[], equip=[], spaces=[], repairs=[], editId=null, curKind='note', detailId=null;
+let markers=[], equip=[], spaces=[], repairs=[], editId=null, curKind='note', detailId=null, pendingLink=null;
 
 // 樓層正規化，讓「B1 / B1F」、「1F / 1」等視為同一層（區域位置表與平面圖命名不一致時仍能對應）
 function canonicalFloor(f){
@@ -395,27 +394,72 @@ function markLoadedSelection(){
   document.querySelectorAll('.pin').forEach(p=>p.classList.toggle('sel',p.dataset.id===detailId));
 }
 
-// ── List panel ─────────────────────────────────────────────
+// ── List panel（可切換瀏覽：本層標記 / 設備清單 / 空間清單 / 報修案件）──
+// 找出本層是否已針對某主資料放置標記
+function findMarkerByLink(kind,id){
+  return markers.find(m=>m.floor_id===curFloor && m.kind===kind &&
+    (kind==='equipment'?m.equipment_id===id : kind==='space'?m.space_id===id : m.repair_id===id));
+}
 function renderList(){
-  const k=document.getElementById('fltKind').value;
+  const src=document.getElementById('fltKind').value||'markers';
   const q=document.getElementById('fltSearch').value.trim().toLowerCase();
-  let list=markers.filter(m=>m.floor_id===curFloor);
-  const total=list.length;
-  if(k) list=list.filter(m=>m.kind===k);
-  if(q) list=list.filter(m=>(m.label||'').toLowerCase().includes(q)||(m.note||'').toLowerCase().includes(q));
   const box=document.getElementById('mkList');
-  if(!list.length){box.innerHTML='<div class="pn-empty">此樓層尚無標記。<br>按「放置標記模式」後點選平面圖新增。</div>';}
-  else{
-    box.innerHTML=list.map(m=>{
+  const cf=canonicalFloor(curFloor);
+  if(src==='markers'){
+    let list=markers.filter(m=>m.floor_id===curFloor);
+    const total=list.length;
+    if(q) list=list.filter(m=>(m.label||'').toLowerCase().includes(q)||(m.note||'').toLowerCase().includes(q));
+    box.innerHTML=list.length?list.map(m=>{
       const col=m.color||KIND[m.kind]?.c||'#ffb300';
       return `<div class="mk-item" onclick="focusMarker('${m.marker_id}')">
         <span class="cdot" style="background:${col}"></span>
         <span class="mk-name">${esc(m.label)}</span>
-        <span class="mk-kind">${KIND[m.kind]?.n||''}</span>
-      </div>`;
-    }).join('');
+        <span class="mk-kind">${KIND[m.kind]?.n||''}</span></div>`;
+    }).join(''):'<div class="pn-empty">此樓層尚無標記。<br>可從「設備清單／空間清單」點選項目放置，或按「放置標記模式」自訂新增。</div>';
+    document.getElementById('pnCount').textContent=`本層標記：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
+    return;
   }
-  document.getElementById('pnCount').textContent=`本層標記：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
+  // ── 主資料清單瀏覽 ──
+  let items=[], kind=src, placedN=0;
+  if(src==='equipment'){
+    items=equip.slice().map(x=>({id:x.equipment_id,name:x.name,sub:x.location||'',match:(x.location||'').toUpperCase().includes(curFloor.toUpperCase())}));
+  }else if(src==='space'){
+    items=spaces.filter(x=>canonicalFloor(x.floor)===cf).map(x=>({id:x.space_id,name:x.space_name,sub:x.floor,match:true}));
+  }else if(src==='repair'){
+    items=repairs.map(x=>({id:x.request_id,name:(x.req_no?x.req_no+' ':'')+(x.fault_type||'報修'),sub:(x.fault_desc||'').replace(/\n/g,' ').slice(0,20),match:true}));
+  }
+  let list=items;
+  if(q) list=list.filter(it=>(it.name||'').toLowerCase().includes(q)||(it.sub||'').toLowerCase().includes(q));
+  // 相對應樓層優先置頂
+  list.sort((a,b)=>(a.match===b.match?0:a.match?-1:1)||(a.name||'').localeCompare(b.name||'','zh-Hant'));
+  const col=KIND[kind].c;
+  box.innerHTML=list.length?list.map(it=>{
+    const mk=findMarkerByLink(kind,it.id); if(mk)placedN++;
+    return `<div class="mk-item" onclick="pickListItem('${kind}','${it.id}')">
+      <span class="cdot" style="background:${col};${mk?'':'opacity:.35'}"></span>
+      <span class="mk-name">${esc(it.name)}${it.sub?` <small style="color:var(--text2)">· ${esc(it.sub)}</small>`:''}</span>
+      <span class="mk-kind" style="${mk?'border-color:'+col+';color:'+col:''}">${mk?'已放置':'放置'}</span></div>`;
+  }).join(''):`<div class="pn-empty">${src==='space'?'本層（區域位置表）尚無空間資料。<br>可於「區域位置表」新增或匯入，或切換樓層。':'目前清單無資料或查無符合項目。'}</div>`;
+  const nm={equipment:'設備',space:'空間',repair:'報修案件'}[kind];
+  document.getElementById('pnCount').textContent=`${nm}清單：${list.length} 項（本層已放置 ${placedN}）`;
+}
+
+// 點清單項目：已放置 → 定位該標記；未放置 → 進入放置模式（自動帶入連結與名稱）
+function pickListItem(kind,id){
+  const mk=findMarkerByLink(kind,id);
+  if(mk){focusMarker(mk.marker_id);return;}
+  let label='';
+  if(kind==='equipment'){const x=equip.find(e=>e.equipment_id===id);label=x?x.name:'';}
+  else if(kind==='space'){const x=spaces.find(e=>e.space_id===id);label=x?x.space_name:'';}
+  else if(kind==='repair'){const x=repairs.find(e=>e.request_id===id);label=x?((x.req_no?x.req_no+' ':'')+(x.fault_type||'報修')):'';}
+  startPlaceLinked(kind,id,label);
+}
+function startPlaceLinked(kind,id,label){
+  pendingLink={kind,id,label};
+  if(!placeMode) togglePlace();
+  const h=document.getElementById('placehint');
+  h.textContent=`點選平面圖放置：${label}（${KIND[kind].n}）　·　再按放置鍵取消`;
+  h.classList.add('on');
 }
 
 function focusMarker(id){
@@ -430,8 +474,11 @@ function focusMarker(id){
 // ── Place mode ─────────────────────────────────────────────
 function togglePlace(){
   placeMode=!placeMode;
+  if(!placeMode) pendingLink=null;
   document.getElementById('btnPlace').classList.toggle('on',placeMode);
-  document.getElementById('placehint').classList.toggle('on',placeMode);
+  const h=document.getElementById('placehint');
+  h.classList.toggle('on',placeMode);
+  if(placeMode&&!pendingLink) h.textContent='點選平面圖任一位置放置標記　·　再按一次退出放置模式';
   document.getElementById('btnPlace').textContent=placeMode?'✓ 放置中（點圖新增 / 再按退出）':'＋ 放置標記模式';
   viewer.setMouseNavEnabled(true);
 }
@@ -441,8 +488,19 @@ viewer.addHandler('canvas-click',ev=>{
   if(!ev.quick) return;                                   // ignore drags
   if(ev.originalEvent.target.closest && ev.originalEvent.target.closest('.pin')) return;
   const vp=viewer.viewport.pointFromPixel(ev.position);
+  const link=pendingLink; pendingLink=null;
   openMkCreate(vp.x,vp.y);
+  if(link) applyPendingLink(link);
 });
+// 從清單帶入的連結套用到新增標記表單
+function applyPendingLink(link){
+  pickKind(link.kind);
+  if(link.kind==='equipment') document.getElementById('mkEqp').value=link.id||'';
+  else if(link.kind==='space') document.getElementById('mkSpace').value=link.id||'';
+  else if(link.kind==='repair') document.getElementById('mkRepair').value=link.id||'';
+  if(link.label) document.getElementById('mkLabel').value=link.label;
+  document.getElementById('placehint').textContent='點選平面圖任一位置放置標記　·　再按一次退出放置模式';
+}
 
 // ── Create / Edit modal ────────────────────────────────────
 let pendX=0, pendY=0;
