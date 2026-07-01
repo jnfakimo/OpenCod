@@ -36,6 +36,9 @@ thead th{text-align:left;color:var(--text-dim);font-weight:600;padding:8px 10px;
 tbody td{padding:9px 10px;border-bottom:1px solid rgba(12,40,64,.5)}
 tbody tr{cursor:pointer;transition:background .15s}
 tbody tr:hover{background:rgba(0,212,255,.04)}
+.th-filter{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.th-filter select{width:120px;max-width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
+.th-filter select:focus{border-color:var(--cyan)}
 .req-no{font-family:var(--font-mono);color:var(--cyan);font-size:.72rem}
 .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.66rem;font-weight:700;white-space:nowrap}
 .urg{font-size:.64rem;padding:1px 7px;border-radius:8px;font-weight:700}
@@ -125,14 +128,20 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
 
 <div class="wrap">
   <div class="toolbar">
-    <select id="fUrg" onchange="renderList()"><option value="">全部緊急度</option><option value="urgent">緊急</option><option value="high">高</option><option value="normal">一般</option><option value="low">低</option></select>
-    <input id="fQ" placeholder="搜尋 報修單號 / 設備 / 單位…" style="width:220px" oninput="renderList()">
+    <select id="fUrg" onchange="syncUrgencyFilter(this.value)"><option value="">全部緊急度</option><option value="urgent">緊急</option><option value="high">高</option><option value="normal">一般</option><option value="low">低</option></select>
+    <input id="fQ" placeholder="搜尋 報修單號 / 故障類型 / 單位…" style="width:220px" oninput="renderList()">
     <div class="tspace"></div>
     <button class="btn-add" onclick="openCreate()">＋ 新增報修</button>
   </div>
   <div class="stat-row" id="chips"></div>
   <table>
-    <thead><tr><th>報修單號</th><th>設備</th><th>單位</th><th>緊急</th><th>狀態</th><th>報修時間</th><th></th></tr></thead>
+    <thead><tr>
+      <th>報修單號</th>
+      <th><div class="th-filter"><span>故障類型</span><select id="fType" onchange="renderList()"><option value="">全部類型</option></select></div></th>
+      <th><div class="th-filter"><span>單位</span><select id="fDept" onchange="renderList()"><option value="">全部單位</option></select></div></th>
+      <th><div class="th-filter"><span>緊急</span><select id="fUrgHead" onchange="syncUrgencyFilter(this.value)"><option value="">全部</option><option value="urgent">緊急</option><option value="high">高</option><option value="normal">一般</option><option value="low">低</option></select></div></th>
+      <th><div class="th-filter"><span>狀態</span><select id="fStatus" onchange="renderList()"><option value="">全部狀態</option></select></div></th>
+      <th>報修時間</th><th></th></tr></thead>
     <tbody id="list"><tr><td colspan="7" class="empty">載入中…</td></tr></tbody>
   </table>
 </div>
@@ -339,6 +348,7 @@ async function init(){
   setOperatorDisplay();
   const addBtn=document.querySelector('.btn-add'); if(addBtn) addBtn.style.display=hasPerm('create')?'':'none';
   await Promise.all([loadCases(),loadRefs()]);
+  renderTableFilters();
   restoreWorkorderState();
   renderChips(); renderList();
 }
@@ -385,15 +395,58 @@ function renderChips(){
 function setFilter(s){filterStatus=s;renderChips();renderList();}
 
 function driver(r){const o=ordersByReq[r.request_id];return o?o.status:r.status;}
+function syncUrgencyFilter(value){
+  const top=document.getElementById('fUrg'), head=document.getElementById('fUrgHead');
+  if(top)top.value=value||'';
+  if(head)head.value=value||'';
+  renderList();
+}
+function displayReqNo(r){
+  const raw=String(r?.req_no||'').trim();
+  let m=raw.match(/^RP(\d{4})(\d{2})(\d{2})-(\d+)$/i);
+  if(m)return `${m[1]}-${m[2]}-${m[3]}-${m[4].slice(-3).padStart(3,'0')}`;
+  m=raw.match(/^(\d{4})-?(\d{2})-?(\d{2})-(\d+)$/);
+  if(m)return `${m[1]}-${m[2]}-${m[3]}-${m[4].slice(-3).padStart(3,'0')}`;
+  if(raw)return raw;
+  if(r?.created_at){
+    const d=new Date(r.created_at);
+    return `${d.getFullYear()}-${two(d.getMonth()+1)}-${two(d.getDate())}-${String(r.request_id||'000').replace(/-/g,'').slice(-3).padStart(3,'0')}`;
+  }
+  return '—';
+}
+function renderTableFilters(){
+  const keep={
+    type:document.getElementById('fType')?.value||'',
+    dept:document.getElementById('fDept')?.value||'',
+    status:document.getElementById('fStatus')?.value||''
+  };
+  const fill=(id,all,values,labels={})=>{
+    const el=document.getElementById(id); if(!el)return;
+    el.innerHTML=`<option value="">${all}</option>`+values.map(v=>`<option value="${v}">${labels[v]||v}</option>`).join('');
+  };
+  const types=[...new Set(reqs.map(r=>r.fault_type||'未填寫').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const depts=[...new Set(reqs.map(r=>r.department||'未填寫').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const statuses=[...new Set(reqs.map(r=>driver(r)).filter(Boolean))];
+  fill('fType','全部類型',types);
+  fill('fDept','全部單位',depts);
+  fill('fStatus','全部狀態',statuses,Object.fromEntries(Object.entries(ST).map(([k,v])=>[k,v[0]])));
+  if(document.getElementById('fType'))document.getElementById('fType').value=types.includes(keep.type)?keep.type:'';
+  if(document.getElementById('fDept'))document.getElementById('fDept').value=depts.includes(keep.dept)?keep.dept:'';
+  if(document.getElementById('fStatus'))document.getElementById('fStatus').value=statuses.includes(keep.status)?keep.status:'';
+}
 
 function renderList(){
   const urg=document.getElementById('fUrg').value, q=(document.getElementById('fQ').value||'').toLowerCase();
+  const type=document.getElementById('fType')?.value||'', dept=document.getElementById('fDept')?.value||'', status=document.getElementById('fStatus')?.value||'';
   saveWorkorderState();
   let rows=reqs.filter(r=>{
     const s=driver(r);
     if(filterStatus && s!==filterStatus) return false;
     if(urg && r.urgency!==urg) return false;
-    if(q){const hay=[(r.req_no||''),(r.equipment?.name||''),(r.department||'')].join(' ').toLowerCase();if(!hay.includes(q))return false;}
+    if(status && s!==status) return false;
+    if(type && (r.fault_type||'未填寫')!==type) return false;
+    if(dept && (r.department||'未填寫')!==dept) return false;
+    if(q){const hay=[displayReqNo(r),(r.req_no||''),(r.fault_type||''),(r.department||''),(r.fault_desc||'')].join(' ').toLowerCase();if(!hay.includes(q))return false;}
     return true;
   });
   const tb=document.getElementById('list');
@@ -401,8 +454,8 @@ function renderList(){
   tb.innerHTML=rows.map(r=>{
     const s=driver(r); const u=r.urgency||'normal';
     return `<tr onclick="openDetail('${r.request_id}')">
-      <td class="req-no">${r.req_no||'—'}</td>
-      <td>${r.equipment?.name||'—'}</td>
+      <td class="req-no">${displayReqNo(r)}</td>
+      <td>${r.fault_type||'—'}</td>
       <td>${r.department||'—'}</td>
       <td><span class="urg urg-${u}">${({urgent:'緊急',high:'高',normal:'一般',low:'低'})[u]||u}</span></td>
       <td>${badge(s)}</td>
@@ -415,6 +468,9 @@ function saveWorkorderState(){
   sessionStorage.setItem(WORKORDER_STATE_KEY, JSON.stringify({
     status:filterStatus,
     urgency:document.getElementById('fUrg')?.value || '',
+    type:document.getElementById('fType')?.value || '',
+    dept:document.getElementById('fDept')?.value || '',
+    tableStatus:document.getElementById('fStatus')?.value || '',
     query:document.getElementById('fQ')?.value || ''
   }));
 }
@@ -424,6 +480,10 @@ function restoreWorkorderState(){
   try{state=JSON.parse(sessionStorage.getItem(WORKORDER_STATE_KEY)||'{}');}catch(e){}
   filterStatus=state.status||'';
   const urg=document.getElementById('fUrg'); if(urg) urg.value=state.urgency||'';
+  const urgHead=document.getElementById('fUrgHead'); if(urgHead) urgHead.value=state.urgency||'';
+  const type=document.getElementById('fType'); if(type) type.value=state.type||'';
+  const dept=document.getElementById('fDept'); if(dept) dept.value=state.dept||'';
+  const tableStatus=document.getElementById('fStatus'); if(tableStatus) tableStatus.value=state.tableStatus||'';
   const q=document.getElementById('fQ'); if(q) q.value=state.query||'';
 }
 window.addEventListener('pagehide', saveWorkorderState);
@@ -533,7 +593,7 @@ function clientUuid(){
 }
 function clientReqNo(){
   const d=new Date(), y=d.getFullYear(), m=two(d.getMonth()+1), day=two(d.getDate());
-  return `RP${y}${m}${day}-${String(Date.now()).slice(-6)}`;
+  return `${y}-${m}-${day}-${String(Date.now()).slice(-3).padStart(3,'0')}`;
 }
 function fileExt(file){
   const byName=(file?.name||'').match(/\.([A-Za-z0-9]{1,8})$/)?.[0]?.toLowerCase();
@@ -612,8 +672,8 @@ async function submitCreate(){
     if(!up.error){ await db.from('repair_attachments').insert({request_id:data.request_id,kind:kindOf(f),file_path:path,file_name:f.name,uploaded_by:me_.user_id}); }
   }
   await logStatus(data.request_id,null,null,'pending','建立報修');
-  closeM('m-create'); toast('已新增報修 '+(data.req_no||''));
-  await loadCases(); renderChips(); renderList();
+  closeM('m-create'); toast('已新增報修 '+displayReqNo(data));
+  await loadCases(); renderTableFilters(); renderChips(); renderList();
 }
 function kindOf(f){const t=f.type;if(t.startsWith('image'))return'photo';if(t.startsWith('video'))return'video';if(t.includes('pdf'))return'pdf';if(t.includes('word')||/\.docx?$/i.test(f.name))return'doc';if(t.includes('sheet')||/\.xlsx?$/i.test(f.name))return'xls';return'other';}
 function displayFaultLocation(r){
@@ -635,7 +695,7 @@ let curReq=null;
 async function openDetail(id){
   curReq=reqs.find(r=>r.request_id===id); if(!curReq)return;
   const o=ordersByReq[id];
-  document.getElementById('d-title').textContent=curReq.req_no||'案件詳情';
+  document.getElementById('d-title').textContent=displayReqNo(curReq);
   document.getElementById('d-badge').outerHTML=`<span class="badge" id="d-badge">${(ST[driver(curReq)]||['',''])[0]}</span>`;
   const body=document.getElementById('d-body');
   body.innerHTML='<div class="empty">載入中…</div>'; show('m-detail');
@@ -784,7 +844,7 @@ async function reopen(r,o){if(!hasPerm('update')){toast('沒有更新權限',tru
 async function cancelCase(r){if(!hasPerm('delete')){toast('沒有刪除/取消權限',true);return;}await db.from('repair_requests').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
   await logStatus(r.request_id,null,driver(r),'cancelled','案件取消');await refreshAndReopen(r.request_id);toast('已取消');}
 
-async function refreshAndReopen(reqId){ await loadCases(); renderChips(); renderList(); openDetail(reqId); }
+async function refreshAndReopen(reqId){ await loadCases(); renderTableFilters(); renderChips(); renderList(); openDetail(reqId); }
 
 // ─── UI helpers ───
 function show(id){document.getElementById(id).classList.add('show');}
