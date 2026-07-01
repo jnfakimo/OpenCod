@@ -543,59 +543,20 @@ body{
 .scard-enter{font-family:var(--font-mono);font-size:.7rem;color:var(--scard-c,var(--cyan));opacity:.6;display:flex;align-items:center;gap:5px;transition:opacity .2s}
 .scard:hover .scard-enter{opacity:1}
 .scard-badge{position:absolute;top:10px;right:12px;font-family:var(--font-mono);font-size:.62rem;color:var(--scard-c,var(--cyan));border:1px solid var(--scard-c,var(--cyan));padding:1px 6px;border-radius:2px;opacity:.6}
-.modelhub-grid{display:grid;grid-template-columns:minmax(260px,.95fr) minmax(360px,1.55fr);gap:20px;align-items:stretch}
-.modelhub-main,.modelhub-tile{
-  position:relative;
-  background:rgba(4,17,31,.9);
-  border:1px solid var(--border);
-  border-radius:4px;
-  overflow:hidden;
-}
-.modelhub-main::before,.modelhub-tile::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:2px;
-  background:linear-gradient(90deg,var(--scard-c,var(--cyan)),transparent 82%);
-}
-.modelhub-main{padding:28px 24px;min-height:290px}
-.modelhub-kicker{font-family:var(--font-mono);font-size:.68rem;color:var(--text-dim);letter-spacing:.09em;margin-bottom:18px}
-.modelhub-icon{font-size:2.35rem;color:var(--scard-c,var(--cyan));font-family:var(--font-mono);text-shadow:0 0 16px var(--scard-c,var(--cyan));margin-bottom:16px}
-.modelhub-title{font-family:var(--font-head);font-size:1.42rem;font-weight:700;color:var(--text-hi);letter-spacing:.1em;margin-bottom:10px}
-.modelhub-desc{font-size:.86rem;color:var(--text);line-height:1.75;margin-bottom:18px}
-.modelhub-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:18px 0;padding:12px;border:1px dashed rgba(0,212,255,.26);background:rgba(0,212,255,.04);font-family:var(--font-head);font-size:.86rem;color:var(--text-hi)}
-.modelhub-flow span{color:var(--cyan);font-family:var(--font-mono)}
-.modelhub-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
+.modelhub-note{font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim);margin-bottom:14px;letter-spacing:.06em}
+.modelhub-card-grid{display:grid;grid-template-columns:repeat(2,minmax(260px,320px));gap:18px;margin-bottom:18px}
+.modelhub-bridge{max-width:658px;border:1px solid var(--border);background:rgba(4,17,31,.72);border-radius:4px;padding:16px 18px;color:var(--text-dim);font-size:.78rem;line-height:1.7;position:relative}
+.modelhub-bridge::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff5ea0,transparent 78%)}
+.modelhub-bridge-title{font-family:var(--font-head);font-size:.92rem;color:var(--text-hi);letter-spacing:.08em;margin-bottom:6px}
+.modelhub-bridge-flow{font-family:var(--font-head);color:var(--text-hi);letter-spacing:.04em}
+.modelhub-bridge-flow span{color:var(--cyan);font-family:var(--font-mono);margin:0 6px}
+.modelhub-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
 .modelhub-stat{border:1px solid rgba(26,74,112,.78);background:rgba(2,8,20,.55);padding:10px 12px;border-radius:3px}
 .modelhub-stat b{display:block;color:var(--cyan);font-family:var(--font-mono);font-size:1.15rem;margin-bottom:3px}
 .modelhub-stat small{color:var(--text-dim);font-size:.68rem}
-.modelhub-actions{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-.modelhub-tile{
-  min-height:290px;
-  padding:28px 22px 20px;
-  color:var(--text);
-  text-decoration:none;
-  transition:border .22s,background .22s,transform .22s,box-shadow .22s;
-}
-.modelhub-tile:hover{
-  border-color:var(--scard-c,var(--cyan));
-  background:rgba(0,212,255,.05);
-  transform:translateY(-3px);
-  box-shadow:0 8px 28px rgba(0,0,0,.4),0 0 0 1px var(--scard-c,var(--cyan)) inset;
-}
-.modelhub-badge{position:absolute;top:10px;right:12px;font-family:var(--font-mono);font-size:.62rem;color:var(--scard-c,var(--cyan));border:1px solid var(--scard-c,var(--cyan));padding:1px 6px;border-radius:2px;opacity:.68}
-.modelhub-tile-icon{font-size:2rem;font-family:var(--font-mono);color:var(--scard-c,var(--cyan));text-shadow:0 0 12px var(--scard-c,var(--cyan));margin-bottom:18px}
-.modelhub-tile-title{font-family:var(--font-head);font-size:1.08rem;font-weight:700;color:var(--text-hi);letter-spacing:.1em;margin-bottom:8px}
-.modelhub-tile-desc{font-size:.78rem;color:var(--text-dim);font-family:var(--font-mono);line-height:1.65;margin-bottom:18px;min-height:4.9em}
-.modelhub-enter{font-family:var(--font-mono);font-size:.72rem;color:var(--scard-c,var(--cyan));opacity:.75;display:flex;align-items:center;gap:5px}
-.modelhub-mini-links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-.modelhub-mini-links a{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid rgba(0,212,255,.28);color:var(--cyan);text-decoration:none;border-radius:3px;font-size:.74rem;font-family:var(--font-head);letter-spacing:.06em;background:rgba(0,212,255,.05)}
-.modelhub-mini-links a:hover{border-color:var(--cyan);background:rgba(0,212,255,.12)}
-@media (max-width:960px){
-  .modelhub-grid{grid-template-columns:1fr}
-  .modelhub-actions{grid-template-columns:1fr}
-}
+@media (max-width:760px){.modelhub-card-grid{grid-template-columns:1fr;max-width:320px}}
 @media (max-width:520px){
   .modelhub-stats{grid-template-columns:1fr}
-  .modelhub-main,.modelhub-tile{min-height:auto}
 }
 .settings-back-btn{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.25);border-radius:2px;color:var(--text-dim);font-family:var(--font-mono);font-size:.78rem;cursor:pointer;margin-bottom:20px;transition:all .2s}
 .settings-back-btn:hover{color:var(--cyan);border-color:var(--cyan)}
@@ -1015,52 +976,32 @@ body{
     <div class="page-section" id="page-modelhub">
       <div class="page-header"><h2>⬢ 3D模型雲台</h2><p>區域位置主檔與整合標記系統介接管理</p></div>
 
-      <div class="modelhub-grid">
-        <section class="modelhub-main" style="--scard-c:#ff5ea0">
-          <div class="modelhub-kicker">■ 3D-HUB · 空間主檔 → 標記定位</div>
-          <div class="modelhub-icon">⬢</div>
-          <div class="modelhub-title">3D模型雲台</div>
-          <div class="modelhub-desc">
-            先在「區域位置表」建立各樓層空間主檔，再到「整合標記系統」把空間放到平面圖位置。
-            兩個系統以空間代碼介接，避免名稱不同造成標記錯位。
-          </div>
-          <div class="modelhub-flow">
-            <span>01</span> 區域位置表
-            <span>→</span>
-            <span>02</span> 整合標記系統
-            <span>→</span>
-            <span>03</span> 3D/平面定位
-          </div>
-          <div class="modelhub-stats">
-            <div class="modelhub-stat"><b id="mh-space-count">—</b><small>空間主檔</small></div>
-            <div class="modelhub-stat"><b id="mh-marked-count">—</b><small>已標記空間</small></div>
-            <div class="modelhub-stat"><b id="mh-unmarked-count">—</b><small>未標記空間</small></div>
-          </div>
-          <div class="modelhub-mini-links">
-            <a href="floor3d.html">⬢ 3D立體樓層</a>
-            <a href="modeler.html">⬢ 3D模型建模</a>
-          </div>
-        </section>
+      <div class="modelhub-note">■ 3D-HUB v1.0 · 點選卡片進入子系統</div>
+      <div class="modelhub-card-grid">
+        <div class="scard" style="--scard-c:#00d4ff" onclick="location.href='arealist.html'">
+          <div class="scard-badge">HUB-01</div>
+          <div class="scard-icon">▤</div>
+          <div class="scard-title">區域位置表</div>
+          <div class="scard-desc">建立樓層與空間名稱主檔<br>空間是否使用 / 匯入匯出</div>
+          <div class="scard-enter">▶ 進入子系統</div>
+        </div>
+        <div class="scard" style="--scard-c:#00ff9d" onclick="location.href='b1_integrated_marker_system.html'">
+          <div class="scard-badge">HUB-02</div>
+          <div class="scard-icon">◈</div>
+          <div class="scard-title">整合標記系統</div>
+          <div class="scard-desc">讀取區域位置表空間主檔<br>平面圖標記與位置定位</div>
+          <div class="scard-enter">▶ 進入子系統</div>
+        </div>
+      </div>
 
-        <div class="modelhub-actions">
-          <a class="modelhub-tile" style="--scard-c:#00d4ff" href="arealist.html">
-            <div class="modelhub-badge">HUB-01</div>
-            <div class="modelhub-tile-icon">▤</div>
-            <div class="modelhub-tile-title">區域位置表</div>
-            <div class="modelhub-tile-desc">
-              建立樓層與空間名稱主檔。這裡是整合標記系統的來源清單，可管理空間是否使用與匯入匯出。
-            </div>
-            <div class="modelhub-enter">▶ 進入區域位置表</div>
-          </a>
-          <a class="modelhub-tile" style="--scard-c:#00ff9d" href="b1_integrated_marker_system.html">
-            <div class="modelhub-badge">HUB-02</div>
-            <div class="modelhub-tile-icon">◈</div>
-            <div class="modelhub-tile-title">整合標記系統</div>
-            <div class="modelhub-tile-desc">
-              讀取區域位置表的空間主檔，將空間、設備與報修點標記到平面圖，提供後續巡檢與 3D 定位使用。
-            </div>
-            <div class="modelhub-enter">▶ 進入整合標記系統</div>
-          </a>
+      <div class="modelhub-bridge">
+        <div class="modelhub-bridge-title">介接關係</div>
+        <div class="modelhub-bridge-flow">區域位置表 <span>→</span> 空間代碼 <span>→</span> 整合標記系統</div>
+        <div>區域位置表建立空間主檔，整合標記系統依同一組空間代碼對應標記位置。</div>
+        <div class="modelhub-stats">
+          <div class="modelhub-stat"><b id="mh-space-count">—</b><small>空間主檔</small></div>
+          <div class="modelhub-stat"><b id="mh-marked-count">—</b><small>已標記空間</small></div>
+          <div class="modelhub-stat"><b id="mh-unmarked-count">—</b><small>未標記空間</small></div>
         </div>
       </div>
     </div>
