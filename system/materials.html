@@ -178,6 +178,9 @@ const PER=10;              // 每 10 筆一頁
 let mats=[], cats=[], spaces=[], page=1, editId=null, qrTargetUrl='';
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// 全系統統一日期格式：西元 YYYY-MM-DD
+function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtDate(v){if(!v)return '—';const d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function toast(m,e){const t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(e?' err':'');setTimeout(()=>t.className='toast',2200);}
 function floorOrder(f){const s=String(f||'').trim().toUpperCase();const b=s.match(/^B(\d+)F?$/);if(b)return 100-+b[1];if(s==='RF')return 900;const n=s.match(/^(\d+)F?$/);if(n)return 100+ +n[1];return 500;}
 function catName(id){const c=cats.find(x=>x.category_id===id);return c?c.name:'';}
@@ -293,7 +296,9 @@ function goPage(p){const pages=Math.max(1,Math.ceil(filtered().length/PER));page
 // ── 表單建立 ──────────────────────────────────────────────
 function buildForm(m){
   const box=document.getElementById('mForm');
-  box.innerHTML=GROUPS.map((g,gi)=>{
+  const filed=editId?fmtDate(m.created_at):todayISO();   // 填表日期（統一 YYYY-MM-DD）
+  const header=`<div style="display:flex;justify-content:flex-end;gap:6px;font-size:.72rem;color:var(--text-dim);margin-bottom:8px">填表日期：<b style="color:var(--cyan);font-family:'Share Tech Mono',monospace">${filed}</b></div>`;
+  box.innerHTML=header+GROUPS.map((g,gi)=>{
     const fields=g.f.map(([k,lab,type])=>{
       const v=m[k];
       let ctrl;

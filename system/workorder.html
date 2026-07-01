@@ -159,6 +159,7 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
   <div class="modal">
     <div class="modal-h"><span class="t">＋ 新增報修</span><button class="x" onclick="closeM('m-create')">✕</button></div>
     <div class="modal-b">
+      <div style="display:flex;justify-content:flex-end;gap:6px;font-size:.72rem;color:#3a6a8a;margin-bottom:6px">填表日期：<b id="c-filed" style="color:#00d4ff;font-family:monospace"></b></div>
       <div class="row2">
         <div class="field"><label>報修人</label><select id="c-reporter"><option value="改建室 / 吳玉美">改建室 / 吳玉美</option></select></div>
         <div class="field"><label>聯絡電話</label><input id="c-phone"></div>
@@ -546,7 +547,9 @@ function restoreWorkorderState(){
 }
 window.addEventListener('pagehide', saveWorkorderState);
 function fmt(t){if(!t)return'—';const d=new Date(t);return `${(d.getMonth()+1)}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
-function fmtDate(t){if(!t)return'—';const m=String(t).match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return `${Number(m[1])}/${Number(m[2])}/${Number(m[3])}`;const d=new Date(t);return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;}
+// 全系統統一日期格式：西元 YYYY-MM-DD
+function fmtDate(t){if(!t)return'—';const m=String(t).match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;const d=new Date(t);if(isNaN(d))return String(t).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 let desiredViewDate=new Date(), desiredDraft='';
 function two(n){return String(n).padStart(2,'0');}
 function dateValue(d){return `${d.getFullYear()}-${two(d.getMonth()+1)}-${two(d.getDate())}`;}
@@ -629,6 +632,7 @@ addEventListener('scroll',placeDesiredCalendar,true);
 // ─── Create ───
 function openCreate(){if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}['c-reporter','c-phone','c-mobile','c-dept','c-desc','c-ftype','c-location-desc','c-desired','c-desired-view'].forEach(i=>document.getElementById(i).value='');
   setReporterSelect(); document.getElementById('c-phone').value=operatorPhone(); document.getElementById('c-mobile').value=''; document.getElementById('c-dept').value=operatorDepartment(); document.getElementById('c-msg').textContent='';
+  document.getElementById('c-filed').textContent=todayISO();
   const d=defaultEquipment(); if(d)document.getElementById('c-eqp').value=d.equipment_id;
   document.getElementById('c-location-photo').value=''; document.getElementById('c-files').value=''; closeDesiredCalendar(); show('m-create');}
 function onEqp(){const e=equip.find(x=>x.equipment_id===document.getElementById('c-eqp').value);
