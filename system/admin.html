@@ -544,8 +544,8 @@ body{
 .scard:hover .scard-enter{opacity:1}
 .scard-badge{position:absolute;top:10px;right:12px;font-family:var(--font-mono);font-size:.62rem;color:var(--scard-c,var(--cyan));border:1px solid var(--scard-c,var(--cyan));padding:1px 6px;border-radius:2px;opacity:.6}
 .modelhub-note{font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim);margin-bottom:14px;letter-spacing:.06em}
-.modelhub-card-grid{display:grid;grid-template-columns:repeat(2,minmax(260px,320px));gap:18px;margin-bottom:18px}
-.modelhub-bridge{max-width:658px;border:1px solid var(--border);background:rgba(4,17,31,.72);border-radius:4px;padding:16px 18px;color:var(--text-dim);font-size:.78rem;line-height:1.7;position:relative}
+.modelhub-card-grid{display:grid;grid-template-columns:repeat(3,minmax(240px,320px));gap:18px;margin-bottom:18px}
+.modelhub-bridge{max-width:996px;border:1px solid var(--border);background:rgba(4,17,31,.72);border-radius:4px;padding:16px 18px;color:var(--text-dim);font-size:.78rem;line-height:1.7;position:relative}
 .modelhub-bridge::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff5ea0,transparent 78%)}
 .modelhub-bridge-title{font-family:var(--font-head);font-size:.92rem;color:var(--text-hi);letter-spacing:.08em;margin-bottom:6px}
 .modelhub-bridge-flow{font-family:var(--font-head);color:var(--text-hi);letter-spacing:.04em}
@@ -554,6 +554,7 @@ body{
 .modelhub-stat{border:1px solid rgba(26,74,112,.78);background:rgba(2,8,20,.55);padding:10px 12px;border-radius:3px}
 .modelhub-stat b{display:block;color:var(--cyan);font-family:var(--font-mono);font-size:1.15rem;margin-bottom:3px}
 .modelhub-stat small{color:var(--text-dim);font-size:.68rem}
+@media (max-width:1180px){.modelhub-card-grid{grid-template-columns:repeat(2,minmax(240px,320px))}}
 @media (max-width:760px){.modelhub-card-grid{grid-template-columns:1fr;max-width:320px}}
 @media (max-width:520px){
   .modelhub-stats{grid-template-columns:1fr}
@@ -978,26 +979,33 @@ body{
 
       <div class="modelhub-note">■ 3D-HUB v1.0 · 點選卡片進入子系統</div>
       <div class="modelhub-card-grid">
-        <div class="scard" style="--scard-c:#00d4ff" onclick="location.href='arealist.html'">
+        <div class="scard" style="--scard-c:#ff5ea0" onclick="activateAdminPage('modelhub')">
           <div class="scard-badge">HUB-01</div>
+          <div class="scard-icon">⬢</div>
+          <div class="scard-title">3D模型雲台</div>
+          <div class="scard-desc">區域位置表 / 整合標記系統<br>空間主檔與標記定位介接</div>
+          <div class="scard-enter">▶ 第一步：主控雲台</div>
+        </div>
+        <div class="scard" style="--scard-c:#00d4ff" onclick="location.href='arealist.html'">
+          <div class="scard-badge">HUB-02</div>
           <div class="scard-icon">▤</div>
           <div class="scard-title">區域位置表</div>
           <div class="scard-desc">建立樓層與空間名稱主檔<br>空間是否使用 / 匯入匯出</div>
-          <div class="scard-enter">▶ 進入子系統</div>
+          <div class="scard-enter">▶ 第二步：建立主檔</div>
         </div>
         <div class="scard" style="--scard-c:#00ff9d" onclick="location.href='b1_integrated_marker_system.html'">
-          <div class="scard-badge">HUB-02</div>
+          <div class="scard-badge">HUB-03</div>
           <div class="scard-icon">◈</div>
           <div class="scard-title">整合標記系統</div>
           <div class="scard-desc">讀取區域位置表空間主檔<br>平面圖標記與位置定位</div>
-          <div class="scard-enter">▶ 進入子系統</div>
+          <div class="scard-enter">▶ 第三步：標記定位</div>
         </div>
       </div>
 
       <div class="modelhub-bridge">
         <div class="modelhub-bridge-title">介接關係</div>
-        <div class="modelhub-bridge-flow">區域位置表 <span>→</span> 空間代碼 <span>→</span> 整合標記系統</div>
-        <div>區域位置表建立空間主檔，整合標記系統依同一組空間代碼對應標記位置。</div>
+        <div class="modelhub-bridge-flow">3D模型雲台 <span>→</span> 區域位置表 <span>→</span> 整合標記系統</div>
+        <div>先由 3D模型雲台統一入口管理，再於區域位置表建立空間主檔，整合標記系統依同一組空間代碼對應標記位置。</div>
         <div class="modelhub-stats">
           <div class="modelhub-stat"><b id="mh-space-count">—</b><small>空間主檔</small></div>
           <div class="modelhub-stat"><b id="mh-marked-count">—</b><small>已標記空間</small></div>
