@@ -71,6 +71,12 @@ a{color:inherit;text-decoration:none}
 .space-row:hover{background:var(--surface);border-color:var(--border)}
 .space-row .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:var(--cyan-glow);flex:none}
 .space-row .sname{flex:1;font-size:.85rem;color:var(--text)}
+.space-head{display:flex;align-items:center;gap:10px;padding:6px 8px;color:var(--text-dim);font-size:.68rem;border-bottom:1px solid rgba(12,40,64,.55);margin-bottom:4px}
+.space-head .h-name{flex:1}
+.space-head .h-use,.space-row .use-col{width:116px;flex:none;text-align:center}
+.space-head .h-act{width:92px;flex:none}
+.use-pill{display:inline-flex;align-items:center;justify-content:center;min-width:58px;border:1px solid var(--border);border-radius:10px;padding:2px 8px;font-size:.66rem;color:var(--text-dim);background:rgba(58,106,138,.1)}
+.use-pill.used{border-color:rgba(0,255,157,.55);color:var(--green);background:rgba(0,255,157,.12)}
 .space-row .acts{display:flex;gap:6px;opacity:0;transition:opacity .15s}
 .space-row:hover .acts{opacity:1}
 .mini{font-size:.68rem;padding:3px 9px;border:1px solid var(--border);border-radius:2px;
@@ -142,6 +148,11 @@ a{color:inherit;text-decoration:none}
 
   <div class="toolbar">
     <select id="flt-floor" onchange="render()"><option value="">全部樓層</option></select>
+    <select id="flt-use" onchange="render()">
+      <option value="">全部使用狀態</option>
+      <option value="used">已使用</option>
+      <option value="unused">未使用</option>
+    </select>
     <input id="flt-search" placeholder="搜尋空間名稱…" oninput="render()" style="width:180px">
     <div class="t-space"></div>
     <button class="btn btn-add" onclick="openAdd()">＋ 新增空間</button>
@@ -188,8 +199,10 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 const MARKET='market1';
 
 let rows=[];                 // floor_spaces records
+let usedSpaces=new Map();    // space_id -> marked floor ids
 let editId=null;
 const collapsed=new Set();
+let collapsedReady=false;
 
 // ── 樓層排序 ───────────────────────────────────────────────
 function floorOrder(f){
@@ -207,13 +220,30 @@ function toast(m,err){const t=document.getElementById('toast');t.textContent=m;
 
 // ── Load ───────────────────────────────────────────────────
 async function load(){
-  const {data,error}=await db.from('floor_spaces').select('*').eq('market_id',MARKET)
-    .order('floor_order').order('sort_order').order('space_name');
+  const [spaceRes,markRes]=await Promise.all([
+    db.from('floor_spaces').select('*').eq('market_id',MARKET).order('floor_order').order('sort_order').order('space_name'),
+    db.from('plan_markers').select('space_id,floor_id,status').not('space_id','is',null)
+  ]);
+  const {data,error}=spaceRes;
   if(error){toast('讀取失敗：'+error.message,true);
     document.getElementById('list').innerHTML='<div class="empty">無法讀取資料。請先於 Supabase 執行 sql/floor_spaces.sql 建表。</div>';
     return;}
   rows=data||[];
+  usedSpaces=new Map();
+  if(!markRes.error){
+    (markRes.data||[]).filter(m=>!m.status||m.status==='active').forEach(m=>{
+      if(!m.space_id)return;
+      if(!usedSpaces.has(m.space_id))usedSpaces.set(m.space_id,new Set());
+      if(m.floor_id)usedSpaces.get(m.space_id).add(m.floor_id);
+    });
+  }
   buildFloorFilter();
+  const floors=floorsSorted();
+  [...collapsed].forEach(f=>{if(!floors.includes(f))collapsed.delete(f);});
+  if(!collapsedReady){
+    floors.forEach(f=>collapsed.add(f));
+    collapsedReady=true;
+  }
   render();
 }
 
@@ -231,12 +261,17 @@ function buildFloorFilter(){
 
 // ── Render ─────────────────────────────────────────────────
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function isSpaceUsed(id){return usedSpaces.has(id);}
+function spaceUseText(id){return isSpaceUsed(id)?'已使用':'未使用';}
 
 function render(){
   const fFloor=document.getElementById('flt-floor').value;
+  const fUse=document.getElementById('flt-use').value;
   const q=document.getElementById('flt-search').value.trim().toLowerCase();
   let list=rows.slice();
   if(fFloor) list=list.filter(r=>r.floor===fFloor);
+  if(fUse==='used') list=list.filter(r=>isSpaceUsed(r.space_id));
+  if(fUse==='unused') list=list.filter(r=>!isSpaceUsed(r.space_id));
   if(q)      list=list.filter(r=>(r.space_name||'').toLowerCase().includes(q));
 
   document.getElementById('s-floors').textContent=new Set(rows.map(r=>r.floor)).size;
@@ -259,9 +294,15 @@ function render(){
         <span class="fcount">${items.length} 個空間</span>
       </div>
       <div class="floor-body">
+        <div class="space-head">
+          <span class="h-name">空間名稱</span>
+          <span class="h-use">空間是否使用</span>
+          <span class="h-act"></span>
+        </div>
         ${items.map(r=>`<div class="space-row">
           <span class="dot"></span>
           <span class="sname">${esc(r.space_name)}</span>
+          <span class="use-col"><span class="use-pill ${isSpaceUsed(r.space_id)?'used':''}">${spaceUseText(r.space_id)}</span></span>
           <span class="acts">
             <button class="mini" onclick="openEdit('${r.space_id}')">編輯</button>
             <button class="mini del" onclick="delSpace('${r.space_id}')">刪除</button>
@@ -355,10 +396,10 @@ async function clearAll(){
 function exportRows(){
   return floorsSorted().flatMap(f=>rows.filter(r=>r.floor===f)
     .sort((a,b)=>(a.sort_order-b.sort_order)||a.space_name.localeCompare(b.space_name,'zh-Hant'))
-    .map(r=>[r.floor,r.space_name]));
+    .map(r=>[r.floor,r.space_name,spaceUseText(r.space_id)]));
 }
 function exportData(fmt){
-  const aoa=[['樓層','空間名稱'],...exportRows()];
+  const aoa=[['樓層','空間名稱','空間是否使用'],...exportRows()];
   const ws=XLSX.utils.aoa_to_sheet(aoa);
   const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'區域位置表');
   const stamp=new Date().toISOString().slice(0,10);
