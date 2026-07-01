@@ -82,7 +82,7 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
 .date-actions .confirm:hover{color:#001521;filter:brightness(1.06)}
 .btn-primary{padding:10px 16px;background:rgba(0,212,255,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:2px;cursor:pointer;font-size:.8rem;font-family:var(--font-head);letter-spacing:.05em;transition:all .2s}
 .btn-primary:hover{background:rgba(0,212,255,.22)}
-.msg{font-size:.72rem;text-align:center;padding:5px;min-height:1.3em}
+.msg{font-size:.72rem;text-align:center;padding:5px;min-height:1.3em;white-space:pre-wrap;line-height:1.5}
 .msg.ok{color:var(--green)}.msg.err{color:var(--red)}
 /* detail */
 .d-info{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:.76rem;margin-bottom:14px}
@@ -515,17 +515,48 @@ function openCreate(){if(!hasPerm('create')){toast('沒有新增報修權限',tr
   document.getElementById('c-location-photo').value=''; document.getElementById('c-files').value=''; closeDesiredCalendar(); show('m-create');}
 function onEqp(){const e=equip.find(x=>x.equipment_id===document.getElementById('c-eqp').value);
   if(e&&!document.getElementById('c-ftype').value){} }
+const OPTIONAL_REPAIR_COLUMNS=['fault_location','mobile','equipment_category','location_id','desired_finish','impact_level','urgency','affects_operation'];
+function isSchemaColumnError(error){
+  return error?.code==='PGRST204'||/schema cache|Could not find the .+ column/i.test(error?.message||'');
+}
+function isStatementTimeout(error){
+  return error?.code==='57014'||/statement timeout|canceling statement/i.test(error?.message||'');
+}
+function isEquipmentRequired(error){
+  return /equipment_id.*not-null|null value in column "equipment_id"/i.test(error?.message||'');
+}
 async function insertRepairRequest(rec){
   let payload={...rec};
-  for(let i=0;i<4;i++){
+  let triedWithoutEquipment=false;
+  for(let i=0;i<8;i++){
     const res=await db.from('repair_requests').insert(payload).select('request_id,req_no').single();
     if(!res.error)return res;
-    const msg=res.error.message||'';
-    const col=['fault_location','mobile'].find(c=>payload[c]!==undefined && (msg.includes(c)||/schema cache|column/i.test(msg)));
+    if(isStatementTimeout(res.error) && payload.equipment_id && !triedWithoutEquipment){
+      triedWithoutEquipment=true;
+      delete payload.equipment_id;
+      delete payload.equipment_category;
+      delete payload.location_id;
+      continue;
+    }
+    const msg=res.error.message||'', quoted=msg.match(/'([^']+)' column/)?.[1];
+    const col=OPTIONAL_REPAIR_COLUMNS.find(c=>payload[c]!==undefined && (quoted===c||msg.includes(`'${c}'`)||msg.includes(`"${c}"`)));
     if(!col)return res;
     delete payload[col];
   }
   return await db.from('repair_requests').insert(payload).select('request_id,req_no').single();
+}
+function repairRequestErrorMessage(error){
+  if(!error)return '送出失敗，請稍後再試';
+  if(isEquipmentRequired(error)){
+    return '資料庫尚未完成報修表單更新：目前報修單仍強制要求設備欄位。請先在 Supabase SQL Editor 執行 system/sql/repair_request_timeout_fix.sql，完成後再送出。';
+  }
+  if(isStatementTimeout(error)){
+    return '資料庫新增報修逾時：repair_requests 目前帶設備新增會卡住。表單資料已保留，請先執行 system/sql/repair_request_timeout_fix.sql 後再重送。';
+  }
+  if(isSchemaColumnError(error)){
+    return '資料庫欄位尚未更新：請先執行 system/sql/repair_request_timeout_fix.sql 後再重送。';
+  }
+  return '錯誤：'+(error.message||'送出失敗');
 }
 async function submitCreate(){
   if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}
@@ -542,7 +573,7 @@ async function submitCreate(){
   msg.textContent='送出中…';msg.className='msg';
   const e=equip.find(x=>x.equipment_id===eqId);
   setReporterSelect();
-  const faultDesc=[faultLocation?`故障位置：${faultLocation}`:'',`故障描述：${desc}`].filter(Boolean).join('\n');
+  const faultDesc=[faultLocation?`故障位置：${faultLocation}`:'',`聯絡手機：${mobile}`,`故障描述：${desc}`].filter(Boolean).join('\n');
   const rec={source:'direct',equipment_id:eqId,reporter:operatorLabel(),
     phone:document.getElementById('c-phone').value.trim()||null, department:document.getElementById('c-dept').value.trim()||operatorDepartment()||null,
     equipment_category:e?.category||null, location_id:null, fault_location:faultLocation||null,
@@ -552,7 +583,7 @@ async function submitCreate(){
     desired_finish:document.getElementById('c-desired').value||null, status:'pending', created_by:me_.user_id||null};
   rec.mobile=mobile;
   const {data,error}=await insertRepairRequest(rec);
-  if(error){msg.textContent='錯誤：'+error.message;msg.className='msg err';return;}
+  if(error){msg.textContent=repairRequestErrorMessage(error);msg.className='msg err';return;}
   // attachments
   const photoPath=`${data.request_id}/${Date.now()}_location_${locationPhoto.name}`;
   const photoUp=await db.storage.from('repair-files').upload(photoPath,locationPhoto,{upsert:true});
