@@ -22,12 +22,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 
 #osd{position:fixed;inset:50px 0 0 0;background:#04101f}
 
-/* Floor switch (right) */
-#floors{position:fixed;right:14px;top:62px;display:flex;flex-direction:column;gap:0;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-.fbtn{padding:9px 20px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:12px;text-align:center;transition:all .15s;white-space:nowrap}
-.fbtn:last-child{border-bottom:none}
-.fbtn:hover{background:rgba(0,212,255,.08);color:var(--cyan)}
-.fbtn.active{background:rgba(0,212,255,.18);color:var(--cyan);font-weight:700}
+/* Floor switch (right) — 樓層下拉式選單 */
+#floors{position:fixed;right:14px;top:62px;z-index:150}
+#floors select{background:rgba(4,20,40,.98);color:var(--cyan);border:1px solid var(--border);border-radius:6px;padding:10px 30px 10px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;outline:none;min-width:150px;box-shadow:0 0 18px rgba(0,212,255,.12);
+  appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--cyan) 50%),linear-gradient(135deg,var(--cyan) 50%,transparent 50%);
+  background-position:calc(100% - 16px) center,calc(100% - 11px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+#floors select:hover,#floors select:focus{border-color:var(--cyan)}
+#floors option{background:#04101f;color:var(--text)}
 
 /* Tool dock */
 #tools{position:fixed;right:14px;top:210px;display:flex;flex-direction:column;gap:6px;z-index:150}
@@ -64,7 +66,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 #mkpanel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
 #mkpanel input{accent-color:var(--cyan)}
 
-@media(max-width:600px){ .tb-title{display:none} .tbtn{width:36px;height:36px;font-size:15px} .fbtn{padding:8px 14px} #mkpanel,#mkToggle{font-size:10px} }
+@media(max-width:600px){ .tb-title{display:none} .tbtn{width:36px;height:36px;font-size:15px} #floors select{min-width:120px;font-size:12px} #mkpanel,#mkToggle{font-size:10px} }
 </style>
 </head>
 <body>
@@ -91,10 +93,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 <div id="osd"></div>
 
 <div id="floors">
-  <button class="fbtn" id="f-3F" onclick="showFloor('3F')">3F 三樓</button>
-  <button class="fbtn" id="f-2F" onclick="showFloor('2F')">2F 二樓</button>
-  <button class="fbtn" id="f-1F" onclick="showFloor('1F')">1F 一樓</button>
-  <button class="fbtn active" id="f-B1" onclick="showFloor('B1')">B1 地下一層</button>
+  <select id="floorSel" onchange="showFloor(this.value)">
+    <option value="3F">3F 三樓</option>
+    <option value="2F">2F 二樓</option>
+    <option value="1F">1F 一樓</option>
+    <option value="B1" selected>B1 地下一層</option>
+  </select>
 </div>
 
 <div id="tools">
@@ -106,10 +110,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
   <div class="tbtn" id="t-fs"   title="全螢幕">⛶</div>
 </div>
 
-<!-- 整合標記選單（左側，預設隱藏）-->
-<button id="mkToggle" onclick="toggleMkPanel(true)">◈ 整合標記</button>
+<!-- 標記顯示選單（左側，預設隱藏，與 3D 立體樓層一致）-->
+<button id="mkToggle" onclick="toggleMkPanel(true)">◈ 標記顯示</button>
 <div id="mkpanel">
-  <div class="mh"><span class="mt">◈ 整合標記</span><button class="mc" onclick="toggleMkPanel(false)">隱藏</button></div>
+  <div class="mh"><span class="mt">◈ 標記顯示</span><button class="mc" onclick="toggleMkPanel(false)">隱藏</button></div>
   <label><input type="checkbox" checked onchange="toggleMkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備</label>
   <label><input type="checkbox" checked onchange="toggleMkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間</label>
   <label><input type="checkbox" checked onchange="toggleMkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點</label>
@@ -188,7 +192,7 @@ function item(i){ return i==null?null:viewer.world.getItemAt(i); }
 function showFloor(f){
   curFloor=f;
   FLOORS.forEach(fl=>{ const it=item(fl.idx); if(it) it.setOpacity(fl.id===f?1:0); });
-  FLOORS.forEach(fl=>{ const b=document.getElementById('f-'+fl.id); if(b) b.classList.toggle('active',fl.id===f); });
+  const sel=document.getElementById('floorSel'); if(sel && sel.value!==f) sel.value=f;
   const cur=FLOORS.find(fl=>fl.id===f);
   document.getElementById('hudFloor').textContent=cur.label;
   document.getElementById('tbTitle').textContent=cur.label.replace('▣ ','')+' 平面圖';

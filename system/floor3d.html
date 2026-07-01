@@ -22,11 +22,11 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 #c3d canvas{display:block;touch-action:none}
 
 #floors{position:fixed;right:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-#mkpanel{position:fixed;left:14px;bottom:14px;z-index:151;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:10px 13px;font-size:11px;line-height:1.9;min-width:150px;box-shadow:0 0 22px rgba(0,212,255,.12);display:none}
+#mkpanel{position:fixed;left:14px;top:106px;z-index:151;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:10px 13px;font-size:11px;line-height:1.9;min-width:150px;box-shadow:0 0 22px rgba(0,212,255,.12);display:none}
 #mkpanel .p-t{color:var(--cyan);font-weight:700;font-size:12px}
 #mkpanel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
 #mkpanel input{accent-color:var(--cyan)}
-#mkToggle{position:fixed;left:14px;bottom:14px;z-index:150;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
+#mkToggle{position:fixed;left:14px;top:106px;z-index:150;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
 #mkToggle:hover{border-color:var(--cyan)}
 .fbtn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;text-align:left;transition:all .15s;white-space:nowrap}
 .fbtn:last-child{border-bottom:none}
@@ -67,8 +67,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
   body.controls-open #panelToggle{display:none}
   body.controls-open #floors{display:none}
   #floors{top:104px;right:10px}
-  #mkpanel{left:10px;bottom:10px;font-size:10px;padding:8px 10px}
-  #mkToggle{left:10px;bottom:10px}
+  #mkpanel{left:10px;top:150px;font-size:10px;padding:8px 10px}
+  #mkToggle{left:10px;top:150px}
   .fbtn{padding:9px 13px}
   #hint{left:10px;right:10px;bottom:10px;text-align:center;background:rgba(2,11,24,.72);border:1px solid rgba(10,58,90,.45);border-radius:4px;padding:5px 8px}
 }
@@ -297,6 +297,11 @@ function toggleMarkLabels(on){
   markerObjs.forEach(mk=>{ if(mk.label) mk.label.visible=on; });
 }
 function toggleMkPanel(open){
+  if(open){ // 開啟標記面板時，先收合立體控制面板，避免重疊
+    document.body.classList.add('controls-hidden');
+    document.body.classList.remove('controls-open');
+    const b=document.getElementById('panelToggle'); if(b)b.setAttribute('aria-expanded','false');
+  }
   document.getElementById('mkpanel').style.display=open?'block':'none';
   document.getElementById('mkToggle').style.display=open?'none':'inline-flex';
 }
@@ -394,6 +399,10 @@ function togglePanel(open){
   }
   const btn=document.getElementById('panelToggle');
   if(btn)btn.setAttribute('aria-expanded',String(expanded));
+  // 開啟立體控制時收合標記面板；關閉時恢復標記按鈕
+  const mkT=document.getElementById('mkToggle');
+  if(expanded){ document.getElementById('mkpanel').style.display='none'; if(mkT)mkT.style.display='none'; }
+  else if(mkT){ mkT.style.display='inline-flex'; }
 }
 function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'×'; layoutFloors(); orb.ty=viewY(); syncYPanUI(); }
 function resetView(){ yOffset=0;orb.theta=-0.6;orb.phi=1.02;orb.r=640;orb.tx=0;orb.ty=viewY();orb.tz=0;syncXPanUI();syncYPanUI(); }
