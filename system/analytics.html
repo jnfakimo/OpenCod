@@ -83,7 +83,7 @@ async function fetchSafe(q,fallbackCols){const res=await q;if(res.error)return [
 
 async function load(){
   const from=document.getElementById('from').value,to=document.getElementById('to').value,toEnd=to+'T23:59:59';
-  let reqs=await fetchSafe(db.from('repair_requests').select('request_id,department,equipment_id,urgency,status,fault_type,created_at,desired_finish,equipment(name,category)').gte('created_at',from).lte('created_at',toEnd).limit(8000));
+  let reqs=await fetchSafe(db.from('repair_requests').select('request_id,department,equipment_id,status,fault_type,created_at,desired_finish,equipment(name,category)').gte('created_at',from).lte('created_at',toEnd).limit(8000));
   if(!reqs.length){reqs=await fetchSafe(db.from('repair_requests').select('request_id,department,equipment_id,status,created_at,equipment(name)').gte('created_at',from).lte('created_at',toEnd).limit(8000));}
   let ords=await fetchSafe(db.from('maintenance_orders').select('order_id,request_id,assignee_id,status,start_time,finish_time,created_at,expected_finish,fault_cause,labor_hours,vendor,users:assignee_id(name)').limit(8000));
   let costs=await fetchSafe(db.from('cost_records').select('cost_type,amount,vendor,cost_date,equipment_id,equipment(name)').gte('cost_date',from).lte('cost_date',to).limit(8000));

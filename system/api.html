@@ -74,7 +74,7 @@ GET /rest/v1/equipment?select=equipment_id,name,category,status</pre>
 <pre>POST /rest/v1/repair_requests
 { "source":"direct", "equipment_id":"&lt;uuid&gt;", "reporter":"王小明",
   "department":"蔬菜課", "fault_type":"電氣", "fault_desc":"無法啟動",
-  "urgency":"high", "impact_level":"high", "status":"pending" }</pre>
+  "status":"pending" }</pre>
 
 <h3>派工 / 維修 Work Order</h3>
 <p><span class="tag get">GET</span><span class="tag post">POST</span><span class="tag patch">PATCH</span><code>/maintenance_orders</code></p>

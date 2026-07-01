@@ -120,13 +120,13 @@ function quick(r){
 
 async function fetchReqs(from,toEnd){
   let res=await db.from('repair_requests')
-    .select('request_id,department,equipment_id,urgency,status,fault_type,created_at,desired_finish,hidden,equipment(name,category)')
+    .select('request_id,department,equipment_id,status,fault_type,created_at,desired_finish,hidden,equipment(name,category)')
     .gte('created_at',from).lte('created_at',toEnd).limit(5000);
   if(res.error){ // P1 欄位尚未建立 → 退回基本欄位
     schemaHint();
     res=await db.from('repair_requests').select('request_id,department,equipment_id,status,created_at,equipment(name)')
       .gte('created_at',from).lte('created_at',toEnd).limit(5000);
-    return (res.data||[]).map(r=>({...r,urgency:'normal',fault_type:null,desired_finish:null,hidden:false}));
+    return (res.data||[]).map(r=>({...r,fault_type:null,desired_finish:null,hidden:false}));
   }
   return (res.data||[]).filter(r=>!r.hidden);
 }
@@ -143,7 +143,7 @@ function schemaHint(){
   if(document.getElementById('schemaHint')) return;
   const d=document.createElement('div'); d.id='schemaHint';
   d.style.cssText='background:rgba(255,179,0,.1);border:1px solid var(--amber);color:var(--amber);padding:8px 12px;border-radius:3px;font-size:.74rem;margin-bottom:12px';
-  d.innerHTML='⚠ 部分進階欄位尚未建立，目前顯示基本統計。請在 Supabase SQL Editor 執行 <b>system/sql/work_order_schema.sql</b> 以啟用完整 KPI（緊急/逾期/SLA 等）。';
+  d.innerHTML='⚠ 部分進階欄位尚未建立，目前顯示基本統計。請在 Supabase SQL Editor 執行 <b>system/sql/work_order_schema.sql</b> 以啟用完整 KPI（逾期/SLA 等）。';
   document.querySelector('.wrap').insertBefore(d,document.querySelector('.kpi-grid'));
 }
 
@@ -169,7 +169,6 @@ function render(R,O,from,to){
   const overdue=O.filter(o=>!DONE_ORD.includes(o.status)&&o.expected_finish&&new Date(o.expected_finish)<now).length
               + R.filter(r=>OPEN_REQ.includes(r.status)&&r.desired_finish&&new Date(r.desired_finish)<now).length;
   const waitDispatch=R.filter(r=>r.status==='pending').length;
-  const urgent=R.filter(r=>['high','urgent'].includes(r.urgency)&&OPEN_REQ.includes(r.status)).length;
   const monthCnt=R.filter(r=>r.created_at?.slice(0,7)===monthStart).length;
   // SLA / MTTR
   const doneO=O.filter(o=>DONE_ORD.includes(o.status)&&o.finish_time);
@@ -188,7 +187,6 @@ function render(R,O,from,to){
     {n:inProg,l:'處理中案件',c:'var(--blue)'},
     {n:overdue,l:'已逾期案件',c:'var(--red)'},
     {n:waitDispatch,l:'待派工案件',c:'var(--amber)'},
-    {n:urgent,l:'緊急案件',c:'var(--red)'},
     {n:monthCnt,l:'本月報修件數',c:'var(--purple)'},
     {n:sla==null?'—':sla+'%',l:'SLA 達成率',c:'var(--green)'},
     {n:mttr==null?'—':mttr.toFixed(1),u:'小時',l:'平均修復時間 MTTR',c:'var(--cyan)'},
