@@ -11,12 +11,12 @@
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
 
-#topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200}
+#topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200;overflow-x:auto;overflow-y:hidden}
 .tb-logo{font-size:13px;font-weight:700;color:var(--cyan);white-space:nowrap}
 .tb-sep{width:1px;height:24px;background:var(--border)}
-.tb-title{font-size:11px;color:var(--text2);white-space:nowrap}
-.tb-space{flex:1}
-.tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s}
+.tb-title{font-size:11px;color:var(--text2);white-space:nowrap;flex:0 0 auto}
+.tb-space{flex:1 0 auto}
+.tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s;white-space:nowrap;flex:0 0 auto}
 .tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
 
 #osd{position:fixed;inset:50px 0 0 0;background:#04101f}
@@ -148,10 +148,12 @@ body.panel-open #panelToggle{display:none}
   <div class="tb-sep"></div>
   <div class="tb-title">整合標記系統</div>
   <div class="tb-space"></div>
-  <a href="b1plan.html" class="tb-back">▣ 平面圖</a>
-  <a href="workorder.html" class="tb-back">◪ 報修系統</a>
-  <a href="admin.html" class="tb-back">⬡ 後台</a>
-  <a href="floor3d.html" class="tb-back" style="border-color:var(--cyan);color:var(--cyan)">⬡ 3D立體</a>
+  <a href="modeler.html" class="tb-back">3D建模系統</a>
+  <a href="b1plan.html" class="tb-back">開啟平面圖</a>
+  <a href="floor3d.html" class="tb-back">開啟3D模型</a>
+  <a href="arealist.html" class="tb-back">區域位置表</a>
+  <a href="b1_integrated_marker_system.html" class="tb-back">整合標記系統</a>
+  <a href="admin.html#modelhub" class="tb-back">後台</a>
 </div>
 
 <button id="panelToggle" onclick="togglePanel(true)">☰ 標記選單</button>

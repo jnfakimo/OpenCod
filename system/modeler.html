@@ -16,10 +16,10 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);padding:10px 16px;
-  display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
+  display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;overflow-x:auto;overflow-y:hidden}
 .nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--pink);letter-spacing:.06em;text-shadow:0 0 14px rgba(255,94,160,.5)}
-.nav-sub{font-size:.7rem;color:var(--text-dim)}.nav-space{flex:1}
-.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;transition:all .2s}
+.nav-sub{font-size:.7rem;color:var(--text-dim)}.nav-space{flex:1 0 auto}.navbar a{flex:0 0 auto}
+.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;transition:all .2s;white-space:nowrap}
 .nav-back:hover{border-color:var(--cyan);color:var(--cyan)}
 .wrap{max-width:1100px;margin:0 auto;padding:18px 16px;display:grid;grid-template-columns:320px 1fr;gap:18px}
 @media(max-width:780px){.wrap{grid-template-columns:1fr}}
@@ -61,11 +61,12 @@ select:focus,input:focus{border-color:var(--cyan)}
     <div class="nav-sub">上傳 DXF → 更新樓層平面圖 + 3D 立體模型</div>
   </div>
   <div class="nav-space"></div>
-  <a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
-  <a href="workorder.html"><button class="nav-back">⚒ 報修系統</button></a>
-  <a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
-  <a href="admin.html"><button class="nav-back">← 後台</button></a>
-  <a href="floor3d.html"><button class="nav-back">⬡ 3D立體模型</button></a>
+  <a href="modeler.html"><button class="nav-back">3D建模系統</button></a>
+  <a href="b1plan.html"><button class="nav-back">開啟平面圖</button></a>
+  <a href="floor3d.html"><button class="nav-back">開啟3D模型</button></a>
+  <a href="arealist.html"><button class="nav-back">區域位置表</button></a>
+  <a href="b1_integrated_marker_system.html"><button class="nav-back">整合標記系統</button></a>
+  <a href="admin.html#modelhub"><button class="nav-back">後台</button></a>
 </nav>
 
 <div class="wrap">
