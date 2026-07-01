@@ -78,7 +78,10 @@ body.panel-open #panelToggle{display:none}
 
 /* Marker pins on the plan */
 .pin{position:relative;cursor:pointer;transform:translate(-50%,-50%);pointer-events:auto}
-.pin .pdot{width:8px;height:8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto}
+/* 放大可點擊範圍（透明），視覺圓點仍維持小尺寸，方便點選 */
+.pin::before{content:'';position:absolute;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%);border-radius:50%}
+.pin:hover .pdot{transform:rotate(-45deg) scale(1.25)}
+.pin .pdot{width:9px;height:9px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto;transition:transform .12s}
 .pin .plab{position:absolute;left:50%;top:-3px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
 .pin:hover .plab,.pin.show-lab .plab{opacity:1}
 .pin.sel .pdot{outline:3px solid rgba(255,255,255,.5);outline-offset:2px}
