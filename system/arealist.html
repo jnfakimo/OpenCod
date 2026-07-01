@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>區域位置表 — 臺北農產巡檢系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -262,7 +265,7 @@ function buildFloorFilter(){
 // ── Render ─────────────────────────────────────────────────
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function isSpaceUsed(id){return usedSpaces.has(id);}
-function spaceUseText(id){return isSpaceUsed(id)?'已使用':'未使用';}
+function spaceUseText(id){return isSpaceUsed(id)?'使用':'未使用';}
 
 function render(){
   const fFloor=document.getElementById('flt-floor').value;
