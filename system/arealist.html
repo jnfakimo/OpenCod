@@ -76,8 +76,11 @@ a{color:inherit;text-decoration:none}
 .space-row .sname{flex:1;font-size:.85rem;color:var(--text)}
 .space-head{display:flex;align-items:center;gap:10px;padding:6px 8px;color:var(--text-dim);font-size:.68rem;border-bottom:1px solid rgba(12,40,64,.55);margin-bottom:4px}
 .space-head .h-name{flex:1}
-.space-head .h-use,.space-row .use-col{width:116px;flex:none;text-align:center}
+.space-head .h-use,.space-row .use-col{width:132px;flex:none;text-align:center}
+.space-head .h-use{display:flex;flex-direction:column;align-items:center;gap:4px}
 .space-head .h-act{width:92px;flex:none}
+.use-filter{width:126px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
+.use-filter:focus{border-color:var(--cyan)}
 .use-pill{display:inline-flex;align-items:center;justify-content:center;min-width:58px;border:1px solid var(--border);border-radius:10px;padding:2px 8px;font-size:.66rem;color:var(--text-dim);background:rgba(58,106,138,.1)}
 .use-pill.used{border-color:rgba(0,255,157,.55);color:var(--green);background:rgba(0,255,157,.12)}
 .space-row .acts{display:flex;gap:6px;opacity:0;transition:opacity .15s}
@@ -151,7 +154,7 @@ a{color:inherit;text-decoration:none}
 
   <div class="toolbar">
     <select id="flt-floor" onchange="render()"><option value="">全部樓層</option></select>
-    <select id="flt-use" onchange="render()">
+    <select id="flt-use" onchange="syncUseFilter(this.value)">
       <option value="">全部使用狀態</option>
       <option value="used">已使用</option>
       <option value="unused">未使用</option>
@@ -266,6 +269,18 @@ function buildFloorFilter(){
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function isSpaceUsed(id){return usedSpaces.has(id);}
 function spaceUseText(id){return isSpaceUsed(id)?'使用':'未使用';}
+function useFilterOptions(value){
+  return `<option value="" ${value===''?'selected':''}>全部使用狀態</option>
+    <option value="used" ${value==='used'?'selected':''}>已使用</option>
+    <option value="unused" ${value==='unused'?'selected':''}>未使用</option>`;
+}
+function syncUseFilter(value){
+  const v=value||'';
+  const top=document.getElementById('flt-use');
+  if(top)top.value=v;
+  document.querySelectorAll('.use-filter').forEach(el=>{el.value=v;});
+  render();
+}
 
 function render(){
   const fFloor=document.getElementById('flt-floor').value;
@@ -299,7 +314,7 @@ function render(){
       <div class="floor-body">
         <div class="space-head">
           <span class="h-name">空間名稱</span>
-          <span class="h-use">空間是否使用</span>
+          <span class="h-use"><span>空間是否使用</span><select class="use-filter" onchange="syncUseFilter(this.value)">${useFilterOptions(fUse)}</select></span>
           <span class="h-act"></span>
         </div>
         ${items.map(r=>`<div class="space-row">
