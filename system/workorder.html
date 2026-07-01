@@ -31,15 +31,22 @@ a{color:inherit;text-decoration:none}
 .chip:hover{border-color:var(--border-hi)}
 .chip.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.08)}
 .chip b{color:var(--text-hi);margin-left:4px}
-table{width:100%;border-collapse:collapse;font-size:.76rem}
-thead th{text-align:left;color:var(--text-dim);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);font-size:.7rem;letter-spacing:.04em}
+.table-scroll{width:100%;overflow-x:auto}
+table{width:100%;min-width:780px;border-collapse:collapse;font-size:.76rem}
+thead th{text-align:left;color:var(--text-dim);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);font-size:.7rem;letter-spacing:.04em;white-space:nowrap}
 tbody td{padding:9px 10px;border-bottom:1px solid rgba(12,40,64,.5)}
 tbody tr{cursor:pointer;transition:background .15s}
 tbody tr:hover{background:rgba(0,212,255,.04)}
 .th-filter{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .th-filter select{width:120px;max-width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
 .th-filter select:focus{border-color:var(--cyan)}
-.req-no{font-family:var(--font-mono);color:var(--cyan);font-size:.72rem}
+.req-no{font-family:var(--font-mono);color:var(--cyan);font-size:.72rem;white-space:nowrap;word-break:keep-all;min-width:118px}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:12px;flex-wrap:wrap;color:var(--text-dim);font-size:.72rem}
+.page-btn{min-width:32px;height:30px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:2px;cursor:pointer;font-family:var(--font-head);font-weight:700}
+.page-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.page-btn.on{background:rgba(0,212,255,.16);border-color:var(--cyan);color:var(--cyan)}
+.page-btn:disabled{opacity:.35;cursor:not-allowed;border-color:var(--border);color:var(--text-dim)}
+.page-info{margin-right:auto}
 .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.66rem;font-weight:700;white-space:nowrap}
 .urg{font-size:.64rem;padding:1px 7px;border-radius:8px;font-weight:700}
 .urg-urgent{background:rgba(255,59,59,.15);color:var(--red);border:1px solid rgba(255,59,59,.4)}
@@ -134,16 +141,19 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
     <button class="btn-add" onclick="openCreate()">＋ 新增報修</button>
   </div>
   <div class="stat-row" id="chips"></div>
-  <table>
-    <thead><tr>
-      <th>報修單號</th>
-      <th><div class="th-filter"><span>故障類型</span><select id="fType" onchange="renderList()"><option value="">全部類型</option></select></div></th>
-      <th><div class="th-filter"><span>單位</span><select id="fDept" onchange="renderList()"><option value="">全部單位</option></select></div></th>
-      <th><div class="th-filter"><span>緊急</span><select id="fUrgHead" onchange="syncUrgencyFilter(this.value)"><option value="">全部</option><option value="urgent">緊急</option><option value="high">高</option><option value="normal">一般</option><option value="low">低</option></select></div></th>
-      <th><div class="th-filter"><span>狀態</span><select id="fStatus" onchange="renderList()"><option value="">全部狀態</option></select></div></th>
-      <th>報修時間</th><th></th></tr></thead>
-    <tbody id="list"><tr><td colspan="7" class="empty">載入中…</td></tr></tbody>
-  </table>
+  <div class="table-scroll">
+    <table>
+      <thead><tr>
+        <th>報修單號</th>
+        <th><div class="th-filter"><span>故障類型</span><select id="fType" onchange="renderList()"><option value="">全部類型</option></select></div></th>
+        <th><div class="th-filter"><span>單位</span><select id="fDept" onchange="renderList()"><option value="">全部單位</option></select></div></th>
+        <th><div class="th-filter"><span>緊急</span><select id="fUrgHead" onchange="syncUrgencyFilter(this.value)"><option value="">全部</option><option value="urgent">緊急</option><option value="high">高</option><option value="normal">一般</option><option value="low">低</option></select></div></th>
+        <th><div class="th-filter"><span>狀態</span><select id="fStatus" onchange="renderList()"><option value="">全部狀態</option></select></div></th>
+        <th>報修時間</th><th></th></tr></thead>
+      <tbody id="list"><tr><td colspan="7" class="empty">載入中…</td></tr></tbody>
+    </table>
+  </div>
+  <div class="pager" id="pager"></div>
 </div>
 
 <!-- 新增報修 -->
@@ -326,7 +336,8 @@ function setReporterSelect(){
 }
 
 let me_=readLoginCache();
-let reqs=[],ordersByReq={},equip=[],locs=[],techs=[],filterStatus='';
+const PAGE_SIZE=10;
+let reqs=[],ordersByReq={},equip=[],locs=[],techs=[],filterStatus='',currentPage=1,lastFilterKey='',reqNoDisplayMap={};
 
 async function init(){
   try{const {data:{session}}=await db.auth.getSession();
@@ -376,6 +387,7 @@ async function loadCases(){
   const {data:r}=await db.from('repair_requests')
     .select('*,equipment(name,category,qr_code)').eq('hidden',false).order('created_at',{ascending:false}).limit(500);
   reqs=r||[];
+  buildReqNoMap();
   const ids=reqs.map(x=>x.request_id);
   ordersByReq={};
   if(ids.length){
@@ -401,7 +413,37 @@ function syncUrgencyFilter(value){
   if(head)head.value=value||'';
   renderList();
 }
+function reqDateKey(r){
+  const raw=String(r?.req_no||'').trim();
+  let m=raw.match(/^RP(\d{4})(\d{2})(\d{2})-/i);
+  if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+  m=raw.match(/^(\d{4})-?(\d{2})-?(\d{2})-/);
+  if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+  const d=r?.created_at?new Date(r.created_at):new Date();
+  if(!Number.isNaN(d.getTime()))return `${d.getFullYear()}-${two(d.getMonth()+1)}-${two(d.getDate())}`;
+  return dateValue(new Date());
+}
+function reqSortTime(r){
+  const t=new Date(r?.created_at||0).getTime();
+  return Number.isFinite(t)?t:0;
+}
+function buildReqNoMap(){
+  const groups={};
+  reqs.forEach(r=>{
+    const k=reqDateKey(r);
+    if(!groups[k])groups[k]=[];
+    groups[k].push(r);
+  });
+  reqNoDisplayMap={};
+  Object.entries(groups).forEach(([date,items])=>{
+    items.sort((a,b)=>reqSortTime(a)-reqSortTime(b)||String(a.request_id||'').localeCompare(String(b.request_id||'')));
+    items.forEach((r,i)=>{
+      if(r.request_id)reqNoDisplayMap[r.request_id]=`${date}-${String(i+1).padStart(3,'0')}`;
+    });
+  });
+}
 function displayReqNo(r){
+  if(r?.request_id && reqNoDisplayMap[r.request_id])return reqNoDisplayMap[r.request_id];
   const raw=String(r?.req_no||'').trim();
   let m=raw.match(/^RP(\d{4})(\d{2})(\d{2})-(\d+)$/i);
   if(m)return `${m[1]}-${m[2]}-${m[3]}-${m[4].slice(-3).padStart(3,'0')}`;
@@ -435,9 +477,35 @@ function renderTableFilters(){
   if(document.getElementById('fStatus'))document.getElementById('fStatus').value=statuses.includes(keep.status)?keep.status:'';
 }
 
+function workorderFilterKey(){
+  const urg=document.getElementById('fUrg').value, q=(document.getElementById('fQ').value||'').toLowerCase();
+  const type=document.getElementById('fType')?.value||'', dept=document.getElementById('fDept')?.value||'', status=document.getElementById('fStatus')?.value||'';
+  return JSON.stringify({status:filterStatus,urg,type,dept,tableStatus:status,q});
+}
+function renderPager(total,totalPages){
+  const pager=document.getElementById('pager');
+  if(!pager)return;
+  if(!total){pager.innerHTML='';return;}
+  const pages=[];
+  for(let i=1;i<=totalPages;i++){
+    if(totalPages<=7 || i===1 || i===totalPages || Math.abs(i-currentPage)<=1)pages.push(i);
+    else if(pages[pages.length-1]!=='…')pages.push('…');
+  }
+  pager.innerHTML=`<span class="page-info">每頁 10 筆，第 ${currentPage} / ${totalPages} 頁，共 ${total} 筆</span>
+    <button class="page-btn" onclick="gotoPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>‹</button>
+    ${pages.map(p=>p==='…'?'<span>…</span>':`<button class="page-btn ${p===currentPage?'on':''}" onclick="gotoPage(${p})">${p}</button>`).join('')}
+    <button class="page-btn" onclick="gotoPage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}>›</button>`;
+}
+function gotoPage(page){
+  currentPage=Math.max(1,Number(page)||1);
+  renderList();
+}
 function renderList(){
   const urg=document.getElementById('fUrg').value, q=(document.getElementById('fQ').value||'').toLowerCase();
   const type=document.getElementById('fType')?.value||'', dept=document.getElementById('fDept')?.value||'', status=document.getElementById('fStatus')?.value||'';
+  const key=workorderFilterKey();
+  if(lastFilterKey && key!==lastFilterKey)currentPage=1;
+  lastFilterKey=key;
   saveWorkorderState();
   let rows=reqs.filter(r=>{
     const s=driver(r);
@@ -450,8 +518,12 @@ function renderList(){
     return true;
   });
   const tb=document.getElementById('list');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="7" class="empty">無符合案件</td></tr>';return;}
-  tb.innerHTML=rows.map(r=>{
+  if(!rows.length){tb.innerHTML='<tr><td colspan="7" class="empty">無符合案件</td></tr>';renderPager(0,1);return;}
+  const totalPages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
+  if(currentPage>totalPages)currentPage=totalPages;
+  if(currentPage<1)currentPage=1;
+  const pageRows=rows.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
+  tb.innerHTML=pageRows.map(r=>{
     const s=driver(r); const u=r.urgency||'normal';
     return `<tr onclick="openDetail('${r.request_id}')">
       <td class="req-no">${displayReqNo(r)}</td>
@@ -462,6 +534,7 @@ function renderList(){
       <td style="color:var(--text-dim);font-size:.72rem">${fmt(r.created_at)}</td>
       <td style="color:var(--cyan)">檢視 ›</td></tr>`;
   }).join('');
+  renderPager(rows.length,totalPages);
 }
 
 function saveWorkorderState(){
@@ -471,7 +544,8 @@ function saveWorkorderState(){
     type:document.getElementById('fType')?.value || '',
     dept:document.getElementById('fDept')?.value || '',
     tableStatus:document.getElementById('fStatus')?.value || '',
-    query:document.getElementById('fQ')?.value || ''
+    query:document.getElementById('fQ')?.value || '',
+    page:currentPage
   }));
 }
 
@@ -485,6 +559,8 @@ function restoreWorkorderState(){
   const dept=document.getElementById('fDept'); if(dept) dept.value=state.dept||'';
   const tableStatus=document.getElementById('fStatus'); if(tableStatus) tableStatus.value=state.tableStatus||'';
   const q=document.getElementById('fQ'); if(q) q.value=state.query||'';
+  currentPage=Math.max(1,Number(state.page)||1);
+  lastFilterKey=workorderFilterKey();
 }
 window.addEventListener('pagehide', saveWorkorderState);
 function fmt(t){if(!t)return'—';const d=new Date(t);return `${(d.getMonth()+1)}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
@@ -592,8 +668,9 @@ function clientUuid(){
   });
 }
 function clientReqNo(){
-  const d=new Date(), y=d.getFullYear(), m=two(d.getMonth()+1), day=two(d.getDate());
-  return `${y}-${m}-${day}-${String(Date.now()).slice(-3).padStart(3,'0')}`;
+  const today=dateValue(new Date());
+  const next=reqs.filter(r=>reqDateKey(r)===today).length+1;
+  return `${today}-${String(next).padStart(3,'0')}`;
 }
 function fileExt(file){
   const byName=(file?.name||'').match(/\.([A-Za-z0-9]{1,8})$/)?.[0]?.toLowerCase();
@@ -603,6 +680,35 @@ function fileExt(file){
 }
 function storagePath(requestId,file,prefix){
   return `${requestId}/${Date.now()}_${prefix}_${clientUuid().slice(0,8)}${fileExt(file)}`;
+}
+function storageObjectPath(path){
+  return path.split('/').map(encodeURIComponent).join('/');
+}
+function uploadErrorMessage(error){
+  const msg=error?.message||String(error||'');
+  if(/Load failed|Failed to fetch|NetworkError/i.test(msg))return '手機瀏覽器暫時無法連線到檔案上傳服務，請確認網路後再重送。';
+  return msg||'上傳失敗';
+}
+async function uploadRepairFile(path,file){
+  const contentType=file?.type||'application/octet-stream';
+  const first=await db.storage.from('repair-files').upload(path,file,{upsert:true,contentType});
+  if(!first.error)return first;
+  if(!/Load failed|Failed to fetch|NetworkError/i.test(first.error.message||''))return first;
+  try{
+    let token=SUPA_KEY;
+    try{const {data:{session}}=await db.auth.getSession(); if(session?.access_token)token=session.access_token;}catch(e){}
+    const res=await fetch(`${SUPA_URL}/storage/v1/object/repair-files/${storageObjectPath(path)}`,{
+      method:'POST',
+      headers:{apikey:SUPA_KEY,Authorization:`Bearer ${token}`,'Content-Type':contentType,'x-upsert':'true'},
+      body:file
+    });
+    if(res.ok)return {data:{path},error:null};
+    let text='';
+    try{text=await res.text();}catch(e){}
+    return {data:null,error:{message:text||`HTTP ${res.status}`}};
+  }catch(e){
+    return {data:null,error:{message:e?.message||first.error.message||'Load failed'}};
+  }
 }
 async function insertRepairRequest(rec){
   let payload={...rec};
@@ -662,13 +768,13 @@ async function submitCreate(){
   if(error){msg.textContent=repairRequestErrorMessage(error);msg.className='msg err';return;}
   // attachments
   const photoPath=storagePath(data.request_id,locationPhoto,'location');
-  const photoUp=await db.storage.from('repair-files').upload(photoPath,locationPhoto,{upsert:true});
-  if(photoUp.error){msg.textContent='案件已建立，但故障位置照片上傳失敗：'+photoUp.error.message;msg.className='msg err';return;}
+  const photoUp=await uploadRepairFile(photoPath,locationPhoto);
+  if(photoUp.error){msg.textContent='案件已建立，但故障位置照片上傳失敗：'+uploadErrorMessage(photoUp.error);msg.className='msg err';return;}
   await db.from('repair_attachments').insert({request_id:data.request_id,kind:'location_photo',file_path:photoPath,file_name:locationPhoto.name,uploaded_by:me_.user_id});
   const files=document.getElementById('c-files').files;
   for(const f of files){
     const path=storagePath(data.request_id,f,kindOf(f));
-    const up=await db.storage.from('repair-files').upload(path,f,{upsert:true});
+    const up=await uploadRepairFile(path,f);
     if(!up.error){ await db.from('repair_attachments').insert({request_id:data.request_id,kind:kindOf(f),file_path:path,file_name:f.name,uploaded_by:me_.user_id}); }
   }
   await logStatus(data.request_id,null,null,'pending','建立報修');
