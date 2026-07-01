@@ -91,6 +91,14 @@ a{color:inherit;text-decoration:none}
   cursor:pointer;background:none;color:var(--text-dim);transition:all .2s}
 .mini:hover{border-color:var(--cyan);color:var(--cyan)}
 .mini.del:hover{border-color:var(--red);color:var(--red)}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  padding:10px 8px 4px;border-top:1px solid rgba(12,40,64,.55);
+  color:var(--text-dim);font-size:.7rem}
+.pager .page-info{margin-right:auto}
+.page-btn{font-size:.68rem;padding:4px 10px;border:1px solid var(--border);border-radius:2px;
+  cursor:pointer;background:var(--surface);color:var(--text);transition:all .2s}
+.page-btn:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan)}
+.page-btn:disabled{opacity:.35;cursor:not-allowed}
 
 .empty{text-align:center;padding:60px 20px;color:var(--text-dim);font-size:.85rem}
 
@@ -128,7 +136,10 @@ a{color:inherit;text-decoration:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.err{border-color:var(--red)}
 
-@media(max-width:640px){.content{padding:12px}.toolbar{gap:6px}}
+@media(max-width:640px){.content{padding:12px}.toolbar{gap:6px}
+  .pager{justify-content:flex-start;flex-wrap:wrap}
+  .pager .page-info{width:100%;margin-right:0}
+}
 </style>
 </head>
 <body>
@@ -159,7 +170,7 @@ a{color:inherit;text-decoration:none}
   </div>
 
   <div class="toolbar">
-    <select id="flt-floor" onchange="render()"><option value="">全部樓層</option></select>
+    <select id="flt-floor" onchange="resetPaging();render()"><option value="">全部樓層</option></select>
     <select id="flt-use" onchange="syncUseFilter(this.value)">
       <option value="">全部使用狀態</option>
       <option value="used">已使用</option>
@@ -215,6 +226,8 @@ let usedSpaces=new Map();    // space_id -> marked floor ids
 let editId=null;
 const collapsed=new Set();
 let collapsedReady=false;
+const PAGE_SIZE=10;
+const floorPages=new Map();
 
 // ── 樓層排序 ───────────────────────────────────────────────
 function floorOrder(f){
@@ -280,11 +293,13 @@ function useFilterOptions(value){
     <option value="used" ${value==='used'?'selected':''}>已使用</option>
     <option value="unused" ${value==='unused'?'selected':''}>未使用</option>`;
 }
+function resetPaging(){floorPages.clear();}
 function syncUseFilter(value){
   const v=value||'';
   const top=document.getElementById('flt-use');
   if(top)top.value=v;
   document.querySelectorAll('.use-filter').forEach(el=>{el.value=v;});
+  resetPaging();
   render();
 }
 function syncNameFilter(value){
@@ -293,10 +308,16 @@ function syncNameFilter(value){
   const top=document.getElementById('flt-search');
   if(top)top.value=v;
   document.querySelectorAll('.name-filter').forEach(el=>{el.value=v;});
+  resetPaging();
   render();
   if(fromHeader&&top){
     setTimeout(()=>{top.focus();top.setSelectionRange(v.length,v.length);},0);
   }
+}
+
+function setFloorPage(f,page){
+  floorPages.set(String(f),Math.max(1,Number(page)||1));
+  render();
 }
 
 function render(){
@@ -322,6 +343,13 @@ function render(){
 
   box.innerHTML=floors.map(f=>{
     const items=byFloor[f].sort((a,b)=>(a.sort_order-b.sort_order)||a.space_name.localeCompare(b.space_name,'zh-Hant'));
+    const totalPages=Math.max(1,Math.ceil(items.length/PAGE_SIZE));
+    const page=Math.min(Math.max(Number(floorPages.get(String(f)))||1,1),totalPages);
+    floorPages.set(String(f),page);
+    const start=(page-1)*PAGE_SIZE;
+    const pageItems=items.slice(start,start+PAGE_SIZE);
+    const from=items.length?start+1:0;
+    const to=Math.min(start+PAGE_SIZE,items.length);
     const isC=!filterActive&&collapsed.has(f);
     return `<div class="floor-block">
       <div class="floor-head${isC?' collapsed':''}" onclick="toggleFloor('${esc(f)}')">
@@ -335,7 +363,7 @@ function render(){
           <span class="h-use"><span>空間是否使用</span><select class="use-filter" onchange="syncUseFilter(this.value)">${useFilterOptions(fUse)}</select></span>
           <span class="h-act"></span>
         </div>
-        ${items.map(r=>`<div class="space-row">
+        ${pageItems.map(r=>`<div class="space-row">
           <span class="dot"></span>
           <span class="sname">${esc(r.space_name)}</span>
           <span class="use-col"><span class="use-pill ${isSpaceUsed(r.space_id)?'used':''}">${spaceUseText(r.space_id)}</span></span>
@@ -344,6 +372,11 @@ function render(){
             <button class="mini del" onclick="delSpace('${r.space_id}')">刪除</button>
           </span>
         </div>`).join('')}
+        <div class="pager">
+          <span class="page-info">每頁 10 筆，目前 ${from}-${to} 筆，共 ${items.length} 筆，第 ${page}/${totalPages} 頁</span>
+          <button class="page-btn" onclick="setFloorPage('${esc(f)}',${page-1})" ${page<=1?'disabled':''}>上一頁</button>
+          <button class="page-btn" onclick="setFloorPage('${esc(f)}',${page+1})" ${page>=totalPages?'disabled':''}>下一頁</button>
+        </div>
       </div>
     </div>`;
   }).join('');
