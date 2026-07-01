@@ -31,6 +31,7 @@ alter table users add column if not exists hidden    boolean default false;
 -- ── 3. 擴充 報修單（§三）────────────────────────────────────
 alter table repair_requests add column if not exists req_no            text;
 alter table repair_requests add column if not exists mobile            text;
+alter table repair_requests add column if not exists fault_location    text;
 alter table repair_requests add column if not exists equipment_category text;
 alter table repair_requests add column if not exists location_id       uuid references locations(location_id);
 alter table repair_requests add column if not exists fault_type        text;
@@ -41,6 +42,7 @@ alter table repair_requests add column if not exists desired_finish    timestamp
 alter table repair_requests add column if not exists assignee_id       uuid references users(user_id);
 alter table repair_requests add column if not exists hidden            boolean default false;
 alter table repair_requests add column if not exists updated_at        timestamptz default now();
+alter table repair_requests alter column equipment_id drop not null;
 
 -- 放寬 報修單 狀態（涵蓋舊值 + 完整流程 §八）
 alter table repair_requests drop constraint if exists repair_requests_status_check;

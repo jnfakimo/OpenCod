@@ -200,7 +200,7 @@ async function doLogin() {
     return;
   }
 
-  const { data: profile } = await db.from('users').select('user_id,role,rbac_role,name,phone,permissions,dept_id,department,dep').eq('auth_id', data.user.id).single();
+  const { data: profile } = await db.from('users').select('user_id,username,role,rbac_role,name,phone,permissions,dept_id,department').eq('auth_id', data.user.id).single();
   if (!profile) {
     err.textContent = '找不到使用者資料，請聯絡管理員';
     btn.disabled = false; btn.textContent = '登入';
@@ -211,9 +211,11 @@ async function doLogin() {
   sessionStorage.setItem('user_role', profile.role);
   sessionStorage.setItem('user_rbac_role', profile.rbac_role || '');
   sessionStorage.setItem('user_name', profile.name);
+  if (profile.username) sessionStorage.setItem('user_username', profile.username);
+  else sessionStorage.removeItem('user_username');
   if (profile.user_id) sessionStorage.setItem('user_id', profile.user_id);
   if (profile.dept_id) sessionStorage.setItem('user_dept_id', profile.dept_id);
-  if (profile.department || profile.dep) sessionStorage.setItem('user_department', profile.department || profile.dep);
+  if (profile.department) sessionStorage.setItem('user_department', profile.department);
   if (profile.phone) sessionStorage.setItem('user_phone', profile.phone);
   else sessionStorage.removeItem('user_phone');
   window.location.href = getLoginRoute(profile);
