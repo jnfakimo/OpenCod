@@ -30,6 +30,7 @@ alter table users add column if not exists hidden    boolean default false;
 
 -- ── 3. 擴充 報修單（§三）────────────────────────────────────
 alter table repair_requests add column if not exists req_no            text;
+alter table repair_requests add column if not exists mobile            text;
 alter table repair_requests add column if not exists equipment_category text;
 alter table repair_requests add column if not exists location_id       uuid references locations(location_id);
 alter table repair_requests add column if not exists fault_type        text;

@@ -58,6 +58,7 @@ create table if not exists repair_requests (
   equipment_id        uuid not null references equipment(equipment_id),
   reporter            text not null,
   phone               text,
+  mobile              text,
   department          text,
   fault_desc          text not null,
   status              text not null default 'pending' check (status in ('pending','transferred','closed')),
