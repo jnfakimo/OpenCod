@@ -501,7 +501,7 @@ function onImportFile(ev){
 async function importAoa(aoa){
   if(!aoa||!aoa.length){toast('檔案無資料',true);return;}
   // 判斷是否有標題列（首列含「樓層」/「空間」字樣）
-  const head=aoa[0].map(c=>String(c||'').trim());
+  const head=aoa[0].map(c=>String(c||'').trim().replace(/^\ufeff/,''));
   let floorCol=head.findIndex(h=>/樓層|floor/i.test(h));
   let nameCol =head.findIndex(h=>/空間|名稱|space|name/i.test(h));
   let start=1;
@@ -522,8 +522,7 @@ async function importAoa(aoa){
   if(!parsed.length){toast('未讀取到有效資料列',true);return;}
   const {data:latest,error:latestErr}=await db.from('floor_spaces')
     .select('floor,space_name')
-    .eq('market_id',MARKET)
-    .limit(10000);
+    .eq('market_id',MARKET);
   if(latestErr){toast('匯入前檢查失敗：'+latestErr.message,true);return;}
 
   const existing=new Set((latest||[]).map(r=>importKey(r.floor,r.space_name)));
@@ -558,9 +557,15 @@ async function importAoa(aoa){
   summary.push('', `確認沒有問題後，才會匯入 ${payload.length} 筆新資料。`, '是否繼續？');
   if(!confirm(summary.join('\n'))){toast('已取消匯入');return;}
 
-  const {error}=await db.from('floor_spaces')
-    .upsert(payload,{onConflict:'market_id,floor,space_name',ignoreDuplicates:true});
-  if(error){toast('匯入失敗：'+error.message,true);return;}
+  // 批量寫入（已預先排除重複，用 insert 即可）
+  const chunkSize=50;let inserted=0;let lastErr=null;
+  for(let i=0;i<payload.length;i+=chunkSize){
+    const chunk=payload.slice(i,i+chunkSize);
+    const {error}=await db.from('floor_spaces').insert(chunk);
+    if(error){lastErr=error;break;}
+    inserted+=chunk.length;
+  }
+  if(lastErr){toast(`匯入失敗（已匯入 ${inserted} 筆後中斷）：${lastErr.message}`,true);return;}
   toast(`已匯入 ${payload.length} 筆，略過重複 ${existed.length+fileDup.length} 筆`);await load();
 }
 
