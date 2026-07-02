@@ -226,7 +226,7 @@ const ROLE_PERMISSION_PRESETS={
   reporter:{maintenance:true,repair:true,read:true,create:true},
   duty:{maintenance:true,handover:true,repair:true,read:true,create:true,dispatch:true},
   dispatcher:{maintenance:true,repair:true,read:true,create:true,update:true,dispatch:true,export:true},
-  technician:{maintenance:true,read:true,update:true},
+  technician:{maintenance:true,read:true,update:true,dispatch:true},
   unit_supervisor:{maintenance:true,handover:true,repair:true,read:true,create:true,close:true,sign:true,export:true},
   mgmt_supervisor:{maintenance:true,handover:true,read:true,close:true,sign:true,export:true},
   sysadmin:{inspector:true,maintenance:true,handover:true,repair:true,read:true,create:true,update:true,delete:true,dispatch:true,close:true,sign:true,export:true,admin:true}
@@ -392,12 +392,13 @@ async function loadCases(){
   scopeReqsForRole();
 }
 
-// 依登入帳號限縮案件範圍：一般報修人員→只看自己報修；維修技術人員→只看指派給自己；其餘角色不限縮
+// 依登入帳號限縮案件範圍：一般報修人員→只看自己報修；維修技術人員→只看指派給自己
+// （若該技術人員帳號同時具備派工權限，則視同派工人員，不限縮，需能看到待派工案件才能派工）；其餘角色不限縮
 function scopeReqsForRole(){
   const role=normalizeRoleId(me_);
   if(role==='reporter'){
     reqs=reqs.filter(r=>r.created_by && me_?.user_id && r.created_by===me_.user_id);
-  }else if(role==='technician'){
+  }else if(role==='technician' && !hasPerm('dispatch')){
     reqs=reqs.filter(r=>{const o=ordersByReq[r.request_id];return o && o.assignee_id && me_?.user_id && o.assignee_id===me_.user_id;});
   }
 }

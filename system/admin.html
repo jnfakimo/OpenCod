@@ -1409,7 +1409,7 @@ const ROLE_PERMISSION_PRESETS = {
   reporter:{ maintenance:true, repair:true, read:true, create:true },
   duty:{ maintenance:true, handover:true, repair:true, read:true, create:true, dispatch:true },
   dispatcher:{ maintenance:true, repair:true, read:true, create:true, update:true, dispatch:true, export:true },
-  technician:{ maintenance:true, read:true, update:true },
+  technician:{ maintenance:true, read:true, update:true, dispatch:true },
   unit_supervisor:{ maintenance:true, handover:true, repair:true, read:true, create:true, close:true, sign:true, export:true },
   mgmt_supervisor:{ maintenance:true, handover:true, read:true, close:true, sign:true, export:true },
   sysadmin:Object.fromEntries(PERMISSION_DEFS.map(p => [p.key, true]))
