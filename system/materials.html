@@ -126,7 +126,11 @@ tr:hover td{background:rgba(0,212,255,.04)}
     <input id="f-q" placeholder="搜尋 編號/名稱/品牌/型號…" oninput="page=1;render()" style="width:210px">
     <div class="t-space"></div>
     <button class="btn btn-add" onclick="openAdd()">＋ 新增材料</button>
-    <button class="btn btn-green" onclick="exportXLSX()">⭱ 匯出 XLSX</button>
+    <button class="btn" onclick="document.getElementById('impFile').click()">⭳ 整筆匯入</button>
+    <button class="btn btn-green" onclick="exportXLSX('xlsx')">⭱ 匯出 XLSX</button>
+    <button class="btn btn-green" onclick="exportXLSX('csv')">⭱ 匯出 CSV</button>
+    <button class="btn" onclick="downloadTemplate()">▤ 範本</button>
+    <input type="file" id="impFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="onImportFile(event)">
   </div>
 
   <div class="tbl-wrap">
@@ -376,18 +380,74 @@ function showQR(id){
 }
 function openQrTarget(){if(qrTargetUrl)window.open(qrTargetUrl,'_blank','noopener');}
 
-function exportXLSX(){
-  const cols=['floor','material_code','material_name','material_alias','category','sub_category','material_type','status',
-    'brand','manufacturer','model','specification','unit','purchase_price','currency','safety_stock','current_stock',
-    'storage_location','shelf','inspection_required','inspection_cycle','maintenance_cycle','critical_level','risk_level',
-    'cad_file_url','datasheet_url','manual_url','qr_code','remark'];
-  const head=['樓層','材料編號','名稱','別名','分類','子分類','類型','狀態','品牌','製造商','型號','規格','單位','採購單價','幣別',
-    '安全庫存','目前庫存','儲位','貨架','需巡檢','巡檢週期','保養週期','重要程度','風險等級','CAD','規格書','手冊','QR','備註'];
-  const rows=filtered().map(m=>cols.map(c=>c==='category'?catName(m.category_id):(m[c]==null?'':m[c])));
-  const ws=XLSX.utils.aoa_to_sheet([head,...rows]);const wb=XLSX.utils.book_new();
+// 匯出/匯入共用欄位（順序一致，方便匯出後修改再匯入）
+const IE_COLS=['floor','material_code','material_name','material_alias','category','sub_category','material_type','status',
+  'brand','manufacturer','model','specification','unit','purchase_price','currency','safety_stock','current_stock',
+  'storage_location','shelf','inspection_required','inspection_cycle','maintenance_cycle','critical_level','risk_level',
+  'cad_file_url','datasheet_url','manual_url','qr_code','remark'];
+const IE_HEAD=['樓層','材料編號','名稱','別名','分類','子分類','類型','狀態','品牌','製造商','型號','規格','單位','採購單價','幣別',
+  '安全庫存','目前庫存','儲位','貨架','需巡檢','巡檢週期','保養週期','重要程度','風險等級','CAD','規格書','手冊','QR','備註'];
+const NUM_FIELDS=new Set(['purchase_price','safety_stock','current_stock','maximum_stock','minimum_stock','lead_time']);
+
+function exportXLSX(fmt){
+  fmt=fmt||'xlsx';
+  const rows=filtered().map(m=>IE_COLS.map(c=>c==='category'?catName(m.category_id):(c==='inspection_required'?(m[c]?'是':'否'):(c==='status'?(m[c]==='inactive'?'停用':'啟用'):(m[c]==null?'':m[c])))));
+  const ws=XLSX.utils.aoa_to_sheet([IE_HEAD,...rows]);const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'MaterialMaster');
-  XLSX.writeFile(wb,`設備材料主檔_${new Date().toISOString().slice(0,10)}.xlsx`);
-  toast('已匯出');
+  XLSX.writeFile(wb,`設備材料主檔_${todayISO()}.${fmt}`,{bookType:fmt});
+  toast('已匯出 '+fmt.toUpperCase());
+}
+function downloadTemplate(){
+  const sample=['B1','ELE-B1-0001','範例：低壓配電盤','','電氣材料','','設備','啟用','品牌A','製造商A','型號X','規格說明','台','120000','TWD','1','2','B1配電室','A-01','是','每月','每季','高','中','','','','','範例備註'];
+  const ws=XLSX.utils.aoa_to_sheet([IE_HEAD,sample]);const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'MaterialMaster');
+  XLSX.writeFile(wb,'設備材料主檔_匯入範本.xlsx');
+}
+
+// ── 整筆匯入（XLSX / CSV）──────────────────────────────────
+function catIdByName(n){const c=cats.find(x=>x.name===String(n).trim()||x.code===String(n).trim().toUpperCase());return c?c.category_id:null;}
+function onImportFile(ev){
+  const file=ev.target.files[0];ev.target.value='';if(!file)return;
+  const r=new FileReader();
+  r.onload=async e=>{try{
+    const wb=XLSX.read(e.target.result,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    await importAoa(XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false}));
+  }catch(err){toast('匯入失敗：'+err.message,true);}};
+  r.readAsArrayBuffer(file);
+}
+async function importAoa(aoa){
+  if(!aoa||aoa.length<2){toast('檔案無資料列',true);return;}
+  const head=aoa[0].map(c=>String(c||'').trim());
+  // 標題 → 欄位索引（依中文標題對應；找不到就用欄位順序）
+  const idx={};
+  IE_HEAD.forEach((h,i)=>{const p=head.indexOf(h);idx[IE_COLS[i]]=(p>=0?p:i);});
+  const seqCounter={};                       // 產生新編號用
+  const nextCode=(cat,fl)=>{const pre=`${cat||'OTH'}-${(fl||'NA').toUpperCase().replace(/\s/g,'')}-`;
+    if(seqCounter[pre]==null){let mx=0;mats.forEach(m=>{if((m.material_code||'').startsWith(pre)){const n=parseInt(m.material_code.split('-')[2]||'0',10);if(n>mx)mx=n;}});seqCounter[pre]=mx;}
+    return pre+String(++seqCounter[pre]).padStart(4,'0');};
+  const withCode=[], noCode=[];
+  for(let i=1;i<aoa.length;i++){
+    const row=aoa[i]||[]; const g=k=>{const v=row[idx[k]];return v==null?'':String(v).trim();};
+    const name=g('material_name'); if(!name)continue;
+    const rec={material_name:name};
+    IE_COLS.forEach(c=>{if(c==='material_name'||c==='category')return;let v=g(c);if(v==='')return;
+      if(c==='status')rec[c]=(v==='停用'||v.toLowerCase()==='inactive')?'inactive':'active';
+      else if(c==='inspection_required')rec[c]=/^(是|Y|yes|true|需|1)$/i.test(v);
+      else if(NUM_FIELDS.has(c))rec[c]=Number(v);
+      else rec[c]=v;});
+    const catId=catIdByName(g('category')); if(catId)rec.category_id=catId;
+    if(!rec.status)rec.status='active';
+    if(!rec.material_code){rec.material_code=nextCode(catCode(rec.category_id),rec.floor);noCode.push(rec);}
+    else withCode.push(rec);
+  }
+  if(!withCode.length&&!noCode.length){toast('未讀取到有效資料',true);return;}
+  let ok=0,err=null;
+  if(withCode.length){const {error}=await db.from('materials').upsert(withCode,{onConflict:'material_code'});if(error)err=error;else ok+=withCode.length;}
+  if(noCode.length){const {error}=await db.from('materials').insert(noCode);if(error)err=error;else ok+=noCode.length;}
+  if(err){toast('匯入部分失敗：'+err.message,true);}
+  else toast(`已匯入 ${ok} 筆`);
+  await load();
 }
 
 function show(id){document.getElementById(id).classList.add('show');}
