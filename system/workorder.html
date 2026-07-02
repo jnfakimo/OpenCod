@@ -389,6 +389,17 @@ async function loadCases(){
     const {data:o}=await db.from('maintenance_orders').select('*,users:assignee_id(name)').in('request_id',ids).order('created_at',{ascending:false});
     (o||[]).forEach(ord=>{ if(!ordersByReq[ord.request_id]) ordersByReq[ord.request_id]=ord; }); // latest per request
   }
+  scopeReqsForRole();
+}
+
+// 依登入帳號限縮案件範圍：一般報修人員→只看自己報修；維修技術人員→只看指派給自己；其餘角色不限縮
+function scopeReqsForRole(){
+  const role=normalizeRoleId(me_);
+  if(role==='reporter'){
+    reqs=reqs.filter(r=>r.created_by && me_?.user_id && r.created_by===me_.user_id);
+  }else if(role==='technician'){
+    reqs=reqs.filter(r=>{const o=ordersByReq[r.request_id];return o && o.assignee_id && me_?.user_id && o.assignee_id===me_.user_id;});
+  }
 }
 
 function renderChips(){
