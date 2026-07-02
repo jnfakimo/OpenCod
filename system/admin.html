@@ -9,6 +9,7 @@
 <title>臺北農產運銷股份有限公司 第一果菜市場 後台管理系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -794,7 +795,7 @@ body{
       <div class="panel">
         <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center">
           <span>帳號清單</span>
-          <button class="btn btn-primary btn-sm" onclick="exportUsersCsv()">↓ 匯出 CSV</button>
+          <button class="btn btn-sm" style="border:1px solid #00ff9d;color:#00ff9d;background:none" onclick="exportUsersXlsx()">⭱ 匯出XLSX</button>
         </div>
         <!-- 頁籤列 -->
         <div style="display:flex;gap:0;margin-bottom:12px;border-bottom:1px solid var(--border)">
@@ -833,13 +834,13 @@ body{
       <!-- 批次匯入 CSV -->
       <div class="panel">
         <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center">
-          <span>批次匯入帳號（CSV）</span>
-          <button class="btn btn-sm" style="background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.2);color:var(--text-dim);font-size:.72rem" onclick="downloadImportTemplate()">↓ 下載範本</button>
+          <span>批次匯入帳號（XLSX）</span>
+          <button class="btn btn-sm" style="border:1px solid var(--border);color:var(--text-dim);font-size:.72rem;background:none" onclick="downloadImportTemplate()">▤ 範本</button>
         </div>
-        <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:12px">支援匯出格式或範本格式（姓名, 帳號, Email, 密碼, 電話, 角色）。帳號/Email已存在則自動跳過。</p>
+        <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:12px">支援匯出格式或範本格式（姓名, 帳號, Email, 密碼, 電話, 角色）；XLSX / CSV 皆可讀。帳號/Email已存在則自動跳過。</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <input type="file" id="csvImportFile" accept=".csv" style="flex:1;padding:8px;background:rgba(2,8,20,.8);border:1px solid var(--border);border-radius:2px;color:var(--text-hi);font-size:.8rem;outline:none;min-width:200px">
-          <button class="btn btn-primary btn-sm" onclick="importUsersCsv()">↑ 開始匯入</button>
+          <input type="file" id="csvImportFile" accept=".xlsx,.xls,.csv" style="flex:1;padding:8px;background:rgba(2,8,20,.8);border:1px solid var(--border);border-radius:2px;color:var(--text-hi);font-size:.8rem;outline:none;min-width:200px">
+          <button class="btn btn-sm" style="border:1px solid #1a7fff;color:#6fb4ff;background:none" onclick="importUsersXlsx()">⭳ 匯入XLSX</button>
         </div>
         <div id="csvImportLog" style="margin-top:12px;font-family:var(--font-mono);font-size:.75rem;max-height:180px;overflow-y:auto;background:rgba(2,8,20,.8);border:1px solid var(--border);border-radius:2px;padding:10px;display:none;line-height:1.7"></div>
       </div>
@@ -960,7 +961,7 @@ body{
             <option value="labor">工時費</option>
             <option value="other">其他</option>
           </select>
-          <button class="btn btn-primary btn-sm" onclick="exportCostCsv()">↓ CSV</button>
+          <button class="btn btn-sm" style="border:1px solid #00ff9d;color:#00ff9d;background:none" onclick="exportCostCsv()">⭱ 匯出XLSX</button>
         </div>
         <div style="overflow-x:auto">
           <table class="data-table">
@@ -1988,7 +1989,8 @@ function filterUsers() {
   renderUsers(paginated);
 }
 
-function exportUsersCsv() {
+// 統一標準：匯出 XLSX（綠）
+function exportUsersXlsx() {
   const headers = ['姓名','帳號','Email','密碼','電話','部門','角色','狀態', ...PERMISSION_DEFS.map(p => p.label)];
   const rows = allUsers.map(u => {
     const roleId = normalizeRoleId(u);
@@ -1998,23 +2000,20 @@ function exportUsersCsv() {
       getDeptPath(u.dept_id), ROLE_LABEL[roleId] || roleId,
       u.status === 'active' ? '啟用' : '停用',
       ...PERMISSION_DEFS.map(({ key }) => permissionEnabled(u.permissions, key, roleId) ? '是' : '否'),
-    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+    ];
   });
-  const csv = '﻿' + [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `users_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.csv`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '帳號清單');
+  XLSX.writeFile(wb, `帳號清單_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
+// 統一標準：下載匯入範本（XLSX）
 function downloadImportTemplate() {
-  const csv = '﻿姓名,帳號,Email,密碼,電話,角色\n王小明,tcfm_wang,wang@example.com,Password123,0912345678,一般報修人員\n';
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'user_import_template.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  const head = ['姓名','帳號','Email','密碼','電話','角色'];
+  const sample = ['王小明','tcfm_wang','wang@example.com','Password123','0912345678','一般報修人員'];
+  const ws = XLSX.utils.aoa_to_sheet([head, sample]);
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '帳號匯入範本');
+  XLSX.writeFile(wb, '帳號匯入範本.xlsx');
 }
 
 function parseCSVLine(line) {
@@ -2033,17 +2032,17 @@ function genTempPassword() {
   return 'Tc' + Math.random().toString(36).slice(2,8).toUpperCase() + Math.floor(10 + Math.random() * 90);
 }
 
-async function importUsersCsv() {
+async function importUsersXlsx() {
   const file = document.getElementById('csvImportFile').files[0];
-  if (!file) { showToast('請選擇 CSV 檔案', true); return; }
+  if (!file) { showToast('請選擇檔案（XLSX / CSV）', true); return; }
   const log = document.getElementById('csvImportLog');
   log.style.display = 'block'; log.innerHTML = '<div style="color:var(--cyan)">▶ 開始匯入…</div>';
-  const text = await file.text();
-  const lines = text.replace(/^﻿/, '').split('\n').map(l => l.trim()).filter(Boolean);
-  if (lines.length < 2) { log.innerHTML += '<div style="color:var(--red)">CSV 格式錯誤：需至少一筆資料列</div>'; return; }
-  const header = parseCSVLine(lines[0]);
+  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+  const aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, blankrows: false });
+  if (!aoa || aoa.length < 2) { log.innerHTML += '<div style="color:var(--red)">格式錯誤：需至少一筆資料列</div>'; return; }
+  const header = aoa[0].map(x => String(x == null ? '' : x).trim());
   const isExportFmt = header.length >= 8;
-  const dataLines = lines.slice(1);
+  const dataLines = aoa.slice(1);
   let success = 0, failed = 0, skipped = 0;
   const existingUsernames = new Set(allUsers.map(u => (u.username || '').toLowerCase()));
   const existingEmails    = new Set(allUsers.map(u => (u.email    || '').toLowerCase()));
@@ -2056,7 +2055,7 @@ async function importUsersCsv() {
     inspector:'reporter',maintenance:'technician',supervisor:'unit_supervisor',admin:'sysadmin'
   };
   for (let i = 0; i < dataLines.length; i++) {
-    const cols = parseCSVLine(dataLines[i]);
+    const cols = (dataLines[i] || []).map(x => String(x == null ? '' : x).trim());
     let name, username, email, password, phone, roleRaw;
     if (isExportFmt) {
       [name, username, email, password, phone] = cols;
@@ -2350,17 +2349,13 @@ async function loadCostByEq() {
   </div>`).join('') : '<div style="color:var(--text-dim);font-size:.85rem;font-family:var(--font-mono)">目前無費用紀錄</div>';
 }
 
-function exportCostCsv() {
+function exportCostCsv() {   // 統一標準：匯出 XLSX
   if (!_lastCosts.length) { showToast('目前無費用記錄可下載', true); return; }
-  let csv = '設備,費用類型,廠商,日期,說明,金額\n';
-  _lastCosts.forEach(c => {
-    const row = [c.equipment?.name || '', COST_TYPE_LABEL[c.cost_type] || c.cost_type, c.vendor || '', c.cost_date || '', c.note || '', c.amount];
-    csv += row.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',') + '\n';
-  });
-  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `費用報表_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.csv`; a.click();
-  URL.revokeObjectURL(a.href);
+  const head = ['設備','費用類型','廠商','日期','說明','金額'];
+  const rows = _lastCosts.map(c => [c.equipment?.name || '', COST_TYPE_LABEL[c.cost_type] || c.cost_type, c.vendor || '', c.cost_date || '', c.note || '', c.amount]);
+  const ws = XLSX.utils.aoa_to_sheet([head, ...rows]);
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '費用報表');
+  XLSX.writeFile(wb, `費用報表_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 const AUDIT_ACTION_LABEL = { insert:'新增', update:'修改', status_change:'狀態變更', delete:'刪除' };
