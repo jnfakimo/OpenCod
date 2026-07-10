@@ -16,3 +16,11 @@ Thumbs.db
 
 # temp
 *.tmp
+
+# knowledge vault (sensebar-agent-knowledge-vault-builder)
+__pycache__/
+*.vtt
+*.mp4
+*.m4a
+*.mp3
+temp_sub.*
