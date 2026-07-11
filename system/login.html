@@ -186,14 +186,14 @@ async function doLogin() {
   if (!username || !password) { err.textContent = '請填寫帳號與密碼'; return; }
   btn.disabled = true; btn.textContent = '登入中…';
 
-  const { data: profile0, error: lookupErr } = await db.from('users').select('email').eq('username', username).eq('status', 'active').single();
-  if (lookupErr || !profile0?.email) {
+  const { data: loginEmail, error: lookupErr } = await db.rpc('login_lookup_email', { p_username: username });
+  if (lookupErr || !loginEmail) {
     err.textContent = '找不到帳號，請確認帳號是否正確';
     btn.disabled = false; btn.textContent = '登入';
     return;
   }
 
-  const { data, error } = await db.auth.signInWithPassword({ email: profile0.email, password });
+  const { data, error } = await db.auth.signInWithPassword({ email: loginEmail, password });
   if (error) {
     err.textContent = '密碼錯誤';
     btn.disabled = false; btn.textContent = '登入';
