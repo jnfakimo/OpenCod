@@ -39,7 +39,7 @@ DXF→plan/3D · `handover.html` shift handover · `analytics.html` · `rbac.htm
 
 ## How to run / verify
 - **Run**: it's static. Open any `system/*.html` in a browser, or serve the repo
-  root (`python3 -m http.server`) and browse to `/system/…`. No install/build.
+  root (`python3 -m http.server`) and browse to `/system/...`. No install/build.
 - **Verify JS**: this repo has no test suite. Sanity-check a page's inline script
   with Node before committing:
   ```
@@ -61,7 +61,7 @@ RLS is currently open (`allow_all_for_now`) for development. Storage buckets:
 - **Match the surrounding style**: cyberpunk dark theme. Core vars: `--bg:#020b18`,
   `--cyan:#00d4ff`, `--green:#00ff9d`, `--amber:#ffb300`, `--red:#ff3b3b`; fonts
   Noto Sans TC + Rajdhani. UI text is Traditional Chinese.
-- **Dates**: unified format is **西元 `YYYY-MM-DD`** (datetime `YYYY-MM-DD HH:mm`);
+- **Dates**: unified format is 西元 `YYYY-MM-DD` (datetime `YYYY-MM-DD HH:mm`);
   date inputs use a calendar picker; forms show a 填表日期 (today). Use the local
   `fmtDate()`/`todayISO()` helpers.
 - **Floor naming differs between systems**: area/material data may use `B1F`,

@@ -17,6 +17,9 @@ Thumbs.db
 # temp
 *.tmp
 
+# Python .venv (ai-agent-ep03)
+.venv/
+
 # knowledge vault (sensebar-agent-knowledge-vault-builder)
 __pycache__/
 *.vtt
