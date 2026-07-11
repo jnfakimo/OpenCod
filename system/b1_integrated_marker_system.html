@@ -283,6 +283,16 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 const KIND={equipment:{c:'#00d4ff',n:'設備'},space:{c:'#00ff9d',n:'空間'},repair:{c:'#ff5470',n:'報修點'},note:{c:'#ffb300',n:'一般'}};
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 prog(15,'建立檢視器…');
 
 let rot=0, loaded=0, curFloor='B1', placeMode=false, showLabels=false;
@@ -623,14 +633,14 @@ async function saveMk(){
   let error;
   if(editId){({error}=await db.from('plan_markers').update(rec).eq('marker_id',editId));}
   else{({error}=await db.from('plan_markers').insert(rec));}
-  if(error){msg.textContent='儲存失敗：'+error.message;return;}
+  if(error){msg.textContent='儲存失敗：'+translateError(error.message);return;}
   closeMk(); await loadData();
 }
 async function deleteMk(){
   if(!editId)return;
   if(!confirm('確定刪除此標記？'))return;
   const {error}=await db.from('plan_markers').delete().eq('marker_id',editId);
-  if(error){document.getElementById('mkMsg').textContent='刪除失敗：'+error.message;return;}
+  if(error){document.getElementById('mkMsg').textContent='刪除失敗：'+translateError(error.message);return;}
   closeMk(); detailId=null; await loadData();
 }
 

@@ -71,6 +71,16 @@ const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 const PERMS=[['create','新增'],['update','修改'],['delete','刪除'],['read','查詢'],['dispatch','派工'],['close','結案'],['sign','簽核'],['export','匯出'],['admin','後台管理']];
 const LEGACY_ROLE_BY_RBAC={reporter:'inspector',duty:'maintenance',dispatcher:'maintenance',technician:'maintenance',unit_supervisor:'supervisor',mgmt_supervisor:'supervisor',sysadmin:'admin'};
 const MENU_PRESETS={
@@ -113,7 +123,7 @@ function renderMatrix(){
 async function togglePerm(role,perm,val){
   perms[role+'|'+perm]=val;
   const {error}=await db.from('role_permissions').upsert({role_id:role,perm,allowed:val},{onConflict:'role_id,perm'});
-  toast(error?('儲存失敗：'+error.message):'已更新',!!error);
+  toast(error?('儲存失敗：'+translateError(error.message)):'已更新',!!error);
 }
 async function renderUsers(){
   const {data:users}=await db.from('users').select('user_id,name,role,rbac_role,department').eq('status','active').order('name');
@@ -128,7 +138,7 @@ async function renderUsers(){
 async function setUserRole(uid,role){
   const updates = role ? { rbac_role:role, role:LEGACY_ROLE_BY_RBAC[role] || 'inspector', permissions:permissionsForRole(role) } : { rbac_role:null };
   const {error}=await db.from('users').update(updates).eq('user_id',uid);
-  toast(error?('儲存失敗：'+error.message):'已指派角色',!!error);
+  toast(error?('儲存失敗：'+translateError(error.message)):'已指派角色',!!error);
 }
 let _tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=err?'var(--red)':'var(--border-hi)';el.style.color=err?'var(--red)':'var(--text)';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2200);}
 init();

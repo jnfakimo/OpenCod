@@ -184,6 +184,20 @@ const PER=10;              // 每 10 筆一頁
 let mats=[], cats=[], spaces=[], page=1, editId=null, qrTargetUrl='';
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 // 全系統統一日期格式：西元 YYYY-MM-DD
 function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function fmtDate(v){if(!v)return '—';const d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -356,13 +370,13 @@ async function saveMaterial(){
   let error;
   if(editId){({error}=await db.from('materials').update(rec).eq('material_id',editId));}
   else{({error}=await db.from('materials').insert(rec));}
-  if(error){msg.textContent=(error.code==='23505'?'材料編號重複':'儲存失敗：'+error.message);return;}
+  if(error){msg.textContent=(error.code==='23505'?'材料編號重複':'儲存失敗：'+translateError(error.message));return;}
   closeM('m-edit');toast(editId?'已更新':'已新增');await load();
 }
 async function delMaterial(id){const m=mats.find(x=>x.material_id===id);if(!m)return;
   if(!confirm(`確定刪除「${m.material_code||''} ${m.material_name}」？`))return;
   const {error}=await db.from('materials').delete().eq('material_id',id);
-  if(error){toast('刪除失敗：'+error.message,true);return;}
+  if(error){toast('刪除失敗：'+translateError(error.message),true);return;}
   toast('已刪除');await load();
 }
 
@@ -415,7 +429,7 @@ function onImportFile(ev){
     const wb=XLSX.read(e.target.result,{type:'array'});
     const ws=wb.Sheets[wb.SheetNames[0]];
     await importAoa(XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false}));
-  }catch(err){toast('匯入失敗：'+err.message,true);}};
+  }catch(err){toast('匯入失敗：'+translateError(err.message),true);}};
   r.readAsArrayBuffer(file);
 }
 async function importAoa(aoa){
@@ -447,7 +461,7 @@ async function importAoa(aoa){
   let ok=0,err=null;
   if(withCode.length){const {error}=await db.from('materials').upsert(withCode,{onConflict:'material_code'});if(error)err=error;else ok+=withCode.length;}
   if(noCode.length){const {error}=await db.from('materials').insert(noCode);if(error)err=error;else ok+=noCode.length;}
-  if(err){toast('匯入部分失敗：'+err.message,true);}
+  if(err){toast('匯入部分失敗：'+translateError(err.message),true);}
   else toast(`已匯入 ${ok} 筆`);
   await load();
 }

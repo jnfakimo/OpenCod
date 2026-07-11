@@ -155,12 +155,43 @@ function getLoginRoute(profile) {
   return ROLE_ROUTES[profile.role] || 'workorder.html?v=reporter-20260701';
 }
 
-// ── Handle password-reset link (#type=recovery) ───────────────────────────────
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('User already registered')) return '此 Email 已被註冊';
+  if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
+  if (msg.includes('Email not confirmed')) return 'Email 尚未驗證，請檢查信箱';
+  if (msg.includes('New password should be different')) return '新密碼不能與舊密碼相同';
+  if (msg.includes('Password should be at least')) return '密碼長度不足，請輸入更長的密碼';
+  if (msg.includes('Signup requires a valid password')) return '請輸入有效密碼';
+  if (msg.includes('For security purposes') && msg.includes('second')) return '操作過於頻繁，請稍後再試';
+  if (msg.includes('Email link is invalid or has expired') || msg.includes('otp_expired')) return '連結已失效或過期，請重新申請';
+  if (msg.includes('invalid format')) return 'Email 格式不正確';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
+
+// ── Handle password-reset link (#type=recovery / #error=...) ──────────────────
 (async () => {
   const hash = window.location.hash;
   if (hash.includes('type=recovery')) {
     document.getElementById('loginCard').style.display = 'none';
     document.getElementById('resetOverlay').classList.add('show');
+    return;
+  }
+  if (hash.includes('error=')) {
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    const desc = params.get('error_description') || params.get('error_code') || params.get('error') || '';
+    document.getElementById('errMsg').textContent = translateError(desc.replace(/\+/g, ' '));
+    window.location.hash = '';
     return;
   }
 
@@ -247,7 +278,7 @@ document.getElementById('forgotSendBtn').addEventListener('click', async () => {
   const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo });
   btn.disabled = false; btn.textContent = '寄送重設連結';
   if (error) {
-    err.textContent = '寄送失敗：' + error.message;
+    err.textContent = '寄送失敗：' + translateError(error.message);
   } else {
     ok.textContent = '重設連結已寄出，請檢查您的信箱（含垃圾郵件）';
     btn.disabled = true;
@@ -268,7 +299,7 @@ document.getElementById('resetSaveBtn').addEventListener('click', async () => {
   const { error } = await db.auth.updateUser({ password: pw });
   btn.disabled = false; btn.textContent = '設定新密碼';
   if (error) {
-    err.textContent = '設定失敗：' + error.message;
+    err.textContent = '設定失敗：' + translateError(error.message);
   } else {
     ok.textContent = '密碼已更新！即將跳轉至登入頁面…';
     setTimeout(() => {

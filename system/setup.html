@@ -74,6 +74,16 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const ADMIN_AUTH_ID = 'eb771a87-aa4d-4066-b23d-9b810a5c00bd';
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 
 function setStep(n, state, detail) {
   const icon = document.getElementById('i' + n);
@@ -102,7 +112,7 @@ async function run() {
     }
     setStep(1, 'ok', '連線成功');
   } catch(e) {
-    setStep(1, 'fail', '連線失敗：' + e.message);
+    setStep(1, 'fail', '連線失敗：' + translateError(e.message));
     showResult(false, '❌ 無法連線 Supabase，請確認網路連線。');
     return;
   }
@@ -130,8 +140,8 @@ async function run() {
     status: 'active',
   });
   if (insErr) {
-    setStep(3, 'fail', '失敗：' + insErr.message);
-    showResult(false, '❌ 建立管理者失敗：' + insErr.message + '<br>請確認 schema.sql 已執行，且 RLS policy 已開啟。');
+    setStep(3, 'fail', '失敗：' + translateError(insErr.message));
+    showResult(false, '❌ 建立管理者失敗：' + translateError(insErr.message) + '<br>請確認 schema.sql 已執行，且 RLS policy 已開啟。');
     return;
   }
   setStep(3, 'ok', '管理者帳號建立成功');

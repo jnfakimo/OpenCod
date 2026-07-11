@@ -220,6 +220,21 @@ a{color:inherit;text-decoration:none}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 const MARKET='market1';
 
 let rows=[];                 // floor_spaces records
@@ -251,7 +266,7 @@ async function load(){
     db.from('plan_markers').select('space_id,floor_id,status').not('space_id','is',null)
   ]);
   const {data,error}=spaceRes;
-  if(error){toast('讀取失敗：'+error.message,true);
+  if(error){toast('讀取失敗：'+translateError(error.message),true);
     document.getElementById('list').innerHTML='<div class="empty">無法讀取資料。請先於 Supabase 執行 sql/floor_spaces.sql 建表。</div>';
     return;}
   rows=data||[];
@@ -410,7 +425,7 @@ async function saveSpace(){
   let error;
   if(editId){({error}=await db.from('floor_spaces').update(payload).eq('space_id',editId));}
   else{({error}=await db.from('floor_spaces').insert(payload));}
-  if(error){msg.textContent=(error.code==='23505'?'該樓層已有相同空間名稱':'儲存失敗：'+error.message);msg.className='msg err';return;}
+  if(error){msg.textContent=(error.code==='23505'?'該樓層已有相同空間名稱':'儲存失敗：'+translateError(error.message));msg.className='msg err';return;}
   closeModal('m-edit');toast(editId?'已更新':'已新增');await load();
 }
 
@@ -431,7 +446,7 @@ async function delSpace(id){
   }
   if(!confirm(`確定刪除「${r.floor} · ${r.space_name}」？`))return;
   const {error}=await db.from('floor_spaces').delete().eq('space_id',id);
-  if(error){toast('刪除失敗：'+error.message,true);return;}
+  if(error){toast('刪除失敗：'+translateError(error.message),true);return;}
   toast('已刪除');await load();
 }
 
@@ -457,7 +472,7 @@ async function clearAll(){
   if(!confirm(msg+'\n\n確定清除？'))return;
   if(!confirm('再次確認：此動作無法復原。確定清除？'))return;
   const {error}=await db.from('floor_spaces').delete().in('space_id',delRows.map(r=>r.space_id));
-  if(error){toast('清除失敗：'+error.message,true);return;}
+  if(error){toast('清除失敗：'+translateError(error.message),true);return;}
   toast(`已清除 ${delRows.length} 筆`+(keepRows.length?`，保留 ${keepRows.length} 筆（已被標記）`:''));
   await load();
 }
@@ -493,7 +508,7 @@ function onImportFile(ev){
       const ws=wb.Sheets[wb.SheetNames[0]];
       const aoa=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false});
       await importAoa(aoa);
-    }catch(err){toast('匯入失敗：'+err.message,true);}
+    }catch(err){toast('匯入失敗：'+translateError(err.message),true);}
   };
   reader.readAsArrayBuffer(file);
 }
@@ -523,7 +538,7 @@ async function importAoa(aoa){
   const {data:latest,error:latestErr}=await db.from('floor_spaces')
     .select('floor,space_name')
     .eq('market_id',MARKET);
-  if(latestErr){toast('匯入前檢查失敗：'+latestErr.message,true);return;}
+  if(latestErr){toast('匯入前檢查失敗：'+translateError(latestErr.message),true);return;}
 
   const existing=new Set((latest||[]).map(r=>importKey(r.floor,r.space_name)));
   const existed=[], payload=[];
@@ -565,7 +580,7 @@ async function importAoa(aoa){
     if(error){lastErr=error;break;}
     inserted+=chunk.length;
   }
-  if(lastErr){toast(`匯入失敗（已匯入 ${inserted} 筆後中斷）：${lastErr.message}`,true);return;}
+  if(lastErr){toast(`匯入失敗（已匯入 ${inserted} 筆後中斷）：${translateError(lastErr.message)}`,true);return;}
   toast(`已匯入 ${payload.length} 筆，略過重複 ${existed.length+fileDup.length} 筆`);await load();
 }
 

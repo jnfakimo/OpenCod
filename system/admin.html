@@ -2658,7 +2658,7 @@ async function testLinePush() {
     const body = await res.json().catch(() => ({}));
     if (body.ok) showToast('測試訊息已送出，請查看 LINE 群組');
     else showToast('推播失敗：' + (body.msg || '請確認 Token / Group ID 已儲存'), true);
-  } catch(e) { showToast('推播失敗：' + e.message, true); }
+  } catch(e) { showToast('推播失敗：' + translateError(e.message), true); }
 }
 
 function applySystemName() {
@@ -3099,8 +3099,11 @@ function translateError(msg) {
   if (msg.includes('User already registered')) return '此 Email 已被註冊';
   if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
   if (msg.includes('Email not confirmed')) return 'Email 尚未驗證，請檢查信箱';
-  if (msg.includes('Password should be at least')) return '密碼至少需要 6 個字元';
+  if (msg.includes('New password should be different')) return '新密碼不能與舊密碼相同';
+  if (msg.includes('Password should be at least')) return '密碼長度不足，請輸入更長的密碼';
   if (msg.includes('Signup requires a valid password')) return '請輸入有效密碼';
+  if (msg.includes('For security purposes') && msg.includes('second')) return '操作過於頻繁，請稍後再試';
+  if (msg.includes('Email link is invalid or has expired') || msg.includes('otp_expired')) return '連結已失效或過期，請重新申請';
   if (msg.includes('invalid format')) return 'Email 格式不正確';
   if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
   if (msg.includes('null value in column')) return '必填欄位不可空白';
@@ -3108,11 +3111,11 @@ function translateError(msg) {
   if (msg.includes('violates row-level security')) return '無操作權限';
   if (msg.includes('permission denied')) return '無操作權限';
   if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
-  if (msg.includes('relation does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
   if (msg.includes('value too long')) return '輸入值過長';
   if (msg.includes('invalid input syntax')) return '輸入格式不正確';
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
-  return msg;
+  return '操作失敗，請稍後再試或聯絡系統管理員';
 }
 
 function showToast(msg, isErr = false) {

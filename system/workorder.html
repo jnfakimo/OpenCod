@@ -214,6 +214,26 @@ const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('User already registered')) return '此 Email 已被註冊';
+  if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
+  if (msg.includes('Email not confirmed')) return 'Email 尚未驗證，請檢查信箱';
+  if (msg.includes('New password should be different')) return '新密碼不能與舊密碼相同';
+  if (msg.includes('Password should be at least')) return '密碼長度不足，請輸入更長的密碼';
+  if (msg.includes('For security purposes') && msg.includes('second')) return '操作過於頻繁，請稍後再試';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 
 const ST={pending:['待派工','#ffb300'],transferred:['已轉派','#1a7fff'],assigned:['待接單','#1a7fff'],
   accepted:['已接單','#00d4ff'],in_progress:['維修中','#00d4ff'],waiting_parts:['等待料件','#b48aff'],
@@ -687,7 +707,7 @@ function storageObjectPath(path){
 function uploadErrorMessage(error){
   const msg=error?.message||String(error||'');
   if(/Load failed|Failed to fetch|NetworkError/i.test(msg))return '手機瀏覽器暫時無法連線到檔案上傳服務，請確認網路後再重送。';
-  return msg||'上傳失敗';
+  return msg?translateError(msg):'上傳失敗';
 }
 async function uploadRepairFile(path,file){
   const contentType=file?.type||'application/octet-stream';
@@ -741,7 +761,7 @@ function repairRequestErrorMessage(error){
   if(isSchemaColumnError(error)){
     return '資料庫欄位尚未更新：請先執行 system/sql/repair_request_timeout_fix.sql 後再重送。';
   }
-  return '錯誤：'+(error.message||'送出失敗');
+  return '錯誤：'+(error.message?translateError(error.message):'送出失敗');
 }
 async function submitCreate(){
   if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}
@@ -885,7 +905,7 @@ async function doDispatch(reqId){
     work_content:document.getElementById('x-content').value.trim()||null,need_shutdown:document.getElementById('x-shut').value==='true',
     need_approval:document.getElementById('x-appr').value==='true',status:'assigned',accept_status:'pending'};
   const {data,error}=await db.from('maintenance_orders').insert(ord).select('order_id,wo_no').single();
-  if(error){toast('派工失敗：'+error.message,true);return;}
+  if(error){toast('派工失敗：'+translateError(error.message),true);return;}
   await db.from('repair_requests').update({status:'assigned',assignee_id:tech||null,updated_at:new Date().toISOString()}).eq('request_id',reqId);
   await logStatus(reqId,data.order_id,driver(r),'assigned','派工 '+(data.wo_no||'')+(tech?(' → '+(techs.find(t=>t.user_id===tech)?.name||'')):'')+(vendor?(' 委外:'+vendor):''));
   // 站內通知技師（§九）
@@ -954,7 +974,7 @@ function show(id){document.getElementById(id).classList.add('show');}
 function closeM(id){document.getElementById(id).classList.remove('show');if(id==='m-create')closeDesiredCalendar();}
 let _tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=err?'var(--red)':'var(--border-hi)';el.style.color=err?'var(--red)':'var(--text)';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400);}
 
-init().catch(e=>{document.getElementById('list').innerHTML=`<tr><td colspan="6" class="empty" style="color:var(--red)">載入失敗：${e.message}<br><small>請確認已執行 work_order_schema.sql</small></td></tr>`;});
+init().catch(e=>{document.getElementById('list').innerHTML=`<tr><td colspan="6" class="empty" style="color:var(--red)">載入失敗：${escHtml(translateError(e.message))}<br><small>請確認已執行 work_order_schema.sql</small></td></tr>`;});
 </script>
 </body>
 </html>

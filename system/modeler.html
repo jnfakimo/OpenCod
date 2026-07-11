@@ -122,6 +122,16 @@ const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 function getParser(){ return window.DxfParser?.default || window.DxfParser || null; }
 
 let lastBlob=null, lastBBox=null;
@@ -166,7 +176,7 @@ async function handleFile(f){
       `檔名：<b>${escHtml(f.name)}</b><br>線段群組：<b>${polylines.length}</b>　頂點：<b>${npts}</b><br>`+
       `範圍：<b>${Math.round(bbox.w)}</b> × <b>${Math.round(bbox.h)}</b> mm`;
     document.getElementById('cv').toBlob(b=>{lastBlob=b;document.getElementById('saveBtn').disabled=false;setMsg('解析完成，可按「更新模型」','ok');},'image/png');
-  }catch(err){ setMsg('解析失敗：'+err.message,'err'); }
+  }catch(err){ setMsg('解析失敗：'+translateError(err.message),'err'); }
 }
 
 // ─── recursive entity collection (expands INSERT/blocks) ───
@@ -261,7 +271,7 @@ async function saveModel(){
     setMsg('✓ 已更新 '+floor+' 模型，平面圖與 3D 已同步','ok');
     loadSaved();
   }catch(err){
-    setMsg('儲存失敗：'+(err.message||err)+'（請確認已建立 floor_models 表與 floorplans 儲存桶）','err');
+    setMsg('儲存失敗：'+translateError(err.message||String(err))+'（請確認已建立 floor_models 表與 floorplans 儲存桶）','err');
   }finally{ document.getElementById('saveBtn').disabled=false; }
 }
 

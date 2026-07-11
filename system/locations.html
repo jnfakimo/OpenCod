@@ -291,6 +291,20 @@ const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function escJs(s){return String(s==null?'':s).replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 
 // ─── State ───
 let allLocs=[], allMkts=[], allDepts=[];
@@ -549,7 +563,7 @@ async function saveLocation(){
   } else {
     ({error:err}=await db.from('locations').insert(payload));
   }
-  if(err){msg.textContent='錯誤：'+err.message;msg.className='msg err';return;}
+  if(err){msg.textContent='錯誤：'+translateError(err.message);msg.className='msg err';return;}
   msg.textContent='已儲存';msg.className='msg ok';
   await loadLocations(); renderTree();
   setTimeout(()=>closeModal('loc-modal'),800);
@@ -559,7 +573,7 @@ async function saveLocation(){
 async function toggleLoc(id,cur){
   const nxt=cur==='active'?'inactive':'active';
   const {error}=await db.from('locations').update({status:nxt}).eq('location_id',id);
-  if(error){toast('操作失敗：'+error.message,true);return;}
+  if(error){toast('操作失敗：'+translateError(error.message),true);return;}
   await loadLocations(); renderTree();
   toast(nxt==='active'?'已啟用':'已停用');
 }
@@ -643,7 +657,7 @@ async function saveDept(){
   let err;
   if(id){({error:err}=await db.from('departments').update(payload).eq('dept_id',id));}
   else{({error:err}=await db.from('departments').insert(payload));}
-  if(err){msg.textContent='錯誤：'+err.message;msg.className='msg err';return;}
+  if(err){msg.textContent='錯誤：'+translateError(err.message);msg.className='msg err';return;}
   msg.textContent='已儲存';msg.className='msg ok';
   await loadDepts(); renderDeptTree();
   setTimeout(()=>closeModal('dept-modal'),800);
@@ -677,7 +691,7 @@ function toast(msg,err=false){
 }
 
 // ─── Start ────────────────────────────────────────────────────
-init().catch(e=>{document.getElementById('tree-body').innerHTML=`<tr><td colspan="4" class="empty" style="color:var(--red)">載入失敗：${e.message}</td></tr>`;});
+init().catch(e=>{document.getElementById('tree-body').innerHTML=`<tr><td colspan="4" class="empty" style="color:var(--red)">載入失敗：${escHtml(translateError(e.message))}</td></tr>`;});
 </script>
 </body>
 </html>
