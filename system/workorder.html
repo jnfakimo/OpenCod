@@ -235,6 +235,23 @@ function translateError(msg) {
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
   return '操作失敗，請稍後再試或聯絡系統管理員';
 }
+async function notifyLineRepair(record) {
+  try {
+    const res = await fetch(`${SUPA_URL}/functions/v1/line-notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_KEY}` },
+      body: JSON.stringify({ table: 'repair_requests', record }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || body.ok === false) {
+      console.warn('LINE repair notification failed:', body.msg || res.status);
+    }
+    return body;
+  } catch (e) {
+    console.warn('LINE repair notification failed:', e?.message || e);
+    return { ok: false, msg: e?.message || String(e) };
+  }
+}
 
 const ST={pending:['待派工','#ffb300'],transferred:['已轉派','#1a7fff'],assigned:['待接單','#1a7fff'],
   accepted:['已接單','#00d4ff'],in_progress:['維修中','#00d4ff'],waiting_parts:['等待料件','#b48aff'],
@@ -797,6 +814,7 @@ async function submitCreate(){
     if(!up.error){ await db.from('repair_attachments').insert({request_id:data.request_id,kind:kindOf(f),file_path:path,file_name:f.name,uploaded_by:me_.user_id}); }
   }
   await logStatus(data.request_id,null,null,'pending','建立報修');
+  await notifyLineRepair({...rec,...data});
   closeM('m-create'); toast('已新增報修 '+displayReqNo(data));
   await loadCases(); renderTableFilters(); renderChips(); renderList();
 }

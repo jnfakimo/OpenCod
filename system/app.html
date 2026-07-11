@@ -683,6 +683,23 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
 function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function notifyLineRepair(record) {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/line-notify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+      body: JSON.stringify({ table: 'repair_requests', record }),
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || body.ok === false) {
+      console.warn('LINE repair notification failed:', body.msg || res.status);
+    }
+    return body;
+  } catch (e) {
+    console.warn('LINE repair notification failed:', e?.message || e);
+    return { ok: false, msg: e?.message || String(e) };
+  }
+}
 
 let currentUser = null;
 let currentCycle = null;
@@ -1271,6 +1288,7 @@ async function createRepairFromInspection(eq, faultDesc) {
   };
   const { data: repairData, error } = await db.from('repair_requests').insert(repair).select().single();
   if (!error && repairData) {
+    await notifyLineRepair(repairData);
     await db.from('maintenance_orders').insert({
       request_id: repairData.request_id,
       equipment_id: eq.equipment_id,
@@ -1298,6 +1316,7 @@ async function submitRepair() {
   };
   const { data, error } = await db.from('repair_requests').insert(repair).select().single();
   if (error) { showToast('送出失敗', true); return; }
+  await notifyLineRepair(data);
   await db.from('maintenance_orders').insert({ request_id: data.request_id, equipment_id: eqId, status: 'pending' });
   await db.from('repair_requests').update({ status: 'transferred' }).eq('request_id', data.request_id);
   await writeAudit('repair_requests', data.request_id, 'insert', null, repair);
