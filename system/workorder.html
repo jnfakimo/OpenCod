@@ -213,6 +213,7 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 const ST={pending:['待派工','#ffb300'],transferred:['已轉派','#1a7fff'],assigned:['待接單','#1a7fff'],
   accepted:['已接單','#00d4ff'],in_progress:['維修中','#00d4ff'],waiting_parts:['等待料件','#b48aff'],
@@ -369,10 +370,10 @@ async function loadRefs(){
   // fill selects
   const eq=document.getElementById('c-eqp');
   if(eq){
-    eq.innerHTML='<option value="">系統自動帶入</option>'+equip.map(x=>`<option value="${x.equipment_id}">${x.name}${x.qr_code?' ('+x.qr_code+')':''}</option>`).join('');
+    eq.innerHTML='<option value="">系統自動帶入</option>'+equip.map(x=>`<option value="${x.equipment_id}">${escHtml(x.name)}${x.qr_code?' ('+escHtml(x.qr_code)+')':''}</option>`).join('');
     const d=defaultEquipment(); if(d)eq.value=d.equipment_id;
   }
-  const dl=document.getElementById('deptList'); dl.innerHTML=[...new Set(reqs.map(r=>r.department).filter(Boolean))].map(d=>`<option>${d}</option>`).join('');
+  const dl=document.getElementById('deptList'); dl.innerHTML=[...new Set(reqs.map(r=>r.department).filter(Boolean))].map(d=>`<option>${escHtml(d)}</option>`).join('');
 }
 function defaultEquipment(){
   return equip.find(x=>/未指定|一般|報修|其他/i.test(x.name||'')) || equip[0] || null;
@@ -526,9 +527,9 @@ function renderList(){
   tb.innerHTML=pageRows.map(r=>{
     const s=driver(r);
     return `<tr onclick="openDetail('${r.request_id}')">
-      <td class="req-no">${displayReqNo(r)}</td>
-      <td>${r.fault_type||'—'}</td>
-      <td>${r.department||'—'}</td>
+      <td class="req-no">${escHtml(displayReqNo(r))}</td>
+      <td>${escHtml(r.fault_type||'—')}</td>
+      <td>${escHtml(r.department||'—')}</td>
       <td>${badge(s)}</td>
       <td style="color:var(--text-dim);font-size:.72rem">${fmt(r.created_at)}</td>
       <td style="color:var(--cyan)">檢視 ›</td></tr>`;
@@ -810,32 +811,32 @@ async function openDetail(id){
   const eqName=curReq.equipment?.name||'—';
   body.innerHTML=`
     <div class="d-info">
-      <div><span class="k">設備：</span><span class="v">${eqName}</span></div>
-      <div><span class="k">分類：</span><span class="v">${curReq.equipment_category||curReq.equipment?.category||'—'}</span></div>
-      <div><span class="k">故障位置：</span><span class="v">${displayFaultLocation(curReq)}</span></div>
-      <div><span class="k">QR：</span><span class="v">${curReq.equipment?.qr_code||'—'}</span></div>
-      <div><span class="k">報修人：</span><span class="v">${curReq.reporter||'—'}</span></div>
-      <div><span class="k">單位：</span><span class="v">${curReq.department||'—'}</span></div>
-      <div><span class="k">電話：</span><span class="v">${curReq.phone||'—'}</span></div>
-      <div><span class="k">手機：</span><span class="v">${curReq.mobile||'—'}</span></div>
-      <div><span class="k">故障類型：</span><span class="v">${curReq.fault_type||'—'}</span></div>
+      <div><span class="k">設備：</span><span class="v">${escHtml(eqName)}</span></div>
+      <div><span class="k">分類：</span><span class="v">${escHtml(curReq.equipment_category||curReq.equipment?.category||'—')}</span></div>
+      <div><span class="k">故障位置：</span><span class="v">${escHtml(displayFaultLocation(curReq))}</span></div>
+      <div><span class="k">QR：</span><span class="v">${escHtml(curReq.equipment?.qr_code||'—')}</span></div>
+      <div><span class="k">報修人：</span><span class="v">${escHtml(curReq.reporter||'—')}</span></div>
+      <div><span class="k">單位：</span><span class="v">${escHtml(curReq.department||'—')}</span></div>
+      <div><span class="k">電話：</span><span class="v">${escHtml(curReq.phone||'—')}</span></div>
+      <div><span class="k">手機：</span><span class="v">${escHtml(curReq.mobile||'—')}</span></div>
+      <div><span class="k">故障類型：</span><span class="v">${escHtml(curReq.fault_type||'—')}</span></div>
       <div><span class="k">希望完成：</span><span class="v">${curReq.desired_finish?fmtDate(curReq.desired_finish):'—'}</span></div>
-      <div class="full"><span class="k">故障描述：</span><span class="v">${displayFaultDesc(curReq)}</span></div>
-      ${o?`<div class="full"><span class="k">派工：</span><span class="v">${o.wo_no||''} · 技師 ${o.users?.name||'—'}${o.vendor?' · 委外 '+o.vendor:''}</span></div>`:''}
-      ${o&&o.fault_cause?`<div class="full"><span class="k">維修結果：</span><span class="v">${o.fault_cause||''}｜${o.handle_method||''}${o.parts_used?'｜更換:'+o.parts_used:''}${o.labor_hours?'｜工時:'+o.labor_hours+'h':''}</span></div>`:''}
+      <div class="full"><span class="k">故障描述：</span><span class="v">${escHtml(displayFaultDesc(curReq))}</span></div>
+      ${o?`<div class="full"><span class="k">派工：</span><span class="v">${escHtml(o.wo_no||'')} · 技師 ${escHtml(o.users?.name||'—')}${o.vendor?' · 委外 '+escHtml(o.vendor):''}</span></div>`:''}
+      ${o&&o.fault_cause?`<div class="full"><span class="k">維修結果：</span><span class="v">${escHtml(o.fault_cause||'')}｜${escHtml(o.handle_method||'')}${o.parts_used?'｜更換:'+escHtml(o.parts_used):''}${o.labor_hours?'｜工時:'+escHtml(o.labor_hours)+'h':''}</span></div>`:''}
     </div>
     ${atts&&atts.length?`<div class="sect">附件</div><div class="atts">${atts.map(a=>attHtml(a)).join('')}</div>`:''}
     <div class="sect">處理歷程</div>
-    <ul class="tl">${(logs||[]).map(l=>`<li><div class="st">${(ST[l.to_status]||[l.to_status])[0]}</div>${l.note?`<div class="nt">${l.note}</div>`:''}<div class="op">${l.operator_name||''} · <span class="ts">${fmt(l.created_at)}</span></div></li>`).join('')||'<li><div class="nt">尚無歷程</div></li>'}</ul>
+    <ul class="tl">${(logs||[]).map(l=>`<li><div class="st">${escHtml((ST[l.to_status]||[l.to_status])[0])}</div>${l.note?`<div class="nt">${escHtml(l.note)}</div>`:''}<div class="op">${escHtml(l.operator_name||'')} · <span class="ts">${fmt(l.created_at)}</span></div></li>`).join('')||'<li><div class="nt">尚無歷程</div></li>'}</ul>
     <div class="sect">操作</div>
     <div class="actions" id="d-actions"></div>
     <div id="d-sub"></div>`;
   renderActions(curReq,o);
 }
 function attHtml(a){
-  const url=`${SUPA_URL}/storage/v1/object/public/repair-files/${a.file_path}`;
-  if(a.kind==='photo'||a.kind==='location_photo') return `<a class="att" href="${url}" target="_blank"><img src="${url}" alt=""></a>`;
-  return `<a class="att" href="${url}" target="_blank">📎 ${a.file_name||a.kind}</a>`;
+  const url=`${SUPA_URL}/storage/v1/object/public/repair-files/${(a.file_path||'').split('/').map(encodeURIComponent).join('/')}`;
+  if(a.kind==='photo'||a.kind==='location_photo') return `<a class="att" href="${escHtml(url)}" target="_blank"><img src="${escHtml(url)}" alt=""></a>`;
+  return `<a class="att" href="${escHtml(url)}" target="_blank">📎 ${escHtml(a.file_name||a.kind)}</a>`;
 }
 
 // ─── Actions (status-driven) ───
@@ -859,7 +860,7 @@ function dispatchForm(r){
   const sub=document.getElementById('d-sub');
   sub.innerHTML=`<div class="subform show">
     <div class="row2">
-      <div class="field"><label>維修人員</label><select id="x-tech"><option value="">選擇技師…</option>${techs.map(t=>`<option value="${t.user_id}">${t.name}</option>`).join('')}</select></div>
+      <div class="field"><label>維修人員</label><select id="x-tech"><option value="">選擇技師…</option>${techs.map(t=>`<option value="${t.user_id}">${escHtml(t.name)}</option>`).join('')}</select></div>
       <div class="field"><label>委外廠商（選填）</label><input id="x-vendor"></div>
     </div>
     <div class="row2">

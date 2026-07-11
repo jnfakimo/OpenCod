@@ -51,6 +51,7 @@ a{color:inherit;text-decoration:none}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const EV={new_repair:'新報修',dispatch:'派工',return:'退件',overdue:'逾期',complete:'完成',close:'結案',sign:'簽核'};
 let me_={user_id:null};
 function fmt(t){if(!t)return'';const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
@@ -68,9 +69,9 @@ async function load(){
   const unread=data.filter(n=>!n.is_read).length;
   document.getElementById('cnt').textContent=`${data.length} 則通知 · ${unread} 則未讀`;
   box.innerHTML=data.map(n=>`<div class="n ${n.is_read?'read':'unread'}" onclick="markOne('${n.notif_id}',${n.is_read})">
-    <div class="dot"></div><div class="body"><div class="t">${n.title||EV[n.event]||'通知'}</div>
-    ${n.body?`<div class="b">${n.body}</div>`:''}<div class="m">${fmt(n.created_at)}</div></div>
-    <span class="ev">${EV[n.event]||n.event||''}</span></div>`).join('');
+    <div class="dot"></div><div class="body"><div class="t">${escHtml(n.title||EV[n.event]||'通知')}</div>
+    ${n.body?`<div class="b">${escHtml(n.body)}</div>`:''}<div class="m">${fmt(n.created_at)}</div></div>
+    <span class="ev">${escHtml(EV[n.event]||n.event||'')}</span></div>`).join('');
 }
 async function markOne(id,read){ if(read)return; await db.from('notifications').update({is_read:true}).eq('notif_id',id); load(); }
 async function markAll(){ let q=db.from('notifications').update({is_read:true}).eq('is_read',false); if(me_.user_id)q=q.eq('recipient_id',me_.user_id); await q; load(); }

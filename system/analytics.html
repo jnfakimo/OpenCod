@@ -72,6 +72,7 @@ td.num,th.num{text-align:right;font-family:var(--font-mono);color:var(--cyan)}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 let reports=[]; // {title, cols, rows}
 function ymd(d){return d.toISOString().slice(0,10);}
 function quick(r){const now=new Date();let f;
@@ -128,7 +129,7 @@ function render(){
     <div class="card"><h3>${rp.title}<span class="ex">
       <button onclick="exp(${i},'csv')">CSV</button><button onclick="exp(${i},'xlsx')">Excel</button>
     </span></h3>
-    ${rp.rows.length?`<table><tr>${rp.cols.map((c,n)=>`<th class="${n>0?'num':''}">${c}</th>`).join('')}</tr>${rp.rows.slice(0,20).map(row=>`<tr>${row.map((c,n)=>`<td class="${n>0?'num':''}">${c}</td>`).join('')}</tr>`).join('')}</table>`:'<div class="empty">無資料</div>'}
+    ${rp.rows.length?`<table><tr>${rp.cols.map((c,n)=>`<th class="${n>0?'num':''}">${escHtml(c)}</th>`).join('')}</tr>${rp.rows.slice(0,20).map(row=>`<tr>${row.map((c,n)=>`<td class="${n>0?'num':''}">${escHtml(c)}</td>`).join('')}</tr>`).join('')}</table>`:'<div class="empty">無資料</div>'}
     </div>`).join('');
 }
 function exp(i,type){

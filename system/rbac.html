@@ -70,6 +70,7 @@ select:focus{border-color:var(--cyan)}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 const PERMS=[['create','新增'],['update','修改'],['delete','刪除'],['read','查詢'],['dispatch','派工'],['close','結案'],['sign','簽核'],['export','匯出'],['admin','後台管理']];
 const LEGACY_ROLE_BY_RBAC={reporter:'inspector',duty:'maintenance',dispatcher:'maintenance',technician:'maintenance',unit_supervisor:'supervisor',mgmt_supervisor:'supervisor',sysadmin:'admin'};
 const MENU_PRESETS={
@@ -102,7 +103,7 @@ async function init(){
 function renderMatrix(){
   let h='<table><tr><th class="rolename" style="text-align:left">角色＼權限</th>'+PERMS.map(p=>`<th>${p[1]}</th>`).join('')+'</tr>';
   roles.forEach(r=>{
-    h+=`<tr><td class="rolename">${r.name}</td>`+PERMS.map(p=>{
+    h+=`<tr><td class="rolename">${escHtml(r.name)}</td>`+PERMS.map(p=>{
       const on=perms[r.role_id+'|'+p[0]]===true;
       return `<td><input type="checkbox" ${on?'checked':''} onchange="togglePerm('${r.role_id}','${p[0]}',this.checked)"></td>`;
     }).join('')+'</tr>';
@@ -119,9 +120,9 @@ async function renderUsers(){
   const box=document.getElementById('userTbl');
   if(!users||!users.length){box.innerHTML='<div class="empty">無使用者</div>';return;}
   box.innerHTML='<table><tr><th style="text-align:left">姓名</th><th style="text-align:left">單位</th><th style="text-align:left">系統角色(RBAC)</th></tr>'+
-    users.map(u=>`<tr><td class="rolename">${u.name}</td><td style="text-align:left;color:var(--text-dim)">${u.department||'—'}</td>
+    users.map(u=>`<tr><td class="rolename">${escHtml(u.name)}</td><td style="text-align:left;color:var(--text-dim)">${escHtml(u.department||'—')}</td>
       <td style="text-align:left"><select onchange="setUserRole('${u.user_id}',this.value)">
-        <option value="">（未指定）</option>${roles.map(r=>`<option value="${r.role_id}" ${u.rbac_role===r.role_id?'selected':''}>${r.name}</option>`).join('')}
+        <option value="">（未指定）</option>${roles.map(r=>`<option value="${r.role_id}" ${u.rbac_role===r.role_id?'selected':''}>${escHtml(r.name)}</option>`).join('')}
       </select></td></tr>`).join('')+'</table>';
 }
 async function setUserRole(uid,role){

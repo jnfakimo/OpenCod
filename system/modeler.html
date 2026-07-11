@@ -121,6 +121,7 @@ select:focus,input:focus{border-color:var(--cyan)}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function getParser(){ return window.DxfParser?.default || window.DxfParser || null; }
 
 let lastBlob=null, lastBBox=null;
@@ -162,7 +163,7 @@ async function handleFile(f){
     const npts=polylines.reduce((s,p)=>s+p.length,0);
     document.getElementById('stat').style.display='block';
     document.getElementById('stat').innerHTML=
-      `檔名：<b>${f.name}</b><br>線段群組：<b>${polylines.length}</b>　頂點：<b>${npts}</b><br>`+
+      `檔名：<b>${escHtml(f.name)}</b><br>線段群組：<b>${polylines.length}</b>　頂點：<b>${npts}</b><br>`+
       `範圍：<b>${Math.round(bbox.w)}</b> × <b>${Math.round(bbox.h)}</b> mm`;
     document.getElementById('cv').toBlob(b=>{lastBlob=b;document.getElementById('saveBtn').disabled=false;setMsg('解析完成，可按「更新模型」','ok');},'image/png');
   }catch(err){ setMsg('解析失敗：'+err.message,'err'); }
@@ -271,7 +272,7 @@ async function loadSaved(){
   if(!data?.length){box.innerHTML='<div class="stat">尚無樓層模型</div>';return;}
   box.innerHTML=data.map(d=>{
     const dt=new Date(d.updated_at).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-    return `<div class="saved-item"><span class="dot"></span><span class="fl">${d.floor_id}</span><span>${d.name||''}</span><span class="dt">${dt}</span></div>`;
+    return `<div class="saved-item"><span class="dot"></span><span class="fl">${escHtml(d.floor_id)}</span><span>${escHtml(d.name||'')}</span><span class="dt">${dt}</span></div>`;
   }).join('');
 }
 

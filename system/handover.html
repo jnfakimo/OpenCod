@@ -785,10 +785,10 @@ function applyPerms() {
 // ── DEPT DROPDOWNS ─────────────────────────────────
 function buildDeptSelects() {
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
-  const l1Opts = '<option value="">— 選擇第一層 —</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+  const l1Opts = '<option value="">— 選擇第一層 —</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   document.getElementById('hHandoverL1').innerHTML = l1Opts;
   document.getElementById('hTakeoverL1').innerHTML = l1Opts;
-  const fL1Opts = '<option value="">全部部門</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+  const fL1Opts = '<option value="">全部部門</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   document.getElementById('fDeptL1').innerHTML = fL1Opts;
   const fL2 = document.getElementById('fDeptL2');
   fL2.innerHTML = '<option value="">全部課別</option>';
@@ -802,7 +802,7 @@ function onFDeptL1Change() {
   if (l1) {
     const children = allDepts.filter(d => d.parent_id === l1).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
     if (children.length) {
-      l2Sel.innerHTML = '<option value="">全部課別</option>' + children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
+      l2Sel.innerHTML = '<option value="">全部課別</option>' + children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
       l2Sel.style.opacity = '1';
       l2Sel.style.pointerEvents = 'auto';
     } else {
@@ -822,9 +822,9 @@ function buildFlatDeptOpts() {
   const roots = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
   let html = '';
   for (const r of roots) {
-    html += `<option value="${r.dept_id}">${r.name}</option>`;
+    html += `<option value="${r.dept_id}">${escHtml(r.name)}</option>`;
     allDepts.filter(d => d.parent_id === r.dept_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0)).forEach(c => {
-      html += `<option value="${c.dept_id}">&nbsp;&nbsp;└ ${c.name}</option>`;
+      html += `<option value="${c.dept_id}">&nbsp;&nbsp;└ ${escHtml(c.name)}</option>`;
     });
   }
   return html;
@@ -838,7 +838,7 @@ function fillL2(l1Id, l2SelId) {
     l2Sel.disabled = true;
   } else {
     l2Sel.innerHTML = '<option value="">— 選擇課別（選填）—</option>' +
-      children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
+      children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
     l2Sel.disabled = false;
   }
 }
@@ -846,7 +846,7 @@ function fillL2(l1Id, l2SelId) {
 function fillPersonSelect(selId, deptId) {
   const filtered = deptId ? allUsers.filter(u => u.dept_id === deptId) : allUsers;
   document.getElementById(selId).innerHTML = '<option value="">— 選擇人員 —</option>' +
-    filtered.map(u => `<option value="${u.user_id}">${u.name}</option>`).join('');
+    filtered.map(u => `<option value="${u.user_id}">${escHtml(u.name)}</option>`).join('');
 }
 
 
@@ -874,7 +874,7 @@ function filterCaseReporter() {
   const cur = document.getElementById('caseReporter').value;
   document.getElementById('caseReporter').innerHTML =
     '<option value="">— 選擇通報人 —</option>' +
-    filtered.map(u => `<option value="${u.name}">${u.name}</option>`).join('');
+    filtered.map(u => `<option value="${escHtml(u.name)}">${escHtml(u.name)}</option>`).join('');
   if (filtered.find(u => u.name === cur)) document.getElementById('caseReporter').value = cur;
   const unitDept = allDepts.find(d => d.dept_id === deptId);
   document.getElementById('caseReporterUnit').value = unitDept?.name || '';
@@ -1139,7 +1139,7 @@ async function openCaseForm() {
 
   // 所屬單位：二層下拉
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
-  document.getElementById('caseUnitL1').innerHTML = '<option value="">— 選擇第一層 —</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+  document.getElementById('caseUnitL1').innerHTML = '<option value="">— 選擇第一層 —</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   document.getElementById('caseUnitL2').innerHTML = '<option value="">— 無下級單位 —</option>';
   document.getElementById('caseUnitL2').disabled = true;
   if (currentUser?.dept_id) {
@@ -1262,11 +1262,11 @@ async function loadCases() {
     const s = CASE_STATUS[c.status] || { label:c.status, cls:'' };
     const isOverdue = c.due_date && c.due_date < today && c.status !== 'closed';
     return `<tr ${isOverdue?'class="overdue-row"':''}>
-      <td style="font-family:var(--font-mono);font-size:.76rem;white-space:nowrap">${c.case_no}</td>
+      <td style="font-family:var(--font-mono);font-size:.76rem;white-space:nowrap">${escHtml(c.case_no)}</td>
       <td style="font-size:.8rem">${escHtml(c.anomaly_category||'—')}${c.anomaly_sub?`<br><span style="font-size:.7rem;color:var(--text-dim)">└ ${escHtml(c.anomaly_sub)}</span>`:''}</td>
       <td style="font-size:.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml((c.title||'—').substring(0,40))}</td>
       <td><span class="badge ${s.cls}">${s.label}</span></td>
-      <td style="font-size:.8rem">${c.assigned_user?.name||'<span style="color:var(--text-dim)">未指派</span>'}</td>
+      <td style="font-size:.8rem">${c.assigned_user?.name?escHtml(c.assigned_user.name):'<span style="color:var(--text-dim)">未指派</span>'}</td>
       <td style="font-size:.76rem;color:${isOverdue?'var(--red)':'var(--text-dim)'};white-space:nowrap">${c.due_date||'—'}${isOverdue?' ⚠':''}</td>
       <td style="font-family:var(--font-mono);font-size:.74rem;white-space:nowrap">${fmtDate(c.created_at)}</td>
       <td><button class="btn-secondary btn-sm" onclick="openCaseDetail('${c.case_id}')">詳情</button></td>
@@ -1294,7 +1294,7 @@ async function openCaseDetail(caseId) {
   document.getElementById('caseDetailBody').innerHTML = `
     <div class="detail-section">
       <div class="detail-section-title">基本資訊</div>
-      <div class="detail-row"><span class="detail-label">案件編號</span><span class="detail-value" style="font-family:var(--font-mono)">${c.case_no}</span></div>
+      <div class="detail-row"><span class="detail-label">案件編號</span><span class="detail-value" style="font-family:var(--font-mono)">${escHtml(c.case_no)}</span></div>
       <div class="detail-row"><span class="detail-label">建立時間</span><span class="detail-value" style="font-family:var(--font-mono);font-size:.78rem">${new Date(c.created_at).toLocaleString('zh-TW')}</span></div>
       <div class="detail-row"><span class="detail-label">班別</span><span class="detail-value">${SHIFT_LABEL[c.shift_type]||c.shift_type||'—'}</span></div>
       <div class="detail-row"><span class="detail-label">通報人</span><span class="detail-value">${escHtml(c.reporter||'—')}</span></div>
@@ -1316,10 +1316,10 @@ async function openCaseDetail(caseId) {
     <div class="detail-section">
       <div class="detail-section-title">案件狀態</div>
       <div class="detail-row"><span class="detail-label">狀態</span><span class="detail-value"><span class="badge ${s.cls}">${s.label}</span>${isOverdue?' <span style="color:var(--red);font-size:.76rem">⚠ 逾期</span>':''}</span></div>
-      <div class="detail-row"><span class="detail-label">承辦人</span><span class="detail-value">${c.assigned_user?.name||'<span style="color:var(--text-dim)">未指派</span>'}</span></div>
+      <div class="detail-row"><span class="detail-label">承辦人</span><span class="detail-value">${c.assigned_user?.name?escHtml(c.assigned_user.name):'<span style="color:var(--text-dim)">未指派</span>'}</span></div>
       <div class="detail-row"><span class="detail-label">負責單位</span><span class="detail-value">${escHtml(c.responsible_unit||'—')}</span></div>
       <div class="detail-row"><span class="detail-label">到期日</span><span class="detail-value" style="color:${isOverdue?'var(--red)':'inherit'}">${c.due_date||'—'}</span></div>
-      ${c.closed_at?`<div class="detail-row"><span class="detail-label">結案時間</span><span class="detail-value" style="font-family:var(--font-mono);font-size:.76rem">${new Date(c.closed_at).toLocaleString('zh-TW')} by ${c.closed_user?.name||'—'}</span></div>`:''}
+      ${c.closed_at?`<div class="detail-row"><span class="detail-label">結案時間</span><span class="detail-value" style="font-family:var(--font-mono);font-size:.76rem">${new Date(c.closed_at).toLocaleString('zh-TW')} by ${escHtml(c.closed_user?.name||'—')}</span></div>`:''}
       ${c.note?`<div class="detail-row"><span class="detail-label">備註</span><span class="detail-value">${escHtml(c.note)}</span></div>`:''}
     </div>
 
@@ -1330,7 +1330,7 @@ async function openCaseDetail(caseId) {
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
         <select id="actionAssignTo" style="background:rgba(2,8,20,.85);border:1px solid var(--border);color:var(--text-hi);padding:7px 10px;font-family:var(--font-mono);font-size:.82rem;border-radius:2px;outline:none">
           <option value="">— 指派承辦人 —</option>
-          ${allUsers.map(u=>`<option value="${u.user_id}" ${u.user_id===c.assigned_to?'selected':''}>${u.name}</option>`).join('')}
+          ${allUsers.map(u=>`<option value="${u.user_id}" ${u.user_id===c.assigned_to?'selected':''}>${escHtml(u.name)}</option>`).join('')}
         </select>
         <button class="btn-secondary btn-sm" onclick="assignCase('${caseId}')">指派／轉派</button>
         <select id="actionStatus" style="background:rgba(2,8,20,.85);border:1px solid var(--border);color:var(--text-hi);padding:7px 10px;font-family:var(--font-mono);font-size:.82rem;border-radius:2px;outline:none">
@@ -1400,7 +1400,7 @@ function buildCaseLogTimeline(logs) {
       <div class="log-content">
         <div class="log-action">${ACTION_LABEL[l.action]||l.action}</div>
         ${l.content?`<div class="log-text">${escHtml(l.content)}</div>`:''}
-        ${l.log_user?`<div class="log-by">by ${l.log_user.name}</div>`:''}
+        ${l.log_user?`<div class="log-by">by ${escHtml(l.log_user.name)}</div>`:''}
       </div>
     </div>`;
   }).join('');

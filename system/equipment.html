@@ -140,6 +140,8 @@ tbody tr{cursor:pointer;transition:background .15s}tbody tr:hover{background:rgb
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function safeUrl(u){return u&&/^https?:\/\//i.test(u)?escHtml(u):'';}
 let eqs=[],locs=[],curEq=null;
 function fmt(t){if(!t)return'—';const d=new Date(t);return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
 function fmtD(t){if(!t)return'—';const d=new Date(t);return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;}
@@ -151,9 +153,9 @@ async function init(){
   ]);
   eqs=e||[]; locs=l||[];
   const cats=[...new Set(eqs.map(x=>x.category).filter(Boolean))];
-  document.getElementById('fCat').innerHTML='<option value="">全部分類</option>'+cats.map(c=>`<option>${c}</option>`).join('');
-  document.getElementById('catList').innerHTML=cats.map(c=>`<option>${c}</option>`).join('');
-  document.getElementById('e-loc').innerHTML='<option value="">（選填）</option>'+locs.map(x=>`<option value="${x.location_id}">${[x.markets?.name,x.floor,x.area,x.detail].filter(Boolean).join(' / ')}</option>`).join('');
+  document.getElementById('fCat').innerHTML='<option value="">全部分類</option>'+cats.map(c=>`<option>${escHtml(c)}</option>`).join('');
+  document.getElementById('catList').innerHTML=cats.map(c=>`<option>${escHtml(c)}</option>`).join('');
+  document.getElementById('e-loc').innerHTML='<option value="">（選填）</option>'+locs.map(x=>`<option value="${x.location_id}">${escHtml([x.markets?.name,x.floor,x.area,x.detail].filter(Boolean).join(' / '))}</option>`).join('');
   document.getElementById('fCat').onchange=renderList; document.getElementById('fStatus').onchange=renderList;
   renderList();
   // QR quick lookup ?qr=
@@ -168,8 +170,8 @@ function renderList(){
   const tb=document.getElementById('list');
   if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="empty">無符合設備</td></tr>';return;}
   tb.innerHTML=rows.map(e=>`<tr onclick="openHist('${e.equipment_id}')">
-    <td style="color:var(--text-hi)">${e.name}</td><td>${e.category||'—'}</td>
-    <td class="qr">${e.qr_code||'—'}</td><td style="color:var(--text-dim)">${locName(e.location_id)||e.location||'—'}</td>
+    <td style="color:var(--text-hi)">${escHtml(e.name)}</td><td>${escHtml(e.category||'—')}</td>
+    <td class="qr">${escHtml(e.qr_code||'—')}</td><td style="color:var(--text-dim)">${escHtml(locName(e.location_id)||e.location||'—')}</td>
     <td><span class="badge ${e.status==='active'?'b-on':'b-off'}">${({active:'啟用',inactive:'停用',retired:'汰除'})[e.status]||e.status}</span></td>
     <td style="color:var(--cyan)">履歷 ›</td></tr>`).join('');
 }
@@ -208,24 +210,24 @@ async function openHist(id){
     <div><span class="k">購置成本：</span><span class="v">${curEq.purchase_cost?'$'+Number(curEq.purchase_cost).toLocaleString():'—'}</span></div>
     <div><span class="k">保固到期：</span><span class="v">${fmtD(curEq.warranty_until)} ${warnW?'<span class=warn>（已過保）</span>':''}</span></div>
     <div><span class="k">使用年限：</span><span class="v">${curEq.service_life_y?curEq.service_life_y+' 年':'—'}</span></div>
-    <div class="full"><span class="k">位置：</span><span class="v">${locName(curEq.location_id)||curEq.location||'—'}</span></div>
-    <div class="full"><span class="k">說明書：</span><span class="v">${curEq.manual_url?`<a href="${curEq.manual_url}" target="_blank" style="color:var(--blue)">開啟說明書 ↗</a>`:'—'}</span></div>
+    <div class="full"><span class="k">位置：</span><span class="v">${escHtml(locName(curEq.location_id)||curEq.location||'—')}</span></div>
+    <div class="full"><span class="k">說明書：</span><span class="v">${safeUrl(curEq.manual_url)?`<a href="${safeUrl(curEq.manual_url)}" target="_blank" style="color:var(--blue)">開啟說明書 ↗</a>`:'—'}</span></div>
   </div>`;
   // p1 repair+maint
   document.getElementById('p1').innerHTML=
     `<div style="font-size:.74rem;color:var(--cyan);margin-bottom:6px">報修紀錄</div>`+
     (_h.reqs.length?`<table class="mini"><tr><th>報修單號</th><th>故障</th><th>狀態</th><th>時間</th></tr>`+
-      _h.reqs.map(r=>`<tr><td class="qr">${r.req_no||'—'}</td><td>${r.fault_type||''} ${r.fault_desc||''}</td><td>${r.status}</td><td>${fmt(r.created_at)}</td></tr>`).join('')+`</table>`:'<div class="empty">無報修紀錄</div>')+
+      _h.reqs.map(r=>`<tr><td class="qr">${escHtml(r.req_no||'—')}</td><td>${escHtml(r.fault_type||'')} ${escHtml(r.fault_desc||'')}</td><td>${escHtml(r.status)}</td><td>${fmt(r.created_at)}</td></tr>`).join('')+`</table>`:'<div class="empty">無報修紀錄</div>')+
     `<div style="font-size:.74rem;color:var(--cyan);margin:12px 0 6px">維修紀錄</div>`+
     (_h.ords.length?`<table class="mini"><tr><th>派工單號</th><th>技師</th><th>故障原因/處理</th><th>工時</th><th>完成</th></tr>`+
-      _h.ords.map(o=>`<tr><td class="qr">${o.wo_no||'—'}</td><td>${o.users?.name||'—'}</td><td>${[o.fault_cause,o.handle_method].filter(Boolean).join(' / ')||'—'}</td><td>${o.labor_hours||'—'}</td><td>${fmt(o.finish_time)}</td></tr>`).join('')+`</table>`:'<div class="empty">無維修紀錄</div>');
+      _h.ords.map(o=>`<tr><td class="qr">${escHtml(o.wo_no||'—')}</td><td>${escHtml(o.users?.name||'—')}</td><td>${escHtml([o.fault_cause,o.handle_method].filter(Boolean).join(' / ')||'—')}</td><td>${escHtml(o.labor_hours||'—')}</td><td>${fmt(o.finish_time)}</td></tr>`).join('')+`</table>`:'<div class="empty">無維修紀錄</div>');
   // p2 inspection
   document.getElementById('p2').innerHTML=_h.insp.length?`<table class="mini"><tr><th>巡檢時間</th><th>巡檢人</th><th>狀態</th><th>異常說明</th></tr>`+
-    _h.insp.map(i=>`<tr><td>${fmt(i.inspect_time)}</td><td>${i.users?.name||'—'}</td><td>${i.run_status==='abnormal'?'<span style=color:var(--red)>異常</span>':'<span style=color:var(--green)>正常</span>'}</td><td>${i.abnormal_note||'—'}</td></tr>`).join('')+`</table>`:'<div class="empty">無巡檢紀錄</div>';
+    _h.insp.map(i=>`<tr><td>${fmt(i.inspect_time)}</td><td>${escHtml(i.users?.name||'—')}</td><td>${i.run_status==='abnormal'?'<span style=color:var(--red)>異常</span>':'<span style=color:var(--green)>正常</span>'}</td><td>${escHtml(i.abnormal_note||'—')}</td></tr>`).join('')+`</table>`:'<div class="empty">無巡檢紀錄</div>';
   // p3 cost
   const ctype={purchase:'購置',outsource:'委外',parts:'零件',labor:'工資',other:'其他'};
   document.getElementById('p3').innerHTML=_h.costs.length?`<table class="mini"><tr><th>日期</th><th>類別</th><th>金額</th><th>廠商</th><th>備註</th></tr>`+
-    _h.costs.map(c=>`<tr><td>${fmtD(c.cost_date)}</td><td>${ctype[c.cost_type]||c.cost_type}</td><td style="color:var(--cyan)">$${Number(c.amount).toLocaleString()}</td><td>${c.vendor||'—'}</td><td>${c.note||'—'}</td></tr>`).join('')+`</table>`:'<div class="empty">無成本紀錄</div>';
+    _h.costs.map(c=>`<tr><td>${fmtD(c.cost_date)}</td><td>${escHtml(ctype[c.cost_type]||c.cost_type)}</td><td style="color:var(--cyan)">$${Number(c.amount).toLocaleString()}</td><td>${escHtml(c.vendor||'—')}</td><td>${escHtml(c.note||'—')}</td></tr>`).join('')+`</table>`:'<div class="empty">無成本紀錄</div>';
 }
 function tab(i){document.querySelectorAll('#m-hist .tab').forEach((t,n)=>t.classList.toggle('on',n===i));document.querySelectorAll('#m-hist .pane').forEach((p,n)=>p.classList.toggle('on',n===i));}
 

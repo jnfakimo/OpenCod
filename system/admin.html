@@ -1610,7 +1610,7 @@ function populateAdminDeptSelects(selectedDeptId) {
   if (!l1Sel) return;
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
   l1Sel.innerHTML = '<option value="">-- 選擇第一層 --</option>' +
-    l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+    l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   if (selectedDeptId) {
     const dept = deptMap[selectedDeptId];
     if (dept?.parent_id) {
@@ -1636,7 +1636,7 @@ function onAdminDeptL1Change() {
     l2Sel.disabled = true;
   } else {
     l2Sel.innerHTML = '<option value="">-- 選擇課別（選填）--</option>' +
-      children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
+      children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
     l2Sel.disabled = false;
   }
 }
@@ -1662,7 +1662,7 @@ function populateEditUserDeptSelects(selectedDeptId) {
   if (!l1Sel) return;
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
   l1Sel.innerHTML = '<option value="">-- 選擇第一層 --</option>' +
-    l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+    l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   if (selectedDeptId) {
     const dept = deptMap[selectedDeptId];
     if (dept?.parent_id) {
@@ -1688,7 +1688,7 @@ function onEditUserDeptL1Change() {
     l2Sel.disabled = true;
   } else {
     l2Sel.innerHTML = '<option value="">-- 選擇課別（選填）--</option>' +
-      children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
+      children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
     l2Sel.disabled = false;
   }
 }
@@ -1732,7 +1732,7 @@ function populateEqFilter(selectId) {
   const current = el.value;
   const isEntryForm = selectId === 'cost-eq';
   el.innerHTML = `<option value="">${isEntryForm ? '-- 選擇設備 --' : '全部設備'}</option>` +
-    allEquipment.map(e => `<option value="${e.equipment_id}" ${e.equipment_id === current ? 'selected':''}>${e.name}</option>`).join('');
+    allEquipment.map(e => `<option value="${e.equipment_id}" ${e.equipment_id === current ? 'selected':''}>${escHtml(e.name)}</option>`).join('');
 }
 
 async function loadDashboard() {
@@ -1783,9 +1783,9 @@ function formatPerms(p, roleId) {
 
 function renderUsers(users) {
   document.getElementById('usersTbody').innerHTML = users.map(u => `<tr>
-    <td>${u.name}</td>
-    <td style="font-family:var(--font-mono);font-size:.8rem">${u.username || '—'}</td>
-    <td>${getDeptPath(u.dept_id)}</td>
+    <td>${escHtml(u.name)}</td>
+    <td style="font-family:var(--font-mono);font-size:.8rem">${escHtml(u.username || '—')}</td>
+    <td>${escHtml(getDeptPath(u.dept_id))}</td>
     <td><span class="role-badge">${ROLE_LABEL[normalizeRoleId(u)] || normalizeRoleId(u)}</span></td>
     <td>${formatPerms(u.permissions, normalizeRoleId(u))}</td>
     <td><span class="badge ${u.status === 'active' ? 'badge-active' : 'badge-inactive'}">${u.status === 'active' ? '啟用' : '停用'}</span></td>
@@ -1803,7 +1803,7 @@ function populateUserFilters() {
   const prevL1 = l1Sel.value;
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
   l1Sel.innerHTML = '<option value="">全部部門</option>' +
-    l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+    l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   if (prevL1) l1Sel.value = prevL1;
 }
 
@@ -1816,7 +1816,7 @@ function onFilterL1Change() {
     l2Sel.disabled = true;
   } else {
     l2Sel.innerHTML = '<option value="">全部課別</option>' +
-      children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
+      children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
     l2Sel.disabled = false;
   }
   filterUsers();
@@ -2045,8 +2045,8 @@ async function loadEquipmentList() {
 
 function renderEquipment(list) {
   document.getElementById('eqTbody').innerHTML = list.map(e => `<tr>
-    <td>${e.name}</td>
-    <td>${e.location || '—'}</td>
+    <td>${escHtml(e.name)}</td>
+    <td>${escHtml(e.location || '—')}</td>
     <td style="font-family:var(--font-mono)">${e.purchase_cost ? Number(e.purchase_cost).toLocaleString() + ' 元' : '—'}</td>
     <td><span class="badge badge-${e.status}">${e.status === 'active' ? '啟用' : e.status === 'inactive' ? '停用' : '已汰除'}</span></td>
     <td><button class="btn btn-sm" style="background:rgba(12,40,64,0.5);border:1px solid var(--border-hi);color:var(--text-dim)" onclick="showQr('${e.equipment_id}','${e.name.replace(/'/g,"\\'")}','${e.qr_code}')">QR ↗</button></td>
@@ -2290,7 +2290,7 @@ async function loadCostByEq() {
   });
   const sorted = Object.values(byEq).sort((a, b) => b.total - a.total);
   document.getElementById('costByEq').innerHTML = sorted.length ? sorted.map((r,i) => `<div class="cost-eq-row">
-    <span class="cost-eq-name"><span style="font-family:var(--font-mono);color:var(--text-dim);margin-right:10px">${String(i+1).padStart(2,'0')}</span>${r.name}</span>
+    <span class="cost-eq-name"><span style="font-family:var(--font-mono);color:var(--text-dim);margin-right:10px">${String(i+1).padStart(2,'0')}</span>${escHtml(r.name)}</span>
     <span class="cost-eq-amount">${r.total.toLocaleString()} 元</span>
   </div>`).join('') : '<div style="color:var(--text-dim);font-size:.85rem;font-family:var(--font-mono)">目前無費用紀錄</div>';
 }
@@ -3000,7 +3000,7 @@ function renderLocAnalysis() {
     if (hideZero && mkInsp+mkRepair === 0) continue;
     rows.push(`<tr class="la-market-row" onclick="laToggle('${mkKey}')" style="cursor:pointer;background:rgba(0,212,255,0.06);border-top:1px solid var(--border-hi)">
       <td colspan="4" style="font-family:var(--font-head);font-size:.85rem;color:var(--cyan);letter-spacing:.06em;padding-left:12px">
-        <span style="margin-right:6px">${mkCollapsed ? '▶' : '▼'}</span>${mNode.name}
+        <span style="margin-right:6px">${mkCollapsed ? '▶' : '▼'}</span>${escHtml(mNode.name)}
       </td>
       <td style="text-align:right;font-family:var(--font-mono)">${mkInsp||'—'}</td>
       <td style="text-align:right;font-family:var(--font-mono);color:${mkAbn?'var(--red)':'inherit'}">${mkAbn||'—'}</td>
