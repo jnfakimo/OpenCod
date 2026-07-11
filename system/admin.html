@@ -107,6 +107,10 @@ body{
 }
 .brand-logo{display:block;max-width:120px;width:60%;height:auto;margin:0 auto 12px;
   filter:drop-shadow(0 0 10px rgba(0,212,255,.25));border-radius:6px}
+.brand-logo-fallback{display:flex;align-items:center;justify-content:center;
+  width:60px;height:60px;margin:0 auto 12px;font-size:2rem;color:var(--cyan);
+  text-shadow:0 0 10px rgba(0,212,255,.5);border:1px solid var(--border-hi);
+  border-radius:6px;background:rgba(0,212,255,.06)}
 .sidebar-logo::after{
   content:'';position:absolute;
   bottom:0;left:0;right:0;height:1px;
@@ -597,7 +601,7 @@ body{
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <img src="logo.png" alt="臺北農產 第一果菜市場" class="brand-logo" onerror="this.style.display='none'">
+      <img src="logo.png" alt="臺北農產 第一果菜市場" class="brand-logo" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'brand-logo-fallback',textContent:'⬡'}))">
       <div class="org-label"><span data-sysname="org">臺北農產運銷股份有限公司</span><br><span data-sysname="site">第一果菜市場</span></div>
       <h1>⬡ 後台管理系統</h1>
     </div>
