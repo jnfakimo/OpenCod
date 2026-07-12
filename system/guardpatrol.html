@@ -136,10 +136,10 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol.html');}})();
 function translateError(msg){
   if(!msg) return '未知錯誤';
-  if(msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定（system/sql/patrol_shifts.sql）';
+  if((msg.includes('relation') && msg.includes('does not exist'))||msg.includes('schema cache')||msg.includes('Could not find the table')) return '資料表不存在，請先於 Supabase SQL Editor 執行 system/sql/patrol_shifts.sql';
   if(msg.includes('permission denied')||msg.includes('violates row-level security')) return '無操作權限';
   if(msg.includes('Failed to fetch')||msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
-  return '操作失敗，請稍後再試或聯絡系統管理員';
+  return '操作失敗，請稍後再試或聯絡系統管理員（原始訊息：'+msg+'）';
 }
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function fmtHM(t){return String(t||'').slice(0,5);}
