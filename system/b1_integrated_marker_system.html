@@ -68,16 +68,15 @@ body.panel-open #panelToggle{display:none}
 .tbtn{width:40px;height:40px;background:rgba(4,20,40,.95);border:1px solid var(--border);color:var(--cyan2);border-radius:5px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
 .tbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.1)}
 
-/* HUD */
-#hud{position:fixed;right:14px;bottom:14px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;z-index:150;font-size:11px;line-height:1.6}
+/* Bottom-right row: mouse-control hint + HUD, side by side (hint on the left, HUD on the right) */
+#bottomRightRow{position:fixed;right:14px;bottom:14px;z-index:150;display:flex;align-items:flex-end;gap:8px}
+#hud{background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;line-height:1.6}
 #hud .h-t{color:var(--cyan);font-weight:700;margin-bottom:2px}
 #hud span{color:var(--text)}
+#mouseHint{background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;line-height:1.6;color:var(--text);white-space:nowrap}
 
 /* Navigator (mini-map) — bottom-left, enlarged 1.3x */
 #osdNav{position:fixed!important;top:auto!important;right:auto!important;left:14px!important;bottom:14px!important;width:169px!important;height:130px!important;z-index:150}
-
-/* Mouse-control hint — right side, below the tools toolbar (not stacked with the HUD box) */
-#mouseHint{position:fixed;right:14px;top:540px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;z-index:150;font-size:11px;line-height:1.6;color:var(--text)}
 
 #placehint{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:rgba(0,212,255,.15);border:1px solid var(--cyan);color:var(--cyan);padding:6px 16px;border-radius:20px;font-size:12px;z-index:190;display:none}
 #placehint.on{display:block}
@@ -140,8 +139,7 @@ body.panel-open #panelToggle{display:none}
   .pn-list{max-height:38vh}
   #floors{top:auto;bottom:14px;left:14px;right:auto;flex-direction:row}
   #tools{top:auto;bottom:64px;left:14px;right:auto;flex-direction:row}
-  #hud{display:none}
-  #mouseHint{display:none}
+  #bottomRightRow{display:none}
   #osdNav{bottom:114px!important;width:130px!important;height:100px!important}
 }
 </style>
@@ -231,11 +229,12 @@ body.panel-open #panelToggle{display:none}
   <div class="tbtn" id="t-fs"   title="全螢幕">⛶</div>
 </div>
 
-<div id="mouseHint">🖱 滾輪：縮放　拖曳：平移　雙擊：放大</div>
-
-<div id="hud">
-  <div class="h-t" id="hudFloor">▣ B1 地下一層</div>
-  <div>縮放：<span id="h-zoom">100%</span>　旋轉：<span id="h-rot">0°</span></div>
+<div id="bottomRightRow">
+  <div id="mouseHint">🖱 滾輪：縮放　拖曳：平移　雙擊：放大</div>
+  <div id="hud">
+    <div class="h-t" id="hudFloor">▣ B1 地下一層</div>
+    <div>縮放：<span id="h-zoom">100%</span>　旋轉：<span id="h-rot">0°</span></div>
+  </div>
 </div>
 
 <!-- Marker create/edit modal -->
