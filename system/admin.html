@@ -544,7 +544,7 @@ body{
 .scard:hover .scard-enter{opacity:1}
 .scard-badge{position:absolute;top:10px;right:12px;font-family:var(--font-mono);font-size:.62rem;color:var(--scard-c,var(--cyan));border:1px solid var(--scard-c,var(--cyan));padding:1px 6px;border-radius:2px;opacity:.6}
 .modelhub-note{font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim);margin-bottom:14px;letter-spacing:.06em}
-.modelhub-card-grid{display:grid;grid-template-columns:repeat(4,minmax(240px,320px));gap:18px;margin-bottom:18px}
+.modelhub-card-grid{display:grid;grid-template-columns:repeat(5,minmax(240px,320px));gap:18px;margin-bottom:18px}
 .modelhub-bridge{max-width:996px;border:1px solid var(--border);background:rgba(4,17,31,.72);border-radius:4px;padding:16px 18px;color:var(--text-dim);font-size:.78rem;line-height:1.7;position:relative}
 .modelhub-bridge::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff5ea0,transparent 78%)}
 .modelhub-bridge-title{font-family:var(--font-head);font-size:.92rem;color:var(--text-hi);letter-spacing:.08em;margin-bottom:6px}
@@ -1013,6 +1013,13 @@ body{
           <div class="scard-title">3D模型圖</div>
           <div class="scard-desc">統一 3D 立體模型資料來源<br>供後續多系統介接應用</div>
           <div class="scard-enter">▶ 檢視 3D 模型</div>
+        </div>
+        <div class="scard" style="--scard-c:#c77dff" onclick="location.href='patrollist.html'">
+          <div class="scard-badge">HUB-05</div>
+          <div class="scard-icon">◆</div>
+          <div class="scard-title">巡邏點清單</div>
+          <div class="scard-desc">讀取全樓層巡邏點標示資料<br>彙總檢視與快速定位</div>
+          <div class="scard-enter">▶ 檢視巡邏點</div>
         </div>
       </div>
 

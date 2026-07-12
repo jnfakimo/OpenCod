@@ -309,6 +309,12 @@ prog(15,'建立檢視器…');
 
 let rot=0, loaded=0, curFloor='B1', placeMode=false, showLabels=false;
 let markers=[], equip=[], spaces=[], repairs=[], editId=null, curKind='note', detailId=null, pendingLink=null;
+let viewerReady=false, dataReady=false;
+function tryFocusDeepLink(){
+  if(!viewerReady||!dataReady) return;
+  const mid=new URLSearchParams(location.search).get('marker');
+  if(mid) focusMarker(mid);
+}
 
 // 樓層正規化，讓「B1 / B1F」、「1F / 1」等視為同一層（區域位置表與平面圖命名不一致時仍能對應）
 function canonicalFloor(f){
@@ -360,6 +366,7 @@ function onLoad(){
   prog(100,'完成');
   setTimeout(()=>{ const l=document.getElementById('loading'); l.style.transition='opacity .4s'; l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); },150);
   showFloor('B1'); updHud();
+  viewerReady=true; tryFocusDeepLink();
 }
 
 function item(i){ return i==null?null:viewer.world.getItemAt(i); }
@@ -387,6 +394,7 @@ async function loadData(){
   markers=mk.data||[]; equip=eq.data||[]; spaces=sp.data||[]; repairs=(rp.data||[]).filter(r=>!['done','closed','completed','已完成','已結案'].includes(r.status));
   fillLinkSelects();
   drawMarkers(); renderList();
+  dataReady=true; tryFocusDeepLink();
 }
 
 const STAT_LABEL={pending:'待處理',dispatched:'已派工',processing:'處理中',accepted:'已受理',repairing:'維修中'};
