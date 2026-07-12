@@ -56,7 +56,17 @@ body.controls-hidden #panelToggle{display:inline-flex}
 .mini{flex:1;padding:5px;background:rgba(0,212,255,.08);border:1px solid var(--border);color:var(--cyan2);border-radius:3px;cursor:pointer;font-size:10px;transition:all .15s}
 .mini:hover{border-color:var(--cyan);color:var(--cyan)}
 
-#hint{position:fixed;bottom:14px;right:14px;font-size:10px;color:var(--text2);z-index:150;text-align:right;line-height:1.8;pointer-events:none}
+/* Floor-plan thumbnail — bottom-left, reuses the same texture used on the 3D model */
+#planThumb{position:fixed;left:14px;bottom:14px;width:169px;height:130px;z-index:150;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#041428;box-shadow:0 0 18px rgba(0,212,255,.08)}
+#planThumb img{width:100%;height:100%;object-fit:contain}
+
+/* Bottom-right row: mouse-control hint + HUD, side by side (hint on the left, HUD on the right) */
+#bottomRightRow{position:fixed;right:14px;bottom:14px;z-index:150;display:flex;align-items:flex-end;gap:8px}
+#hint{font-size:10px;color:var(--text2);text-align:right;line-height:1.8;pointer-events:none}
+#hud{background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;line-height:1.6;min-width:110px}
+#hud .h-t{color:var(--cyan);font-weight:700;margin-bottom:2px}
+#hud .h-r{color:var(--text2)}
+#hud .h-r span{color:var(--text)}
 #loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px}
 .ld-t{font-size:13px;color:var(--cyan);letter-spacing:.1em}
 .ld-bar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
@@ -75,7 +85,10 @@ body.controls-hidden #panelToggle{display:inline-flex}
   #mkpanel{left:10px;top:150px;font-size:10px;padding:8px 10px}
   #mkToggle{left:10px;top:150px}
   .fbtn{padding:9px 13px}
-  #hint{left:10px;right:10px;bottom:10px;text-align:center;background:rgba(2,11,24,.72);border:1px solid rgba(10,58,90,.45);border-radius:4px;padding:5px 8px}
+  #planThumb{display:none}
+  #hud{display:none}
+  #bottomRightRow{position:static;display:block}
+  #hint{position:fixed;left:10px;right:10px;bottom:10px;text-align:center;background:rgba(2,11,24,.72);border:1px solid rgba(10,58,90,.45);border-radius:4px;padding:5px 8px}
 }
 @media(max-width:480px){
   #topbar{gap:8px;padding:0 10px}
@@ -158,7 +171,15 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <div class="h-r" style="color:var(--text2);margin-top:4px">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
 </div>
 
-<div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
+<div id="planThumb"><img id="planThumbImg" alt="樓層平面縮圖"></div>
+
+<div id="bottomRightRow">
+  <div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
+  <div id="hud">
+    <div class="h-t">▣ 3D 模型圖</div>
+    <div class="h-r">顯示樓層：<span id="h-floors">—</span></div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -332,11 +353,18 @@ function toggleMkPanel(open){
 function toggleMkPin(){ mkPinned3D=!mkPinned3D; if(mkPinned3D) toggleMkPanel(true); syncMkPin3D(); }
 function syncMkPin3D(){ const b=document.getElementById('mkPinBtn'); if(b){ b.classList.toggle('on',mkPinned3D); b.textContent=mkPinned3D?'📌 已釘住':'📌 釘住'; } }
 
+function updateHud(){
+  const el=document.getElementById('h-floors');
+  if(el) el.textContent=FLOORS.filter(f=>f.visible).length+'/'+FLOORS.length;
+}
 function finishLoad(){
   prog(100,'完成');
   setTimeout(()=>{const l=document.getElementById('loading');l.style.transition='opacity .4s';l.style.opacity='0';setTimeout(()=>l.style.display='none',400);},150);
   resetView(); animate();
   loadMarkers();
+  const img=document.getElementById('planThumbImg');
+  if(img) img.src=FLOORS[0].tex;
+  updateHud();
 }
 
 // ── Orbit controls ──
@@ -411,6 +439,8 @@ function toggleFloor(id){
   markerObjs.forEach(mk=>{ if(mk.fl===fl) mk.group.visible=fl.visible && kindVis[mk.kind]; });
   document.getElementById('t-'+id).classList.toggle('on',fl.visible);
   document.getElementById('t-'+id).classList.toggle('off',!fl.visible);
+  if(fl.visible){ const img=document.getElementById('planThumbImg'); if(img) img.src=fl.tex; }
+  updateHud();
 }
 function togglePanel(open){
   const mobile=matchMedia('(max-width:1024px)').matches;
