@@ -105,12 +105,6 @@ body{
   border-bottom:1px solid var(--border);
   position:relative;
 }
-.brand-logo{display:block;max-width:120px;width:60%;height:auto;margin:0 auto 12px;
-  filter:drop-shadow(0 0 10px rgba(0,212,255,.25));border-radius:6px}
-.brand-logo-fallback{display:flex;align-items:center;justify-content:center;
-  width:60px;height:60px;margin:0 auto 12px;font-size:2rem;color:var(--cyan);
-  text-shadow:0 0 10px rgba(0,212,255,.5);border:1px solid var(--border-hi);
-  border-radius:6px;background:rgba(0,212,255,.06)}
 .sidebar-logo::after{
   content:'';position:absolute;
   bottom:0;left:0;right:0;height:1px;
@@ -550,7 +544,7 @@ body{
 .scard:hover .scard-enter{opacity:1}
 .scard-badge{position:absolute;top:10px;right:12px;font-family:var(--font-mono);font-size:.62rem;color:var(--scard-c,var(--cyan));border:1px solid var(--scard-c,var(--cyan));padding:1px 6px;border-radius:2px;opacity:.6}
 .modelhub-note{font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim);margin-bottom:14px;letter-spacing:.06em}
-.modelhub-card-grid{display:grid;grid-template-columns:repeat(3,minmax(240px,320px));gap:18px;margin-bottom:18px}
+.modelhub-card-grid{display:grid;grid-template-columns:repeat(4,minmax(240px,320px));gap:18px;margin-bottom:18px}
 .modelhub-bridge{max-width:996px;border:1px solid var(--border);background:rgba(4,17,31,.72);border-radius:4px;padding:16px 18px;color:var(--text-dim);font-size:.78rem;line-height:1.7;position:relative}
 .modelhub-bridge::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff5ea0,transparent 78%)}
 .modelhub-bridge-title{font-family:var(--font-head);font-size:.92rem;color:var(--text-hi);letter-spacing:.08em;margin-bottom:6px}
@@ -601,7 +595,6 @@ body{
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <img src="logo.png" alt="臺北農產 第一果菜市場" class="brand-logo" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'brand-logo-fallback',textContent:'⬡'}))">
       <div class="org-label"><span data-sysname="org">臺北農產運銷股份有限公司</span><br><span data-sysname="site">第一果菜市場</span></div>
       <h1>⬡ 後台管理系統</h1>
     </div>
@@ -1013,6 +1006,13 @@ body{
           <div class="scard-title">整合標記系統</div>
           <div class="scard-desc">讀取區域位置表空間主檔<br>平面圖標記與位置定位</div>
           <div class="scard-enter">▶ 第三步：標記定位</div>
+        </div>
+        <div class="scard" style="--scard-c:#ffb300" onclick="location.href='floor3d.html'">
+          <div class="scard-badge">HUB-04</div>
+          <div class="scard-icon">▣</div>
+          <div class="scard-title">3D模型圖</div>
+          <div class="scard-desc">統一 3D 立體模型資料來源<br>供後續多系統介接應用</div>
+          <div class="scard-enter">▶ 檢視 3D 模型</div>
         </div>
       </div>
 
