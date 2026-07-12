@@ -76,8 +76,8 @@ body.panel-open #panelToggle{display:none}
 /* Navigator (mini-map) — bottom-left, enlarged 1.3x */
 #osdNav{position:fixed!important;top:auto!important;right:auto!important;left:14px!important;bottom:14px!important;width:169px!important;height:130px!important;z-index:150}
 
-/* Mouse-control hint — bottom-right, stacked above the HUD box */
-#mouseHint{position:fixed;right:14px;bottom:78px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;z-index:150;font-size:11px;line-height:1.6;color:var(--text)}
+/* Mouse-control hint — right side, below the tools toolbar (not stacked with the HUD box) */
+#mouseHint{position:fixed;right:14px;top:540px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;z-index:150;font-size:11px;line-height:1.6;color:var(--text)}
 
 #placehint{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:rgba(0,212,255,.15);border:1px solid var(--cyan);color:var(--cyan);padding:6px 16px;border-radius:20px;font-size:12px;z-index:190;display:none}
 #placehint.on{display:block}
