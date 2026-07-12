@@ -24,6 +24,26 @@ window.PatrolStatus = (function () {
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
   }
 
+  // 班別名稱/數量固定來自 patrol_shift_template；patrol_shifts 只存「當天客製過的時段」。
+  // 回傳「這一天實際生效的班別清單」= 範本班別，若當天有客製時段就用客製的。
+  async function getShiftsForDate(db, dateStr) {
+    const [{ data: tpl }, { data: overrides }] = await Promise.all([
+      db.from('patrol_shift_template').select('*').order('sort_order'),
+      db.from('patrol_shifts').select('*').eq('shift_date', dateStr),
+    ]);
+    const ovMap = new Map((overrides || []).map(o => [o.name, o]));
+    return (tpl || []).map(t => {
+      const ov = ovMap.get(t.name);
+      return {
+        shift_id: ov ? ov.shift_id : ('tpl:' + t.template_id),
+        name: t.name,
+        start_time: ov ? ov.start_time : t.start_time,
+        end_time: ov ? ov.end_time : t.end_time,
+        sort_order: t.sort_order,
+      };
+    });
+  }
+
   // 取得「當前最相關」的一個班別：正在進行中的班別，否則最近剛結束的班別
   // （含昨天跨夜班別仍在進行中的情況）。用於地圖圖釘即時上色。
   async function compute(db, dateStr) {
@@ -33,9 +53,9 @@ window.PatrolStatus = (function () {
     const yBase = new Date(dayBase.getTime() - 24 * 3600 * 1000);
     const yStr = dateStrOf(yBase);
 
-    const [{ data: shiftsToday }, { data: shiftsYesterday }, { data: markers }] = await Promise.all([
-      db.from('patrol_shifts').select('*').eq('shift_date', dateStr).order('sort_order'),
-      db.from('patrol_shifts').select('*').eq('shift_date', yStr).order('sort_order'),
+    const [shiftsToday, shiftsYesterday, { data: markers }] = await Promise.all([
+      getShiftsForDate(db, dateStr),
+      getShiftsForDate(db, yStr),
       db.from('plan_markers').select('marker_id').eq('kind', 'patrol').eq('status', 'active'),
     ]);
 
@@ -80,8 +100,8 @@ window.PatrolStatus = (function () {
     dateStr = dateStr || dateStrOf(now);
     const dayBase = new Date(dateStr + 'T00:00:00');
 
-    const [{ data: shifts }, { data: markers }] = await Promise.all([
-      db.from('patrol_shifts').select('*').eq('shift_date', dateStr).order('sort_order'),
+    const [shifts, { data: markers }] = await Promise.all([
+      getShiftsForDate(db, dateStr),
       db.from('plan_markers').select('marker_id,floor_id,label').eq('kind', 'patrol').eq('status', 'active').order('floor_id').order('label'),
     ]);
 

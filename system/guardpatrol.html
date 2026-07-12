@@ -170,7 +170,7 @@ async function load(){
 function render(result){
   const {shifts,markers,matrix}=result;
   const grid=document.getElementById('grid');
-  if(!shifts.length){grid.innerHTML='<div class="empty">這天尚未設定班別。請至「班別排程管理」設定後再回來查看。</div>';document.getElementById('s-ok').textContent='0';document.getElementById('s-pending').textContent='0';document.getElementById('s-overdue').textContent='0';return;}
+  if(!shifts.length){grid.innerHTML='<div class="empty">尚未設定任何班別範本。請至「班別排程管理」新增範本班別後再回來查看。</div>';document.getElementById('s-ok').textContent='0';document.getElementById('s-pending').textContent='0';document.getElementById('s-overdue').textContent='0';return;}
   if(!markers.length){grid.innerHTML='<div class="empty">目前沒有巡邏點資料。請至「整合標記系統」平面圖新增巡邏點標示。</div>';return;}
 
   let ok=0,pending=0,overdue=0;

@@ -103,16 +103,14 @@ tr:last-child td{border-bottom:none}
 
 <div class="content">
   <div class="hint">
-    設定每天的巡檢班別時段（早/午/晚/夜可自訂）。每一天都能個別調整，可先「套用範本」快速帶入預設班別，再依當天需求增刪改。
-    所有班別巡守同一組巡檢點（即「巡邏點清單」內的巡邏點），不需另外指定。
+    班別名稱與數量固定來自下方「預設範本」，每天只能個別調整這幾個班別的時段（幾點到幾點），不能單日新增或刪除班別本身；
+    要增減班別請到下方「預設範本」設定。所有班別巡守同一組巡檢點（即「巡邏點清單」內的巡邏點），不需另外指定。
   </div>
 
   <div class="panel">
     <div class="panel-h">
       <h2>當日班別</h2>
       <div class="sp"></div>
-      <button class="btn" onclick="applyTemplate()">↧ 套用範本</button>
-      <button class="btn btn-add" onclick="openShiftModal()">＋ 新增班別</button>
     </div>
     <div class="datebar">
       <button class="mini" onclick="shiftDate(-1)">◀</button>
@@ -133,12 +131,11 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 
-<!-- 當日班別 modal -->
+<!-- 當日班別 modal（只能調整時段，班別名稱固定來自範本） -->
 <div class="modal-bg" id="m-shift">
   <div class="modal">
-    <div class="modal-head"><span class="mt" id="shiftTitle">新增班別</span><span class="x" onclick="closeModal('m-shift')">✕</span></div>
+    <div class="modal-head"><span class="mt" id="shiftTitle">調整時段</span><span class="x" onclick="closeModal('m-shift')">✕</span></div>
     <div class="modal-body">
-      <div class="field"><label>班別名稱</label><input id="f-name" placeholder="例：早班"></div>
       <div class="field"><label>開始時間</label><input id="f-start" type="time"></div>
       <div class="field"><label>結束時間（若跨夜，結束時間可小於開始時間）</label><input id="f-end" type="time"></div>
       <div class="msg" id="shiftMsg"></div>
@@ -192,26 +189,32 @@ function shiftDate(delta){
   load();
 }
 
-let shiftRows=[], tplRows=[], editShiftId=null, editTplId=null;
+let shiftRows=[], tplRows=[], editShiftName=null;
 
 async function load(){
+  if(!tplRows.length) await loadTpl();
   const dateStr=document.getElementById('datePick').value;
-  const {data,error}=await db.from('patrol_shifts').select('*').eq('shift_date',dateStr).order('sort_order');
+  const {data,error}=await db.from('patrol_shifts').select('*').eq('shift_date',dateStr);
   if(error){document.getElementById('shiftList').innerHTML='<div class="empty">讀取失敗：'+esc(translateError(error.message))+'</div>';return;}
-  shiftRows=data||[];
+  const overrides=new Map((data||[]).map(s=>[s.name,s]));
+  // 班別名稱／數量固定來自範本；當天若有客製時段就用客製的，否則用範本預設時段
+  shiftRows=tplRows.map(t=>{
+    const ov=overrides.get(t.name);
+    return {name:t.name, start_time:ov?ov.start_time:t.start_time, end_time:ov?ov.end_time:t.end_time,
+      sort_order:t.sort_order, customized:!!ov};
+  });
   renderShifts();
 }
 
 function renderShifts(){
   const box=document.getElementById('shiftList');
-  if(!shiftRows.length){box.innerHTML='<div class="empty">這天還沒有排班。可以點「套用範本」快速帶入，或「新增班別」自行設定。</div>';return;}
+  if(!shiftRows.length){box.innerHTML='<div class="empty">尚未設定範本班別，請先在下方「預設範本」新增。</div>';return;}
   box.innerHTML=`<table><tr><th>班別</th><th>時段</th><th></th></tr>`+
     shiftRows.map(s=>`<tr>
-      <td>${esc(s.name)}</td>
+      <td>${esc(s.name)}${s.customized?' <small style="color:var(--patrol)">（已調整）</small>':''}</td>
       <td class="time">${fmtHM(s.start_time)} – ${fmtHM(s.end_time)}</td>
       <td><div class="acts">
-        <button class="mini" onclick="openShiftModal('${s.shift_id}')">編輯</button>
-        <button class="mini del" onclick="delShift('${s.shift_id}')">刪除</button>
+        <button class="mini" onclick="openShiftModal('${esc(s.name)}')">調整時段</button>
       </div></td>
     </tr>`).join('')+`</table>`;
 }
@@ -238,43 +241,26 @@ function renderTpl(){
 
 function closeModal(id){document.getElementById(id).classList.remove('show');}
 
-function openShiftModal(id){
-  editShiftId=id||null;
-  document.getElementById('shiftTitle').textContent=id?'編輯班別':'新增班別';
+function openShiftModal(name){
+  editShiftName=name;
+  const s=shiftRows.find(x=>x.name===name);if(!s)return;
+  document.getElementById('shiftTitle').textContent=name+'　調整時段';
   document.getElementById('shiftMsg').textContent='';
-  if(id){
-    const s=shiftRows.find(x=>x.shift_id===id);
-    document.getElementById('f-name').value=s.name;
-    document.getElementById('f-start').value=fmtHM(s.start_time);
-    document.getElementById('f-end').value=fmtHM(s.end_time);
-  }else{
-    document.getElementById('f-name').value='';
-    document.getElementById('f-start').value='';
-    document.getElementById('f-end').value='';
-  }
+  document.getElementById('f-start').value=fmtHM(s.start_time);
+  document.getElementById('f-end').value=fmtHM(s.end_time);
   document.getElementById('m-shift').classList.add('show');
 }
 async function saveShift(){
-  const name=document.getElementById('f-name').value.trim();
   const start=document.getElementById('f-start').value;
   const end=document.getElementById('f-end').value;
   const msg=document.getElementById('shiftMsg');
-  if(!name||!start||!end){msg.textContent='請完整填寫班別名稱與時間';return;}
+  if(!start||!end){msg.textContent='請完整填寫開始與結束時間';return;}
   const dateStr=document.getElementById('datePick').value;
-  const sortOrder=editShiftId?shiftRows.find(x=>x.shift_id===editShiftId).sort_order:(shiftRows.length?Math.max(...shiftRows.map(s=>s.sort_order))+1:1);
-  const payload={shift_date:dateStr,name,start_time:start,end_time:end,sort_order:sortOrder};
-  let error;
-  if(editShiftId){({error}=await db.from('patrol_shifts').update(payload).eq('shift_id',editShiftId));}
-  else{({error}=await db.from('patrol_shifts').insert(payload));}
+  const s=shiftRows.find(x=>x.name===editShiftName);
+  const payload={shift_date:dateStr,name:editShiftName,start_time:start,end_time:end,sort_order:s?s.sort_order:0};
+  const {error}=await db.from('patrol_shifts').upsert(payload,{onConflict:'shift_date,name'});
   if(error){msg.textContent=translateError(error.message);return;}
-  closeModal('m-shift');toast(editShiftId?'已更新':'已新增');await load();
-}
-async function delShift(id){
-  const s=shiftRows.find(x=>x.shift_id===id);if(!s)return;
-  if(!confirm(`確定刪除「${s.name}」（${fmtHM(s.start_time)}–${fmtHM(s.end_time)}）？`))return;
-  const {error}=await db.from('patrol_shifts').delete().eq('shift_id',id);
-  if(error){toast('刪除失敗：'+translateError(error.message),true);return;}
-  toast('已刪除');await load();
+  closeModal('m-shift');toast('已更新');await load();
 }
 
 function openTplModal(id){
@@ -305,26 +291,14 @@ async function saveTpl(){
   if(editTplId){({error}=await db.from('patrol_shift_template').update(payload).eq('template_id',editTplId));}
   else{({error}=await db.from('patrol_shift_template').insert(payload));}
   if(error){msg.textContent=translateError(error.message);return;}
-  closeModal('m-tpl');toast(editTplId?'已更新':'已新增');await loadTpl();
+  closeModal('m-tpl');toast(editTplId?'已更新':'已新增');await loadTpl();await load();
 }
 async function delTpl(id){
   const s=tplRows.find(x=>x.template_id===id);if(!s)return;
-  if(!confirm(`確定從範本刪除「${s.name}」？（不影響已排定的日期）`))return;
+  if(!confirm(`確定從範本刪除「${s.name}」？（會一併從所有日期的排班移除這個班別）`))return;
   const {error}=await db.from('patrol_shift_template').delete().eq('template_id',id);
   if(error){toast('刪除失敗：'+translateError(error.message),true);return;}
-  toast('已刪除');await loadTpl();
-}
-
-async function applyTemplate(){
-  if(!tplRows.length){toast('尚未設定範本班別，請先在下方新增範本',true);return;}
-  const dateStr=document.getElementById('datePick').value;
-  const existingNames=new Set(shiftRows.map(s=>s.name));
-  const toInsert=tplRows.filter(t=>!existingNames.has(t.name))
-    .map(t=>({shift_date:dateStr,name:t.name,start_time:t.start_time,end_time:t.end_time,sort_order:t.sort_order}));
-  if(!toInsert.length){toast('範本班別當天都已存在，未新增');return;}
-  const {error}=await db.from('patrol_shifts').insert(toInsert);
-  if(error){toast('套用失敗：'+translateError(error.message),true);return;}
-  toast(`已套用 ${toInsert.length} 個班別`);await load();
+  toast('已刪除');await loadTpl();await load();
 }
 
 document.getElementById('m-shift').addEventListener('click',e=>{if(e.target.id==='m-shift')closeModal('m-shift');});
@@ -332,7 +306,6 @@ document.getElementById('m-tpl').addEventListener('click',e=>{if(e.target.id==='
 
 document.getElementById('datePick').value=todayStr();
 load();
-loadTpl();
 </script>
 </body>
 </html>
