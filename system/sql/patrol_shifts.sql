@@ -40,9 +40,9 @@ create policy "allow_all_for_now" on patrol_shifts for all using (true);
 -- ── 預設範本（可在後台自行調整）──────────────────────────────
 insert into patrol_shift_template (name, start_time, end_time, sort_order)
 select * from (values
-  ('早班','08:00','12:00',1),
-  ('午班','12:00','17:00',2),
-  ('晚班','17:00','22:00',3),
-  ('夜班','22:00','08:00',4)
+  ('早班','08:00'::time,'12:00'::time,1),
+  ('午班','12:00'::time,'17:00'::time,2),
+  ('晚班','17:00'::time,'22:00'::time,3),
+  ('夜班','22:00'::time,'08:00'::time,4)
 ) as v(name, start_time, end_time, sort_order)
 where not exists (select 1 from patrol_shift_template);
