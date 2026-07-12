@@ -555,7 +555,13 @@ function focusMarker(id){
   viewer.viewport.panTo(new OpenSeadragon.Point(m.x,m.y));
   viewer.viewport.zoomTo(Math.max(viewer.viewport.getZoom(),2));
   detailId=id; markLoadedSelection();
-  setTimeout(()=>{const el=document.querySelector('.pin[data-id="'+id+'"]');if(el)openDetailByEl(m,el);},350);
+  let tries=0;
+  const tryOpen=()=>{
+    const el=document.querySelector('.pin[data-id="'+id+'"]');
+    if(el){ openDetailByEl(m,el); return; }
+    if(++tries<15) setTimeout(tryOpen,150);
+  };
+  setTimeout(tryOpen,350);
 }
 
 // ── Place mode ─────────────────────────────────────────────
