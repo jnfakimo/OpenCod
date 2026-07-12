@@ -73,6 +73,9 @@ body.panel-open #panelToggle{display:none}
 #hud .h-t{color:var(--cyan);font-weight:700;margin-bottom:2px}
 #hud span{color:var(--text)}
 
+/* Navigator (mini-map) — moved to bottom-right, stacked above the HUD box, enlarged 1.3x */
+#osdNav{position:fixed!important;top:auto!important;left:auto!important;right:14px!important;bottom:78px!important;width:169px!important;height:130px!important;z-index:150}
+
 #placehint{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:rgba(0,212,255,.15);border:1px solid var(--cyan);color:var(--cyan);padding:6px 16px;border-radius:20px;font-size:12px;z-index:190;display:none}
 #placehint.on{display:block}
 
@@ -135,6 +138,7 @@ body.panel-open #panelToggle{display:none}
   #floors{top:auto;bottom:14px;left:14px;right:auto;flex-direction:row}
   #tools{top:auto;bottom:64px;left:14px;right:auto;flex-direction:row}
   #hud{display:none}
+  #osdNav{bottom:14px!important;width:130px!important;height:100px!important}
 }
 </style>
 </head>
@@ -318,7 +322,7 @@ const FLOORS=[
 
 const viewer = OpenSeadragon({
   id:'osd', prefixUrl:'', showNavigationControl:false,
-  showNavigator:true, navigatorPosition:'TOP_RIGHT', navigatorHeight:100, navigatorWidth:130,
+  showNavigator:true, navigatorId:'osdNav', navigatorPosition:'BOTTOM_RIGHT', navigatorHeight:130, navigatorWidth:169,
   navigatorAutoFade:false, navigatorBackground:'#041428', navigatorBorderColor:'#0a3a5a', navigatorDisplayRegionColor:'#00d4ff',
   backgroundColor:'#04101f', degrees:0, minZoomLevel:0.2, maxZoomPixelRatio:4, zoomPerScroll:1.3,
   animationTime:0.5, springStiffness:7,
