@@ -127,6 +127,14 @@ function hasPermission(profile, key) {
   return ROLE_PERMISSION_PRESETS[normalizeRoleId(profile)]?.[key] === true;
 }
 
+function safeRedirect(target) {
+  if (!target) return null;
+  if (/^[A-Za-z0-9_\-]+\.html(\?[A-Za-z0-9_\-=&%.]*)?$/.test(target)) return target;
+  return null;
+}
+function getRedirectTarget(profile) {
+  return safeRedirect(new URLSearchParams(window.location.search).get('redirect')) || getLoginRoute(profile);
+}
 function getLoginRoute(profile) {
   if (!profile.rbac_role) {
     const p = profile.permissions || {};
@@ -199,7 +207,7 @@ function translateError(msg) {
   const { data: { session } } = await db.auth.getSession();
   if (session) {
     const { data: profile } = await db.from('users').select('role,rbac_role,permissions').eq('auth_id', session.user.id).single();
-    if (profile) { window.location.href = getLoginRoute(profile); return; }
+    if (profile) { window.location.href = getRedirectTarget(profile); return; }
   }
 })();
 
@@ -249,7 +257,7 @@ async function doLogin() {
   if (profile.department) sessionStorage.setItem('user_department', profile.department);
   if (profile.phone) sessionStorage.setItem('user_phone', profile.phone);
   else sessionStorage.removeItem('user_phone');
-  window.location.href = getLoginRoute(profile);
+  window.location.href = getRedirectTarget(profile);
 }
 
 // ── 忘記密碼 ──────────────────────────────────────────────────────────────────

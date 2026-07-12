@@ -8,6 +8,7 @@
 <meta http-equiv="Expires" content="0">
 <title>巡邏點清單 — 臺北農產巡檢系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
   --cyan:#00d4ff;--cyan-glow:0 0 14px rgba(0,212,255,.5);--blue:#1a7fff;--patrol:#c77dff;
@@ -70,12 +71,27 @@ a{color:inherit;text-decoration:none}
   box-shadow:0 0 0 1px rgba(255,255,255,.6);flex:none}
 .mk-row .mname{flex:1;font-size:.85rem;color:var(--text)}
 .mk-row .mnote{font-size:.72rem;color:var(--text-dim)}
+.mk-row .mlast{font-size:.7rem;color:var(--text-dim);white-space:nowrap}
+.mk-row .mlast.has{color:var(--green,#00ff9d)}
 .mk-row .acts{display:flex;gap:6px}
 .mini{font-size:.68rem;padding:3px 9px;border:1px solid var(--border);border-radius:2px;
   cursor:pointer;background:none;color:var(--text-dim);transition:all .2s}
 .mini:hover{border-color:var(--patrol);color:var(--patrol)}
 
 .empty{text-align:center;padding:60px 20px;color:var(--text-dim);font-size:.85rem}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(1,6,14,.82);z-index:200;
+  align-items:center;justify-content:center;padding:16px}
+.modal-bg.show{display:flex}
+.qr-modal{background:var(--panel);border:1px solid var(--border-hi);border-radius:6px;
+  padding:22px;text-align:center;max-width:280px;width:100%}
+.qr-modal .x{float:right;cursor:pointer;color:var(--text-dim);font-size:1.1rem}
+.qr-modal .x:hover{color:var(--patrol)}
+.qr-modal canvas{margin:10px auto;display:block;background:#fff;padding:8px;border-radius:4px}
+.qr-modal .qname{font-family:var(--font-head);font-size:1rem;color:var(--text-hi);margin-bottom:2px}
+.qr-modal .qfloor{font-size:.72rem;color:var(--text-dim);margin-bottom:6px}
+.qr-modal .btn-row{display:flex;gap:8px;margin-top:12px}
+.qr-modal .mini{flex:1;padding:7px}
 </style>
 </head>
 <body>
@@ -107,9 +123,23 @@ a{color:inherit;text-decoration:none}
   <div class="toolbar">
     <select id="flt-floor" onchange="render()"><option value="">全部樓層</option></select>
     <input id="flt-search" placeholder="搜尋巡邏點名稱／備註…" oninput="render()" style="width:220px">
+    <div style="flex:1"></div>
+    <button class="mini" style="padding:7px 12px" onclick="printAllQr()">🖶 列印全部 QR</button>
   </div>
 
   <div id="list"></div>
+</div>
+
+<div class="modal-bg" id="qrModal" onclick="if(event.target.id==='qrModal')closeQr()">
+  <div class="qr-modal">
+    <span class="x" onclick="closeQr()">✕</span>
+    <div class="qname" id="qrName"></div>
+    <div class="qfloor" id="qrFloor"></div>
+    <canvas id="qrCanvas"></canvas>
+    <div class="btn-row">
+      <button class="mini" onclick="window.print()">🖶 列印</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -137,8 +167,16 @@ function floorOrder(f){
 }
 
 let rows=[];
+let lastCheckin=new Map(); // marker_id -> checkin_at (最近一次)
 const collapsed=new Set();
 let collapsedReady=false;
+const CHECKIN_BASE=location.origin+location.pathname.replace(/patrollist\.html$/,'patrolcheckin.html');
+
+function fmtTime(t){
+  const d=new Date(t);
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
 async function load(){
   const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,label,note,x,y')
@@ -152,6 +190,12 @@ async function load(){
   const floors=floorsSorted();
   [...collapsed].forEach(f=>{if(!floors.includes(f))collapsed.delete(f);});
   if(!collapsedReady){ collapsedReady=true; } // 預設全部展開
+
+  lastCheckin=new Map();
+  const {data:ck}=await db.from('patrol_checkins').select('marker_id,checkin_at')
+    .order('checkin_at',{ascending:false}).limit(1000);
+  (ck||[]).forEach(r=>{ if(!lastCheckin.has(r.marker_id)) lastCheckin.set(r.marker_id,r.checkin_at); });
+
   render();
 }
 
@@ -194,18 +238,66 @@ function render(){
         <span class="fcount">${items.length} 個巡邏點</span>
       </div>
       <div class="floor-body">
-        ${items.map(r=>`<div class="mk-row">
+        ${items.map(r=>{
+          const lc=lastCheckin.get(r.marker_id);
+          return `<div class="mk-row">
           <span class="dot"></span>
           <span class="mname">${esc(r.label)}</span>
           <span class="mnote">${esc(r.note||'')}</span>
-          <span class="acts"><button class="mini" onclick="location.href='b1_integrated_marker_system.html?marker=${esc(r.marker_id)}'">定位</button></span>
-        </div>`).join('')}
+          <span class="mlast${lc?' has':''}">${lc?'上次簽到 '+esc(fmtTime(lc)):'尚無簽到記錄'}</span>
+          <span class="acts">
+            <button class="mini" onclick="openQr('${esc(r.marker_id)}')">QR</button>
+            <button class="mini" onclick="location.href='b1_integrated_marker_system.html?marker=${esc(r.marker_id)}'">定位</button>
+          </span>
+        </div>`;}).join('')}
       </div>
     </div>`;
   }).join('');
 }
 
 function toggleFloor(f){collapsed.has(f)?collapsed.delete(f):collapsed.add(f);render();}
+
+// ── QR code ────────────────────────────────────────────────
+function openQr(markerId){
+  const r=rows.find(x=>x.marker_id===markerId); if(!r)return;
+  document.getElementById('qrName').textContent=r.label;
+  document.getElementById('qrFloor').textContent=r.floor_id;
+  const url=CHECKIN_BASE+'?marker='+encodeURIComponent(markerId);
+  QRCode.toCanvas(document.getElementById('qrCanvas'),url,{width:180,margin:1},err=>{
+    if(err) console.error(err);
+  });
+  document.getElementById('qrModal').classList.add('show');
+}
+function closeQr(){document.getElementById('qrModal').classList.remove('show');}
+
+async function printAllQr(){
+  if(!rows.length){alert('目前沒有巡邏點可列印');return;}
+  const win=window.open('','_blank');
+  if(!win){alert('請允許彈出視窗以列印');return;}
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>巡邏點 QR 標籤</title><style>'+
+    'body{font-family:"Noto Sans TC",sans-serif;margin:0;padding:16px}'+
+    '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}'+
+    '.tag{border:1px dashed #999;border-radius:6px;padding:12px;text-align:center;page-break-inside:avoid}'+
+    '.tag img{width:140px;height:140px}'+
+    '.tag .n{font-size:14px;font-weight:700;margin-top:6px}'+
+    '.tag .f{font-size:11px;color:#666}'+
+    '@media print{.tag{border:1px solid #ccc}}'+
+    '</style></head><body><div class="grid" id="g"></div></body></html>');
+  win.document.close();
+  const g=win.document.getElementById('g');
+  const sorted=rows.slice().sort((a,b)=>(floorOrder(a.floor_id)-floorOrder(b.floor_id))||(a.label||'').localeCompare(b.label||'','zh-Hant'));
+  for(const r of sorted){
+    const url=CHECKIN_BASE+'?marker='+encodeURIComponent(r.marker_id);
+    const dataUrl=await QRCode.toDataURL(url,{width:280,margin:1});
+    const tag=win.document.createElement('div');
+    tag.className='tag';
+    tag.innerHTML='<img src="'+dataUrl+'"><div class="n"></div><div class="f"></div>';
+    tag.querySelector('.n').textContent=r.label;
+    tag.querySelector('.f').textContent=r.floor_id;
+    g.appendChild(tag);
+  }
+  win.focus();
+}
 
 load();
 </script>

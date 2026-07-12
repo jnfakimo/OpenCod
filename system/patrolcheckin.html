@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>巡邏點簽到 — 臺北農產巡檢系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;
+  --patrol:#c77dff;--green:#00ff9d;--red:#ff5470;--text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;
+  --font-head:'Rajdhani',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:32px 16px}
+.card{width:100%;max-width:420px;background:var(--panel);border:1px solid var(--border);
+  border-radius:8px;padding:26px 22px;text-align:center}
+.icon{font-size:2.6rem;margin-bottom:10px}
+.icon.ok{color:var(--green);text-shadow:0 0 18px rgba(0,255,157,.5)}
+.icon.err{color:var(--red);text-shadow:0 0 18px rgba(255,84,112,.5)}
+.icon.load{color:var(--patrol);text-shadow:0 0 18px rgba(199,125,255,.5)}
+h1{font-family:var(--font-head);font-size:1.2rem;color:var(--text-hi);letter-spacing:.04em;margin-bottom:6px}
+.sub{font-size:.8rem;color:var(--text-dim);margin-bottom:18px}
+.detail{background:var(--surface);border:1px solid var(--border);border-radius:4px;
+  padding:14px;text-align:left;font-size:.82rem;line-height:2;margin-bottom:18px}
+.detail b{color:var(--text-hi)}
+.detail .k{color:var(--text-dim);display:inline-block;width:70px}
+.btn{display:inline-block;padding:10px 20px;border-radius:3px;font-size:.8rem;
+  font-family:var(--font-head);letter-spacing:.05em;border:1px solid var(--patrol);
+  color:var(--patrol);background:rgba(199,125,255,.1);cursor:pointer;text-decoration:none}
+.btn:hover{background:rgba(199,125,255,.2)}
+.hist{margin-top:20px;text-align:left}
+.hist-t{font-size:.72rem;color:var(--text-dim);margin-bottom:8px;letter-spacing:.04em}
+.hist-row{display:flex;justify-content:space-between;font-size:.76rem;color:var(--text);
+  padding:6px 0;border-top:1px solid rgba(12,40,64,.6)}
+.hist-row .u{color:var(--text-dim)}
+</style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="icon load">◐</div>
+  <h1>處理中…</h1>
+  <div class="sub">正在確認登入狀態</div>
+</div>
+
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg){
+  if(!msg) return '未知錯誤';
+  if(msg.includes('permission denied')||msg.includes('violates row-level security')) return '無操作權限';
+  if(msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if(msg.includes('Failed to fetch')||msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
+function fmt(t){
+  const d=new Date(t);
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
+
+function showState(icon,iconClass,title,sub){
+  document.getElementById('card').innerHTML=`
+    <div class="icon ${iconClass}">${icon}</div>
+    <h1>${esc(title)}</h1>
+    <div class="sub">${esc(sub)}</div>
+    <a class="btn" href="patrollist.html">◀ 返回巡邏點清單</a>`;
+}
+
+(async()=>{
+  const params=new URLSearchParams(location.search);
+  const mid=params.get('marker');
+  if(!mid){ showState('✕','err','無效的連結','缺少巡邏點代碼，請重新掃描 QR code'); return; }
+
+  const {data:{session}}=await db.auth.getSession();
+  if(!session){
+    location.href='login.html?redirect='+encodeURIComponent('patrolcheckin.html'+location.search);
+    return;
+  }
+
+  const {data:profile}=await db.from('users').select('user_id,name').eq('auth_id',session.user.id).single();
+  const userId=profile?.user_id||null;
+  const userName=profile?.name||'（未知人員）';
+
+  const {data:marker,error:mErr}=await db.from('plan_markers')
+    .select('marker_id,floor_id,label,kind,status').eq('marker_id',mid).single();
+  if(mErr||!marker||marker.kind!=='patrol'||marker.status!=='active'){
+    showState('✕','err','找不到此巡邏點','此巡邏點可能已被刪除或停用，請聯絡管理員確認');
+    return;
+  }
+
+  const {error:insErr}=await db.from('patrol_checkins').insert({
+    marker_id:marker.marker_id, floor_id:marker.floor_id, label:marker.label,
+    user_id:userId, user_name:userName
+  });
+  if(insErr){
+    showState('✕','err','簽到失敗',translateError(insErr.message));
+    return;
+  }
+
+  const now=new Date();
+  document.getElementById('card').innerHTML=`
+    <div class="icon ok">✓</div>
+    <h1>簽到成功</h1>
+    <div class="sub">已記錄本次巡邏</div>
+    <div class="detail">
+      <div><span class="k">巡邏點</span><b>${esc(marker.label)}</b></div>
+      <div><span class="k">樓層</span><b>${esc(marker.floor_id)}</b></div>
+      <div><span class="k">人員</span><b>${esc(userName)}</b></div>
+      <div><span class="k">時間</span><b>${esc(fmt(now))}</b></div>
+    </div>
+    <a class="btn" href="patrollist.html">◀ 返回巡邏點清單</a>
+    <div class="hist" id="hist"></div>`;
+
+  const {data:recent}=await db.from('patrol_checkins').select('user_name,checkin_at')
+    .eq('marker_id',marker.marker_id).order('checkin_at',{ascending:false}).limit(5);
+  if(recent&&recent.length){
+    document.getElementById('hist').innerHTML=
+      '<div class="hist-t">此巡邏點最近簽到記錄</div>'+
+      recent.map(r=>`<div class="hist-row"><span class="u">${esc(r.user_name||'')}</span><span>${esc(fmt(r.checkin_at))}</span></div>`).join('');
+  }
+})();
+</script>
+</body>
+</html>
