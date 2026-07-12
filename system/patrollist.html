@@ -8,7 +8,7 @@
 <meta http-equiv="Expires" content="0">
 <title>巡邏點清單 — 臺北農產巡檢系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
   --cyan:#00d4ff;--cyan-glow:0 0 14px rgba(0,212,255,.5);--blue:#1a7fff;--patrol:#c77dff;
@@ -87,7 +87,7 @@ a{color:inherit;text-decoration:none}
   padding:22px;text-align:center;max-width:280px;width:100%}
 .qr-modal .x{float:right;cursor:pointer;color:var(--text-dim);font-size:1.1rem}
 .qr-modal .x:hover{color:var(--patrol)}
-.qr-modal canvas{margin:10px auto;display:block;background:#fff;padding:8px;border-radius:4px}
+.qr-modal #qrCanvas{margin:10px auto;display:flex;justify-content:center;background:#fff;padding:8px;border-radius:4px;width:fit-content}
 .qr-modal .qname{font-family:var(--font-head);font-size:1rem;color:var(--text-hi);margin-bottom:2px}
 .qr-modal .qfloor{font-size:.72rem;color:var(--text-dim);margin-bottom:6px}
 .qr-modal .btn-row{display:flex;gap:8px;margin-top:12px}
@@ -135,7 +135,7 @@ a{color:inherit;text-decoration:none}
     <span class="x" onclick="closeQr()">✕</span>
     <div class="qname" id="qrName"></div>
     <div class="qfloor" id="qrFloor"></div>
-    <canvas id="qrCanvas"></canvas>
+    <div id="qrCanvas"></div>
     <div class="btn-row">
       <button class="mini" onclick="window.print()">🖶 列印</button>
     </div>
@@ -258,19 +258,26 @@ function render(){
 function toggleFloor(f){collapsed.has(f)?collapsed.delete(f):collapsed.add(f);render();}
 
 // ── QR code ────────────────────────────────────────────────
+function makeQrDataUrl(text,size){
+  const tmp=document.createElement('div');
+  new QRCode(tmp,{text:text,width:size,height:size,correctLevel:QRCode.CorrectLevel.M});
+  const canvas=tmp.querySelector('canvas');
+  return canvas?canvas.toDataURL('image/png'):'';
+}
+
 function openQr(markerId){
   const r=rows.find(x=>x.marker_id===markerId); if(!r)return;
   document.getElementById('qrName').textContent=r.label;
   document.getElementById('qrFloor').textContent=r.floor_id;
   const url=CHECKIN_BASE+'?marker='+encodeURIComponent(markerId);
-  QRCode.toCanvas(document.getElementById('qrCanvas'),url,{width:180,margin:1},err=>{
-    if(err) console.error(err);
-  });
+  const box=document.getElementById('qrCanvas');
+  box.innerHTML='';
+  new QRCode(box,{text:url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
   document.getElementById('qrModal').classList.add('show');
 }
 function closeQr(){document.getElementById('qrModal').classList.remove('show');}
 
-async function printAllQr(){
+function printAllQr(){
   if(!rows.length){alert('目前沒有巡邏點可列印');return;}
   const win=window.open('','_blank');
   if(!win){alert('請允許彈出視窗以列印');return;}
@@ -286,16 +293,17 @@ async function printAllQr(){
   win.document.close();
   const g=win.document.getElementById('g');
   const sorted=rows.slice().sort((a,b)=>(floorOrder(a.floor_id)-floorOrder(b.floor_id))||(a.label||'').localeCompare(b.label||'','zh-Hant'));
-  for(const r of sorted){
+  sorted.forEach(r=>{
     const url=CHECKIN_BASE+'?marker='+encodeURIComponent(r.marker_id);
-    const dataUrl=await QRCode.toDataURL(url,{width:280,margin:1});
+    const dataUrl=makeQrDataUrl(url,280);
     const tag=win.document.createElement('div');
     tag.className='tag';
-    tag.innerHTML='<img src="'+dataUrl+'"><div class="n"></div><div class="f"></div>';
+    tag.innerHTML='<img><div class="n"></div><div class="f"></div>';
+    tag.querySelector('img').src=dataUrl;
     tag.querySelector('.n').textContent=r.label;
     tag.querySelector('.f').textContent=r.floor_id;
     g.appendChild(tag);
-  }
+  });
   win.focus();
 }
 
