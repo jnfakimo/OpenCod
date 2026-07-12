@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js"></script>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
@@ -56,10 +56,6 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
 .page-btn:disabled{opacity:.35;cursor:not-allowed;border-color:var(--border);color:var(--text-dim)}
 .page-info{margin-right:auto}
 .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.66rem;font-weight:700;white-space:nowrap}
-.urg{font-size:.64rem;padding:1px 7px;border-radius:8px;font-weight:700}
-.urg-urgent{background:rgba(255,59,59,.15);color:var(--red);border:1px solid rgba(255,59,59,.4)}
-.urg-high{background:rgba(255,179,0,.12);color:var(--amber);border:1px solid rgba(255,179,0,.35)}
-.urg-normal{background:rgba(58,106,138,.12);color:var(--text-dim)}
 .empty{text-align:center;color:var(--text-dim);padding:36px;font-size:.82rem}
 /* modal */
 .modal-bg{position:fixed;inset:0;background:rgba(1,5,15,.86);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow:auto}
@@ -449,7 +445,7 @@ function renderTableHeader(){
   const head=document.getElementById('tHead');
   if(currentTab==='pending'){
     head.innerHTML=`<tr>
-      <th>報修單號</th><th>故障類型</th><th>單位</th><th>急迫性</th><th>狀態</th><th>報修時間</th><th></th>
+      <th>報修單號</th><th>故障類型</th><th>單位</th><th>狀態</th><th>報修時間</th><th></th>
     </tr>`;
   } else {
     head.innerHTML=`<tr>
@@ -461,19 +457,16 @@ function renderTableHeader(){
 function renderTableBody(pageRows){
   const tb=document.getElementById('list');
   if(!pageRows.length){
-    tb.innerHTML=`<tr><td colspan="7" class="empty">無符合案件</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="6" class="empty">無符合案件</td></tr>`;
     return;
   }
-  if(currentTab==='pending'){
+    if(currentTab==='pending'){
     tb.innerHTML=pageRows.map(item=>{
       const r=item.req;
-      const urg=r?.urgency||'normal';
-      const urgHtml=urg!=='normal'?`<span class="urg urg-${urg}">${urg==='urgent'?'緊急':urg==='high'?'高':''}</span>`:'';
       return `<tr onclick="openPendingDetail('${r.request_id}')">
         <td class="req-no">${escHtml(displayReqNo(r))}</td>
         <td>${escHtml(r.fault_type||'—')}</td>
         <td>${escHtml(r.department||'—')}</td>
-        <td>${urgHtml}</td>
         <td>${badge(r.status)}</td>
         <td style="color:var(--text-dim);font-size:.72rem">${fmt(r.created_at)}</td>
         <td style="color:var(--cyan)">→ 派工</td>
@@ -614,7 +607,6 @@ async function openPendingDetail(id){
       <div><span class="k">故障位置：</span><span class="v">${escHtml(displayFaultLocation(curReq))}</span></div>
       <div><span class="k">電話/手機：</span><span class="v">${escHtml(curReq.phone||'—')} / ${escHtml(curReq.mobile||'—')}</span></div>
       <div><span class="k">希望完成：</span><span class="v">${curReq.desired_finish?fmtDate(curReq.desired_finish):'—'}</span></div>
-      <div><span class="k">急迫性：</span><span class="v">${escHtml(curReq.urgency||'normal')}</span></div>
       <div class="full"><span class="k">故障描述：</span><span class="v">${escHtml(displayFaultDesc(curReq))}</span></div>
       ${o?`<div class="full"><span class="k">上次派工：</span><span class="v">${escHtml(o.wo_no||'')} · 技師 ${escHtml(o.users?.name||'—')}${o.vendor?' · 委外 '+escHtml(o.vendor):''}（${(ST[o.status]||[o.status])[0]}）</span></div>`:''}
     </div>
@@ -823,7 +815,7 @@ function show(id){document.getElementById(id).classList.add('show');}
 function closeM(id){document.getElementById(id).classList.remove('show');}
 let _tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=err?'var(--red)':'var(--border-hi)';el.style.color=err?'var(--red)':'var(--text)';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400);}
 
-init().catch(e=>{document.getElementById('list').innerHTML=`<tr><td colspan="7" class="empty" style="color:var(--red)">載入失敗：${escHtml(translateError(e.message))}<br><small>請確認已執行 work_order_schema.sql</small></td></tr>`;});
+init().catch(e=>{document.getElementById('list').innerHTML=`<tr><td colspan="6" class="empty" style="color:var(--red)">載入失敗：${escHtml(translateError(e.message))}<br><small>請確認已執行 work_order_schema.sql</small></td></tr>`;});
 </script>
 </body>
 </html>

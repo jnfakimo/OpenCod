@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js"></script>
-<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <title>戰情儀表板 — 報修派工管理系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="patrolstatus.js"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
   --cyan:#00d4ff;--blue:#1a7fff;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;--purple:#b48aff;
   --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif;--font-mono:'Share Tech Mono',monospace}
 :root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--purple:#7c3aed;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
-/* light mode overrides */
 :root[data-theme="light"] body{background-image:none}
 :root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
 :root[data-theme="light"] .nav-title{text-shadow:none}
@@ -28,37 +28,88 @@ a{color:inherit;text-decoration:none}
 .nav-sub{font-size:.7rem;color:var(--text-dim)}.nav-space{flex:1}
 .nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;transition:all .2s}
 .nav-back:hover{border-color:var(--cyan);color:var(--cyan)}
-.wrap{max-width:1280px;margin:0 auto;padding:16px}
-/* date toolbar */
-.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.wrap{max-width:1320px;margin:0 auto;padding:12px 16px}
+
+/* ── toolbar ── */
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .toolbar input[type=date]{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:2px;font-size:.78rem;outline:none}
 .toolbar input:focus{border-color:var(--cyan)}
 .qbtn{font-size:.72rem;color:var(--text-dim);border:1px solid var(--border);padding:6px 12px;border-radius:2px;cursor:pointer;background:none;transition:all .2s}
 .qbtn:hover,.qbtn.active{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.06)}
-.tspace{flex:1}
-/* KPI cards */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:18px}
-.kpi{position:relative;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:14px 16px;overflow:hidden}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--kc,var(--cyan)),transparent 85%);opacity:.8}
-.kpi .n{font-family:var(--font-head);font-size:2rem;font-weight:700;color:var(--kc,var(--cyan));line-height:1.1}
-.kpi .l{font-size:.7rem;color:var(--text-dim);margin-top:4px}
-.kpi .u{font-size:.62rem;color:var(--text-dim)}
-/* panels */
-.row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-@media(max-width:820px){.row{grid-template-columns:1fr}}
-.card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:14px 16px}
-.card h3{font-family:var(--font-head);font-size:.92rem;color:var(--cyan);letter-spacing:.05em;margin-bottom:12px;font-weight:700;display:flex;align-items:center;gap:8px}
-.card h3 .tag{font-size:.6rem;color:var(--text-dim);font-family:var(--font-mono);border:1px solid var(--border);padding:1px 6px;border-radius:2px;margin-left:auto}
-.chart-box{position:relative;height:240px}
-.bars{display:flex;flex-direction:column;gap:7px}
-.bar-row{display:grid;grid-template-columns:120px 1fr 40px;align-items:center;gap:8px;font-size:.74rem}
-.bar-row .nm{color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar-track{background:rgba(12,40,64,.5);border-radius:2px;height:14px;overflow:hidden}
-.bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--cyan),var(--blue))}
-.bar-row .vv{text-align:right;color:var(--cyan);font-family:var(--font-mono)}
-.empty{color:var(--text-dim);font-size:.78rem;text-align:center;padding:30px}
+.tspace{flex:1}.updated{font-size:.65rem;color:var(--text-dim);font-family:var(--font-mono)}
+.empty{color:var(--text-dim);font-size:.78rem;text-align:center;padding:20px}
 .loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:100;color:var(--cyan);font-family:var(--font-head);letter-spacing:.1em}
 
+/* ── alert bar ── */
+.alert-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.al{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:5px 12px;font-size:.75rem}
+.al .al-icon{width:8px;height:8px;border-radius:50%}
+.al .al-n{font-family:var(--font-head);font-size:1.05rem;font-weight:700;margin-right:2px}
+.al.danger{border-left:3px solid var(--red)}.al.danger .al-icon{background:var(--red);box-shadow:0 0 6px var(--red)}.al.danger .al-n{color:var(--red)}
+.al.warn{border-left:3px solid var(--amber)}.al.warn .al-icon{background:var(--amber);box-shadow:0 0 6px var(--amber)}.al.warn .al-n{color:var(--amber)}
+.al.info{border-left:3px solid var(--cyan)}.al.info .al-icon{background:var(--cyan)}.al.info .al-n{color:var(--cyan)}
+.al .al-l{color:var(--text-dim)}
+.al .al-s{font-size:.65rem;color:var(--text-dim);margin-left:4px;font-family:var(--font-mono)}
+
+/* ── KPI strip (horizontal) ── */
+.kpi-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.ks{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--border);border-radius:3px;padding:8px 14px;min-width:100px;flex:1}
+.ks .ks-icon{font-size:1.3rem;opacity:.6}
+.ks .ks-b{display:flex;flex-direction:column}
+.ks .ks-n{font-family:var(--font-head);font-size:1.35rem;font-weight:700;color:var(--ksc,var(--cyan));line-height:1.1}
+.ks .ks-u{font-size:.6rem;color:var(--text-dim);font-family:var(--font-mono)}
+.ks .ks-l{font-size:.64rem;color:var(--text-dim);margin-top:1px;white-space:nowrap}
+
+/* ── main two‑col layout ── */
+.dash-main{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:860px){.dash-main{grid-template-columns:1fr}}
+
+/* ── patrol ── */
+.pcard{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 14px}
+.pcard h3{font-family:var(--font-head);font-size:.88rem;color:var(--cyan);letter-spacing:.05em;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:8px}
+.pcard h3 .tag{font-size:.6rem;color:var(--text-dim);font-family:var(--font-mono);border:1px solid var(--border);padding:1px 6px;border-radius:2px;margin-left:auto}
+.ps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.pc{background:rgba(12,40,64,.3);border:1px solid var(--border);border-radius:2px;padding:6px 12px;min-width:80px;flex:1;text-align:center}
+.pc .n{font-family:var(--font-head);font-size:1.2rem;font-weight:700;line-height:1.1}
+.pc.ok .n{color:var(--green)}.pc.pending .n{color:var(--purple)}.pc.overdue .n{color:var(--red)}
+.pc .l{font-size:.6rem;color:var(--text-dim);margin-top:1px}
+#pi{font-size:.68rem;color:var(--text-dim);margin-bottom:4px}
+#pg{overflow-x:auto;max-height:340px;overflow-y:auto}
+.pt{border-collapse:collapse;width:100%;font-size:.7rem}
+.pt th{text-align:center;color:var(--text-dim);font-size:.6rem;padding:3px 5px;border-bottom:1px solid var(--border);font-weight:400;white-space:nowrap}
+.pt th.pl{text-align:left;position:sticky;top:0;background:var(--panel);z-index:2}
+.pt td{text-align:center;padding:2px 5px;border-bottom:1px solid rgba(12,40,64,.2)}
+.pt td.pl{text-align:left;white-space:nowrap}
+.pt tr:hover td{background:rgba(0,212,255,.03)}
+.pd{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:.6rem;font-weight:700;color:#022}
+.pd.ok{background:var(--green)}
+.pd.pending{background:var(--purple);color:#fff}
+.pd.overdue{background:var(--red);color:#fff}
+
+/* ── chart card (right column) ── */
+.ccard{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 14px}
+.ccard h3{font-family:var(--font-head);font-size:.88rem;color:var(--cyan);letter-spacing:.05em;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:8px}
+.ccard h3 .tag{font-size:.6rem;color:var(--text-dim);font-family:var(--font-mono);border:1px solid var(--border);padding:1px 6px;border-radius:2px;margin-left:auto}
+.chart-box{position:relative;height:220px}
+
+/* ── rankings 2x2 ── */
+.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:640px){.rank-grid{grid-template-columns:1fr}}
+.rcard{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:10px 12px}
+.rcard h3{font-family:var(--font-head);font-size:.82rem;color:var(--cyan);letter-spacing:.05em;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:6px}
+.rcard h3 .tag{font-size:.58rem;color:var(--text-dim);font-family:var(--font-mono);border:1px solid var(--border);padding:1px 5px;border-radius:2px;margin-left:auto}
+.bars{display:flex;flex-direction:column;gap:5px}
+.bar-row{display:grid;grid-template-columns:100px 1fr 32px;align-items:center;gap:6px;font-size:.7rem}
+.bar-row .nm{color:var(--text-hi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{background:rgba(12,40,64,.5);border-radius:2px;height:12px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--cyan),var(--blue))}
+.bar-row .vv{text-align:right;color:var(--cyan);font-family:var(--font-mono);font-size:.7rem}
+
+/* ── trend full width ── */
+.tcard{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:12px 14px;margin-bottom:12px}
+.tcard h3{font-family:var(--font-head);font-size:.88rem;color:var(--cyan);letter-spacing:.05em;margin-bottom:8px;font-weight:700;display:flex;align-items:center;gap:8px}
+.tcard h3 .tag{font-size:.6rem;color:var(--text-dim);font-family:var(--font-mono);border:1px solid var(--border);padding:1px 6px;border-radius:2px;margin-left:auto}
+.trend-box{position:relative;height:200px}
 </style>
 <link rel="stylesheet" href="light-mode-fix.css">
 </head>
@@ -74,36 +125,59 @@ a{color:inherit;text-decoration:none}
 <a href="workorder.html"><button class="nav-back">⚒ 報修系統</button></a>
 <a href="dispatch.html"><button class="nav-back">◪ 派工系統</button></a>
 <a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
-  <a href="admin.html"><button class="nav-back">← 後台</button></a>
+<a href="admin.html"><button class="nav-back">← 後台</button></a>
 </nav>
 
 <div class="wrap">
+  <!-- toolbar -->
   <div class="toolbar">
     <button class="qbtn" data-range="today" onclick="quick('today')">今日</button>
     <button class="qbtn active" data-range="month" onclick="quick('month')">本月</button>
     <button class="qbtn" data-range="year" onclick="quick('year')">本年</button>
-    <span style="color:var(--text-dim);font-size:.74rem">自訂：</span>
+    <span style="color:var(--text-dim);font-size:.72rem">自訂：</span>
     <input type="date" id="from"> <span style="color:var(--text-dim)">~</span> <input type="date" id="to">
     <button class="qbtn" onclick="load()">查詢</button>
     <div class="tspace"></div>
-    <span id="rangeLbl" style="font-size:.72rem;color:var(--text-dim)"></span>
+    <span id="rangeLbl" style="font-size:.7rem;color:var(--text-dim)"></span>
+    <span class="updated" id="updatedLbl"></span>
   </div>
 
-  <!-- KPI -->
-  <div class="kpi-grid" id="kpiGrid"></div>
+  <!-- alert bar -->
+  <div class="alert-bar" id="alertBar"></div>
 
-  <!-- 排行 + 趨勢 -->
-  <div class="row">
-    <div class="card"><h3>◈ 各單位報修排行<span class="tag">前 8 名</span></h3><div class="bars" id="rkDept"></div></div>
-    <div class="card"><h3>◉ 各設備故障排行<span class="tag">前 8 名</span></h3><div class="bars" id="rkEqp"></div></div>
+  <!-- KPI strip -->
+  <div class="kpi-strip" id="kpiStrip"></div>
+
+  <!-- patrol + status doughnut -->
+  <div class="dash-main">
+    <div class="pcard">
+      <h3>◈ 駐衛警巡檢即時 <span class="tag" id="pt">12s</span></h3>
+      <div class="ps">
+        <div class="pc ok"><div class="n" id="p1">-</div><div class="l">已打卡</div></div>
+        <div class="pc pending"><div class="n" id="p2">-</div><div class="l">待打卡</div></div>
+        <div class="pc overdue"><div class="n" id="p3">-</div><div class="l">逾期未打卡</div></div>
+      </div>
+      <div id="pi"></div>
+      <div id="pg"></div>
+    </div>
+    <div class="ccard">
+      <h3>◐ 案件狀態分佈</h3>
+      <div class="chart-box"><canvas id="statusChart"></canvas></div>
+    </div>
   </div>
-  <div class="row">
-    <div class="card"><h3>⚒ 各維修人員案件數<span class="tag">前 8 名</span></h3><div class="bars" id="rkTech"></div></div>
-    <div class="card"><h3>📈 各月份報修趨勢<span class="tag">12 月</span></h3><div class="chart-box"><canvas id="trendChart"></canvas></div></div>
+
+  <!-- rankings 2x2 -->
+  <div class="rank-grid">
+    <div class="rcard"><h3>◈ 各單位報修排行<span class="tag">前 8</span></h3><div class="bars" id="rkDept"></div></div>
+    <div class="rcard"><h3>◉ 各設備故障排行<span class="tag">前 8</span></h3><div class="bars" id="rkEqp"></div></div>
+    <div class="rcard"><h3>⚒ 維修人員案件數<span class="tag">前 8</span></h3><div class="bars" id="rkTech"></div></div>
+    <div class="rcard"><h3>⚑ 故障類型分析</h3><div class="bars" id="rkFault"></div></div>
   </div>
-  <div class="row">
-    <div class="card"><h3>◐ 案件狀態分佈</h3><div class="chart-box"><canvas id="statusChart"></canvas></div></div>
-    <div class="card"><h3>⚑ 故障類型分析</h3><div class="bars" id="rkFault"></div></div>
+
+  <!-- trend full width -->
+  <div class="tcard">
+    <h3>📈 各月份報修趨勢<span class="tag">12 月</span></h3>
+    <div class="trend-box"><canvas id="trendChart"></canvas></div>
   </div>
 </div>
 
@@ -133,7 +207,7 @@ async function fetchReqs(from,toEnd){
   let res=await db.from('repair_requests')
     .select('request_id,department,equipment_id,status,fault_type,created_at,desired_finish,hidden,equipment(name,category)')
     .gte('created_at',from).lte('created_at',toEnd).limit(5000);
-  if(res.error){ // P1 欄位尚未建立 → 退回基本欄位
+  if(res.error){
     schemaHint();
     res=await db.from('repair_requests').select('request_id,department,equipment_id,status,created_at,equipment(name)')
       .gte('created_at',from).lte('created_at',toEnd).limit(5000);
@@ -154,14 +228,14 @@ function schemaHint(){
   if(document.getElementById('schemaHint')) return;
   const d=document.createElement('div'); d.id='schemaHint';
   d.style.cssText='background:rgba(255,179,0,.1);border:1px solid var(--amber);color:var(--amber);padding:8px 12px;border-radius:3px;font-size:.74rem;margin-bottom:12px';
-  d.innerHTML='⚠ 部分進階欄位尚未建立，目前顯示基本統計。請在 Supabase SQL Editor 執行 <b>system/sql/work_order_schema.sql</b> 以啟用完整 KPI（逾期/SLA 等）。';
-  document.querySelector('.wrap').insertBefore(d,document.querySelector('.kpi-grid'));
+  d.innerHTML='\u26a0 部分進階欄位尚未建立，目前顯示基本統計。請在 Supabase SQL Editor 執行 <b>system/sql/work_order_schema.sql</b> 以啟用完整 KPI（逾期/SLA 等）。';
+  document.querySelector('.wrap').insertBefore(d,document.querySelector('.alert-bar'));
 }
 
 async function load(){
   const from=document.getElementById('from').value, to=document.getElementById('to').value;
   const toEnd=to+'T23:59:59';
-  document.getElementById('rangeLbl').textContent=`區間：${from} ~ ${to}`;
+  document.getElementById('rangeLbl').textContent=`\u5340\u9593\uff1a${from} ~ ${to}`;
   const [R,O]=await Promise.all([fetchReqs(from,toEnd),fetchOrds()]);
   render(R,O,from,to);
   document.getElementById('loading').style.display='none';
@@ -172,7 +246,6 @@ function inRange(ts,from,to){ if(!ts) return false; const d=ts.slice(0,10); retu
 function render(R,O,from,to){
   const today=ymd(new Date());
   const monthStart=today.slice(0,7);
-  // KPIs
   const todayNew=R.filter(r=>r.created_at?.slice(0,10)===today).length;
   const todayDone=O.filter(o=>DONE_ORD.includes(o.status)&&o.finish_time?.slice(0,10)===today).length;
   const inProg=O.filter(o=>['accepted','in_progress','waiting_parts','waiting_vendor','assigned'].includes(o.status)).length;
@@ -181,53 +254,54 @@ function render(R,O,from,to){
               + R.filter(r=>OPEN_REQ.includes(r.status)&&r.desired_finish&&new Date(r.desired_finish)<now).length;
   const waitDispatch=R.filter(r=>r.status==='pending').length;
   const monthCnt=R.filter(r=>r.created_at?.slice(0,7)===monthStart).length;
-  // SLA / MTTR
   const doneO=O.filter(o=>DONE_ORD.includes(o.status)&&o.finish_time);
   const onTime=doneO.filter(o=>o.expected_finish? new Date(o.finish_time)<=new Date(o.expected_finish):true).length;
   const sla=doneO.length? Math.round(onTime/doneO.length*100):null;
   const mttrArr=doneO.filter(o=>o.start_time).map(o=>(new Date(o.finish_time)-new Date(o.start_time))/3600000);
   const mttr=mttrArr.length? (mttrArr.reduce((a,b)=>a+b,0)/mttrArr.length):null;
-  // MTBF: avg gap between failures per equipment (days)
   const byEq={}; R.forEach(r=>{ if(!r.equipment_id)return; (byEq[r.equipment_id]||(byEq[r.equipment_id]=[])).push(new Date(r.created_at)); });
   let gaps=[]; Object.values(byEq).forEach(arr=>{ if(arr.length<2)return; arr.sort((a,b)=>a-b); for(let i=1;i<arr.length;i++) gaps.push((arr[i]-arr[i-1])/86400000); });
   const mtbf=gaps.length? (gaps.reduce((a,b)=>a+b,0)/gaps.length):null;
 
-  const kpis=[
-    {n:todayNew,l:'今日新增報修',c:'var(--cyan)'},
-    {n:todayDone,l:'今日完成案件',c:'var(--green)'},
-    {n:inProg,l:'處理中案件',c:'var(--blue)'},
-    {n:overdue,l:'已逾期案件',c:'var(--red)'},
-    {n:waitDispatch,l:'待派工案件',c:'var(--amber)'},
-    {n:monthCnt,l:'本月報修件數',c:'var(--purple)'},
-    {n:sla==null?'—':sla+'%',l:'SLA 達成率',c:'var(--green)'},
-    {n:mttr==null?'—':mttr.toFixed(1),u:'小時',l:'平均修復時間 MTTR',c:'var(--cyan)'},
-    {n:mtbf==null?'—':mtbf.toFixed(1),u:'天',l:'平均故障間隔 MTBF',c:'var(--blue)'},
-    {n:R.length,l:'區間報修總數',c:'var(--cyan)'},
-    {n:doneO.length,l:'區間完成總數',c:'var(--green)'},
+  // alert bar
+  const alerts=[
+    overdue>0 ? `<div class="al danger"><span class="al-icon"></span><span class="al-n">${overdue}</span><span class="al-l">已逾期</span></div>` : '',
+    waitDispatch>0 ? `<div class="al warn"><span class="al-icon"></span><span class="al-n">${waitDispatch}</span><span class="al-l">待派工</span></div>` : '',
+    `<div class="al info"><span class="al-icon"></span><span class="al-n">${R.length}</span><span class="al-l">區間報修</span><span class="al-s">|</span><span class="al-n">${doneO.length}</span><span class="al-l">已完成</span></div>`,
   ];
-  document.getElementById('kpiGrid').innerHTML=kpis.map(k=>
-    `<div class="kpi" style="--kc:${k.c}"><div class="n">${k.n}${k.u?`<span class="u"> ${k.u}</span>`:''}</div><div class="l">${k.l}</div></div>`).join('');
+  document.getElementById('alertBar').innerHTML=alerts.filter(Boolean).join('');
+
+  // KPI strip
+  const kpis=[
+    {n:todayNew,l:'新增',c:'var(--cyan)',ic:'\u2795'},
+    {n:todayDone,l:'完成',c:'var(--green)',ic:'\u2714'},
+    {n:inProg,l:'處理中',c:'var(--blue)',ic:'\u2699'},
+    {n:sla==null?'—':sla+'%',l:'SLA',c:'var(--amber)',ic:'\u26a0'},
+    {n:mttr==null?'—':mttr.toFixed(1),u:'h',l:'MTTR',c:'var(--cyan)',ic:'\u23f1'},
+    {n:mtbf==null?'—':mtbf.toFixed(1),u:'d',l:'MTBF',c:'var(--purple)',ic:'\u26a1'},
+    {n:monthCnt,l:'本月',c:'var(--green)',ic:'\ud83d\udcc5'},
+  ];
+  document.getElementById('kpiStrip').innerHTML=kpis.map(k=>
+    `<div class="ks" style="--ksc:${k.c}"><div class="ks-icon">${k.ic}</div><div class="ks-b"><div class="ks-n">${k.n}${k.u?`<span class="ks-u"> ${k.u}</span>`:''}</div><div class="ks-l">${k.l}</div></div></div>`).join('');
 
   // rankings
-  rankBars('rkDept', countBy(R,r=>r.department||'未填'));
-  rankBars('rkEqp',  countBy(R,r=>r.equipment?.name||'未知設備'));
-  rankBars('rkFault',countBy(R,r=>r.fault_type||'未分類'));
-  // technician: orders by assignee name
-  rankBars('rkTech', countBy(O,o=>o.users?.name||'未指派'));
+  rankBars('rkDept', countBy(R,r=>r.department||'\u672a\u586b'));
+  rankBars('rkEqp',  countBy(R,r=>r.equipment?.name||'\u672a\u77e5\u8a2d\u5099'));
+  rankBars('rkFault',countBy(R,r=>r.fault_type||'\u672a\u5206\u985e'));
+  rankBars('rkTech', countBy(O,o=>o.users?.name||'\u672a\u6307\u6d3e'));
 
-  // status distribution (doughnut)
-  const stMap={pending:'待派工',transferred:'已轉派',assigned:'待接單',in_progress:'維修中',waiting_parts:'等待料件',waiting_vendor:'等待廠商',pending_review:'待驗收',completed:'已完成',closed:'已結案',rejected:'退件',cancelled:'取消',overdue:'逾期'};
+  // status distribution
+  const stMap={pending:'\u5f85\u6d3e\u5de5',transferred:'\u5df2\u8f49\u6d3e',assigned:'\u5f85\u63a5\u55ae',in_progress:'\u7dad\u4fee\u4e2d',waiting_parts:'\u7b49\u5f85\u6599\u4ef6',waiting_vendor:'\u7b49\u5f85\u5ee0\u5546',pending_review:'\u5f85\u9a57\u6536',completed:'\u5df2\u5b8c\u6210',closed:'\u5df2\u7d50\u6848',rejected:'\u9000\u4ef6',cancelled:'\u53d6\u6d88',overdue:'\u904e\u671f'};
   const stc=countBy(R,r=>stMap[r.status]||r.status);
   drawDoughnut('statusChart',stc);
 
-  // monthly trend (last 12 months) — independent of range filter
   drawTrend();
 }
 
 function countBy(arr,fn){const m={};arr.forEach(x=>{const k=fn(x);m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
 function rankBars(id,entries){
   const box=document.getElementById(id);
-  if(!entries.length){box.innerHTML='<div class="empty">無資料</div>';return;}
+  if(!entries.length){box.innerHTML='<div class="empty">\u7121\u8cc7\u6599</div>';return;}
   const max=entries[0][1];
   box.innerHTML=entries.slice(0,8).map(([k,v])=>
     `<div class="bar-row"><div class="nm" title="${k}">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.max(4,v/max*100)}%"></div></div><div class="vv">${v}</div></div>`).join('');
@@ -238,24 +312,53 @@ function drawDoughnut(id,entries){
   if(!entries.length){return;}
   const cols=['#00d4ff','#1a7fff','#00ff9d','#ffb300','#b48aff','#ff3b3b','#5a8ab0','#00a8cc','#cc7700','#1aaa66','#cc1199','#888'];
   statusChart=new Chart(ctx,{type:'doughnut',data:{labels:entries.map(e=>e[0]),datasets:[{data:entries.map(e=>e[1]),backgroundColor:cols,borderColor:'#05101e',borderWidth:2}]},
-    options:{plugins:{legend:{position:'right',labels:{color:'#a8d8f0',font:{size:11},boxWidth:12}}},cutout:'58%'}});
+    options:{plugins:{legend:{position:'right',labels:{color:'#a8d8f0',font:{size:10},boxWidth:10,padding:8}}},cutout:'58%'}});
 }
 async function drawTrend(){
-  // last 12 months counts
   const now=new Date(); const labels=[],keys=[];
-  for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);labels.push((d.getMonth()+1)+'月');keys.push(d.toISOString().slice(0,7));}
+  for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);labels.push((d.getMonth()+1)+'\u6708');keys.push(d.toISOString().slice(0,7));}
   const start=keys[0]+'-01';
   const {data}=await db.from('repair_requests').select('created_at,hidden').gte('created_at',start).limit(20000);
   const cnt={}; (data||[]).filter(r=>!r.hidden).forEach(r=>{const k=r.created_at?.slice(0,7);cnt[k]=(cnt[k]||0)+1;});
   const vals=keys.map(k=>cnt[k]||0);
   const ctx=document.getElementById('trendChart');
   if(trendChart) trendChart.destroy();
-  trendChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'報修件數',data:vals,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.12)',fill:true,tension:.3,pointBackgroundColor:'#00d4ff'}]},
+  trendChart=new Chart(ctx,{type:'line',data:{labels,datasets:[{label:'\u5831\u4fee\u4ef6\u6578',data:vals,borderColor:'#00d4ff',backgroundColor:'rgba(0,212,255,.12)',fill:true,tension:.3,pointBackgroundColor:'#00d4ff'}]},
     options:{plugins:{legend:{labels:{color:'#a8d8f0'}}},scales:{x:{ticks:{color:'#3a6a8a'},grid:{color:'rgba(12,40,64,.5)'}},y:{ticks:{color:'#3a6a8a'},grid:{color:'rgba(12,40,64,.5)'},beginAtZero:true}}}});
 }
 
 // init
 quick('month');
+</script>
+<script>
+const P_MS=12000;let _pt;
+function fh(t){return String(t||'').slice(0,5);}
+async function ld(){
+  if(typeof PatrolStatus==='undefined'){document.getElementById('pg').innerHTML='<div class="empty">\u8f09\u5165\u4e2d</div>';return;}
+  try{
+    const d=PatrolStatus.dateStrOf(new Date());
+    const r=await PatrolStatus.computeMatrix(db,d);
+    const {shifts,markers,matrix}=r;
+    let a=0,b=0,c=0;
+    matrix.forEach(v=>{if(v==='ok')a++;else if(v==='pending')b++;else c++;});
+    document.getElementById('p1').textContent=a;
+    document.getElementById('p2').textContent=b;
+    document.getElementById('p3').textContent=c;
+    const n=new Date();
+    const s=shifts.find(x=>n>=x.range.start&&n<=x.range.end);
+    if(s) document.getElementById('pi').innerHTML='\u73ed\u5225\uff1a<b style="color:var(--cyan)">'+s.name+'</b> ('+fh(s.start_time)+'-'+fh(s.end_time)+')';
+    else if(shifts.length) document.getElementById('pi').innerHTML='<span style="color:var(--text-dim)">\u76ee\u524d\u7121\u9032\u884c\u4e2d\u73ed\u5225</span>';
+    else document.getElementById('pi').innerHTML='<span style="color:var(--text-dim)">\u5c1a\u672a\u8a2d\u5b9a\u73ed\u5225\u6392\u7a0b</span>';
+    const g=document.getElementById('pg');
+    if(!shifts.length||!markers.length){g.innerHTML='<div class="empty">'+(!shifts.length?'\u5c1a\u672a\u8a2d\u5b9a\u73ed\u5225\u6392\u7a0b':'\u5c1a\u7121\u5de1\u908f\u9ede')+'</div>';return;}
+    const ic={ok:'\u2713',pending:'\u2026',overdue:'\u2715'};
+    g.innerHTML='<table class="pt"><tr><th class="pl">\u5de1\u6aa2\u9ede</th>'+shifts.map(x=>'<th>'+x.name+'<br>'+fh(x.start_time)+'-'+fh(x.end_time)+'</th>').join('')+'</tr>'
+      +markers.map(m=>'<tr><td class="pl">'+(m.floor_id||'')+' '+(m.label||'')+'</td>'
+        +shifts.map(x=>{const st=matrix.get(x.shift_id+'|'+m.marker_id)||'pending';return '<td><span class="pd '+st+'">'+ic[st]+'</span></td>';}).join('')+'</tr>').join('')+'</table>';
+  }catch(e){document.getElementById('pg').innerHTML='<div class="empty">\u8f09\u5165\u5931\u6557</div>';}
+}
+function sr(){ld();if(_pt)clearInterval(_pt);_pt=setInterval(ld,P_MS);}
+sr();
 </script>
 </body>
 </html>
