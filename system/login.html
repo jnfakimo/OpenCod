@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>臺北農產運銷股份有限公司 第一果菜市場 設備巡檢維修系統</title>
@@ -26,6 +28,17 @@ input:focus{border-color:#6366f1}
 .forgot-link{display:block;text-align:center;margin-top:14px;color:#6366f1;font-size:.83rem;cursor:pointer;text-decoration:underline}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center;padding:24px}
 .overlay.show{display:flex}
+
+:root[data-theme="light"] body{background:#f4f6fa;color:#1e293b}
+:root[data-theme="light"] .card{background:#ffffff;border-color:#e2e8f0;box-shadow:0 10px 30px rgba(15,23,42,.08)}
+:root[data-theme="light"] h1{color:#0f172a}
+:root[data-theme="light"] .subtitle{color:#64748b}
+:root[data-theme="light"] label{color:#64748b}
+:root[data-theme="light"] input{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+:root[data-theme="light"] .btn-ghost{border-color:#cbd5e1;color:#64748b}
+:root[data-theme="light"] .btn-ghost:hover{background:rgba(0,0,0,.04)}
+:root[data-theme="light"] .err{color:#dc2626}
+:root[data-theme="light"] .ok{color:#16a34a}
 </style>
 </head>
 <body>

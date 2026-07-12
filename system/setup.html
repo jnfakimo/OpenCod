@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>系統初始化</title>
@@ -27,6 +29,20 @@ h1{font-size:1.3rem;font-weight:700;color:#f8fafc;margin-bottom:6px}
 .result.fail{background:#450a0a;border:1px solid #7f1d1d;color:#fca5a5;display:block}
 .btn{display:inline-block;margin-top:16px;padding:11px 24px;background:#6366f1;color:#fff;border:none;border-radius:9px;font-size:.9rem;font-weight:600;cursor:pointer;text-decoration:none}
 .btn:hover{background:#4f46e5}
+
+:root[data-theme="light"] body{background:#f4f6fa;color:#1e293b}
+:root[data-theme="light"] .card{background:#ffffff;border-color:#e2e8f0;box-shadow:0 10px 30px rgba(15,23,42,.08)}
+:root[data-theme="light"] h1{color:#0f172a}
+:root[data-theme="light"] .sub{color:#64748b}
+:root[data-theme="light"] .step{border-bottom-color:#e2e8f0}
+:root[data-theme="light"] .pending{background:#e2e8f0;color:#64748b}
+:root[data-theme="light"] .running{background:#dbeafe;color:#2563eb}
+:root[data-theme="light"] .ok{background:#dcfce7;color:#16a34a}
+:root[data-theme="light"] .fail{background:#fee2e2;color:#dc2626}
+:root[data-theme="light"] .step-label{color:#1e293b}
+:root[data-theme="light"] .step-detail{color:#64748b}
+:root[data-theme="light"] .result.ok{background:#dcfce7;border-color:#16a34a;color:#166534}
+:root[data-theme="light"] .result.fail{background:#fee2e2;border-color:#dc2626;color:#991b1b}
 </style>
 </head>
 <body>

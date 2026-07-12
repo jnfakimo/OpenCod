@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -8,6 +10,7 @@
 <style>
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0;
   --eq:#00d4ff;--sp:#00ff9d;--pt:#c77dff;--rp:#ff5470;--nt:#ffb300}
+:root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b;--eq:#0284c7;--sp:#059669;--pt:#9333ea;--rp:#dc2626;--nt:#b45309}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
 

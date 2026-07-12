@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -9,6 +11,7 @@
 <title>臺北農產 第一果菜市場 — 3D 模型圖</title>
 <style>
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0}
+:root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
 #topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200;overflow-x:auto;overflow-y:hidden}

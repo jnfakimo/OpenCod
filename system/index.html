@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>臺北農產運銷 ｜ 系統入口</title>
@@ -18,6 +20,7 @@
     --font-head:'Rajdhani',sans-serif;
     --font-tc:'Noto Sans TC',sans-serif;
   }
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-dim:transparent;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   html,body{min-height:100%}
 
