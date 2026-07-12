@@ -204,6 +204,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="patrolstatus.js"></script>
 <script>
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
@@ -296,7 +297,20 @@ async function loadMarkers(){
     (data||[]).forEach(addMarker3D);
     document.getElementById('mkCount').textContent=markerObjs.length;
     layoutMarkers();
+    refreshPatrolStatus();
   }catch(e){}
+}
+let patrolStatusMap=new Map();
+async function refreshPatrolStatus(){
+  try{ const r=await PatrolStatus.compute(db); patrolStatusMap=r.map; }
+  catch(e){ /* patrol_shifts 尚未建表時，靜默略過，標記維持原色 */ }
+  markerObjs.forEach(mk=>{
+    if(mk.kind!=='patrol') return;
+    const state=patrolStatusMap.get(mk.markerId);
+    const hex=state?parseInt(PatrolStatus.COLORS[state].slice(1),16):MARK_COL.patrol;
+    mk.head.material.color.setHex(hex);
+    mk.stem.material.color.setHex(hex);
+  });
 }
 // 文字標籤 sprite（canvas 材質）
 function makeLabelSprite(text,colorHex){
@@ -331,7 +345,7 @@ function addMarker3D(m){
   g.add(stem); g.add(head); g.add(lab);
   g.position.set(x,0,z);
   scene.add(g);
-  markerObjs.push({group:g,fl,kind:m.kind,label:lab});
+  markerObjs.push({group:g,fl,kind:m.kind,label:lab,markerId:m.marker_id,head,stem});
 }
 function layoutMarkers(){
   markerObjs.forEach(mk=>{
@@ -383,6 +397,7 @@ function finishLoad(){
   setTimeout(()=>{const l=document.getElementById('loading');l.style.transition='opacity .4s';l.style.opacity='0';setTimeout(()=>l.style.display='none',400);},150);
   resetView(); animate();
   loadMarkers();
+  setInterval(refreshPatrolStatus,60000);
   const img=document.getElementById('planThumbImg');
   if(img) img.src=FLOORS[0].tex;
   updateHud();

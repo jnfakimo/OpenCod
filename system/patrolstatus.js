@@ -1,0 +1,115 @@
+// 駐衛警巡檢系統 — 共用的巡檢狀態計算模組
+// 三色狀態：ok(已打卡) / pending(待打卡) / overdue(逾期未打卡)
+window.PatrolStatus = (function () {
+  const COLORS = { ok: '#00ff9d', pending: '#c77dff', overdue: '#ff5470' };
+  const LABELS = { ok: '已打卡', pending: '待打卡', overdue: '逾期未打卡' };
+
+  function timeToDate(dayBase, t) {
+    const [h, m, s] = String(t).split(':').map(Number);
+    const d = new Date(dayBase);
+    d.setHours(h, m, s || 0, 0);
+    return d;
+  }
+
+  // 處理跨夜班別（end_time < start_time 代表結束於隔天）
+  function shiftRange(shift, dayBase) {
+    const start = timeToDate(dayBase, shift.start_time);
+    let end = timeToDate(dayBase, shift.end_time);
+    if (end <= start) end = new Date(end.getTime() + 24 * 3600 * 1000);
+    return { start, end };
+  }
+
+  function dateStrOf(d) {
+    const p = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+
+  // 取得「當前最相關」的一個班別：正在進行中的班別，否則最近剛結束的班別
+  // （含昨天跨夜班別仍在進行中的情況）。用於地圖圖釘即時上色。
+  async function compute(db, dateStr) {
+    const now = new Date();
+    dateStr = dateStr || dateStrOf(now);
+    const dayBase = new Date(dateStr + 'T00:00:00');
+    const yBase = new Date(dayBase.getTime() - 24 * 3600 * 1000);
+    const yStr = dateStrOf(yBase);
+
+    const [{ data: shiftsToday }, { data: shiftsYesterday }, { data: markers }] = await Promise.all([
+      db.from('patrol_shifts').select('*').eq('shift_date', dateStr).order('sort_order'),
+      db.from('patrol_shifts').select('*').eq('shift_date', yStr).order('sort_order'),
+      db.from('plan_markers').select('marker_id').eq('kind', 'patrol').eq('status', 'active'),
+    ]);
+
+    const allShifts = [
+      ...(shiftsYesterday || []).map(s => ({ ...s, _base: yBase })),
+      ...(shiftsToday || []).map(s => ({ ...s, _base: dayBase })),
+    ];
+
+    let relevant = null, relevantRange = null;
+    for (const s of allShifts) {
+      const r = shiftRange(s, s._base);
+      if (now >= r.start && now <= r.end) { relevant = s; relevantRange = r; break; }
+    }
+    if (!relevant) {
+      let bestEnd = null;
+      for (const s of allShifts) {
+        const r = shiftRange(s, s._base);
+        if (r.end <= now && (!bestEnd || r.end > bestEnd)) { relevant = s; relevantRange = r; bestEnd = r.end; }
+      }
+    }
+
+    const map = new Map();
+    if (!relevant) return { map, shift: null, range: null };
+
+    const { data: checkins } = await db.from('checkin_logs').select('target_id,checkin_at')
+      .eq('target_type', 'marker')
+      .gte('checkin_at', relevantRange.start.toISOString())
+      .lte('checkin_at', relevantRange.end.toISOString());
+
+    const checkedIds = new Set((checkins || []).map(c => c.target_id));
+    (markers || []).forEach(m => {
+      if (checkedIds.has(m.marker_id)) map.set(m.marker_id, 'ok');
+      else if (now <= relevantRange.end) map.set(m.marker_id, 'pending');
+      else map.set(m.marker_id, 'overdue');
+    });
+    return { map, shift: relevant, range: relevantRange };
+  }
+
+  // 取得「指定日期」全部班別 × 全部巡檢點的完整矩陣。用於稽核總覽頁。
+  async function computeMatrix(db, dateStr) {
+    const now = new Date();
+    dateStr = dateStr || dateStrOf(now);
+    const dayBase = new Date(dateStr + 'T00:00:00');
+
+    const [{ data: shifts }, { data: markers }] = await Promise.all([
+      db.from('patrol_shifts').select('*').eq('shift_date', dateStr).order('sort_order'),
+      db.from('plan_markers').select('marker_id,floor_id,label').eq('kind', 'patrol').eq('status', 'active').order('floor_id').order('label'),
+    ]);
+
+    const ranges = (shifts || []).map(s => ({ ...s, range: shiftRange(s, dayBase) }));
+    const matrix = new Map(); // key: shift_id|marker_id -> 'ok'|'pending'|'overdue'
+    if (!ranges.length) return { shifts: ranges, markers: markers || [], matrix };
+
+    const minStart = ranges.reduce((a, s) => (s.range.start < a ? s.range.start : a), ranges[0].range.start);
+    const maxEnd = ranges.reduce((a, s) => (s.range.end > a ? s.range.end : a), ranges[0].range.end);
+
+    const { data: checkins } = await db.from('checkin_logs').select('target_id,checkin_at')
+      .eq('target_type', 'marker')
+      .gte('checkin_at', minStart.toISOString())
+      .lte('checkin_at', maxEnd.toISOString());
+
+    ranges.forEach(s => {
+      (markers || []).forEach(m => {
+        const hit = (checkins || []).some(c => c.target_id === m.marker_id &&
+          new Date(c.checkin_at) >= s.range.start && new Date(c.checkin_at) <= s.range.end);
+        let state;
+        if (hit) state = 'ok';
+        else if (now <= s.range.end) state = 'pending';
+        else state = 'overdue';
+        matrix.set(s.shift_id + '|' + m.marker_id, state);
+      });
+    });
+    return { shifts: ranges, markers: markers || [], matrix };
+  }
+
+  return { compute, computeMatrix, COLORS, LABELS, dateStrOf };
+})();

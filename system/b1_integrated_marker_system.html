@@ -306,6 +306,7 @@ body.panel-open #panelToggle{display:none}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="patrolstatus.js"></script>
 <script>
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
@@ -414,6 +415,7 @@ async function loadData(){
   fillLinkSelects();
   drawMarkers(); renderList();
   dataReady=true; tryFocusDeepLink();
+  refreshPatrolStatus();
 }
 
 const STAT_LABEL={pending:'待處理',dispatched:'已派工',processing:'處理中',accepted:'已受理',repairing:'維修中'};
@@ -456,13 +458,23 @@ function fillLinkSelects(){
 }
 
 // ── Draw overlays ──────────────────────────────────────────
+let patrolStatusMap=new Map();
+function markerColor(m){
+  if(m.kind==='patrol' && patrolStatusMap.has(m.marker_id)) return PatrolStatus.COLORS[patrolStatusMap.get(m.marker_id)];
+  return m.color||KIND[m.kind]?.c||'#ffb300';
+}
+async function refreshPatrolStatus(){
+  try{ const r=await PatrolStatus.compute(db); patrolStatusMap=r.map; }
+  catch(e){ /* patrol_shifts 尚未建表時，靜默略過，圖釘維持原色 */ }
+  drawMarkers();
+}
 function drawMarkers(){
   viewer.clearOverlays();
   markers.filter(m=>m.floor_id===curFloor).forEach(m=>{
     const el=document.createElement('div');
     el.className='pin'+(showLabels?' show-lab':'');
     el.dataset.id=m.marker_id;
-    const col=m.color||KIND[m.kind]?.c||'#ffb300';
+    const col=markerColor(m);
     el.innerHTML=`<div class="pdot" style="background:${col}"></div><div class="plab">${esc(m.label)}</div>`;
     el.addEventListener('click',ev=>{ ev.stopPropagation(); openDetail(m.marker_id,ev); });
     viewer.addOverlay({element:el, location:new OpenSeadragon.Point(m.x,m.y), placement:OpenSeadragon.Placement.CENTER, checkResize:false});
@@ -765,6 +777,7 @@ window.addEventListener('keydown',e=>{
 
 buildSources();
 loadData();
+setInterval(refreshPatrolStatus,60000);
 </script>
 </body>
 </html>

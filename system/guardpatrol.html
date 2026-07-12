@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>駐衛警巡檢系統 — 臺北農產巡檢系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="patrolstatus.js"></script>
+<style>
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
+  --cyan:#00d4ff;--patrol:#c77dff;--green:#00ff9d;--red:#ff5470;
+  --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;
+  --font-head:'Rajdhani',sans-serif}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;
+  --cyan:#0284c7;--patrol:#9333ea;--green:#059669;--red:#dc2626;
+  --text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+a{color:inherit;text-decoration:none}
+
+.navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);
+  padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;overflow-x:auto;overflow-y:hidden}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--patrol);letter-spacing:.06em}
+.nav-sub{font-size:.7rem;color:var(--text-dim)}
+.nav-space{flex:1 0 auto}.navbar a{flex:0 0 auto}
+.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;
+  transition:all .2s;font-family:var(--font-head);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.nav-back:hover{border-color:var(--patrol);color:var(--patrol)}
+
+.content{padding:14px 16px;max-width:1100px;margin:0 auto}
+.hint{font-size:.72rem;color:var(--text-dim);margin-bottom:14px;line-height:1.6;background:var(--surface);
+  border:1px solid var(--border);border-left:2px solid var(--patrol);border-radius:2px;padding:9px 12px}
+
+.datebar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.datebar input[type=date]{background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:7px 10px;border-radius:2px;font-size:.85rem;outline:none}
+.datebar input[type=date]:focus{border-color:var(--patrol)}
+.mini{font-size:.68rem;padding:5px 11px;border:1px solid var(--border);border-radius:2px;cursor:pointer;background:none;color:var(--text-dim);transition:all .2s}
+.mini:hover{border-color:var(--patrol);color:var(--patrol)}
+
+.stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:10px 16px;min-width:110px}
+.stat-card .n{font-family:var(--font-head);font-size:1.5rem;font-weight:700}
+.stat-card.ok .n{color:var(--green)}
+.stat-card.pending .n{color:var(--patrol)}
+.stat-card.overdue .n{color:var(--red)}
+.stat-card .l{font-size:.68rem;color:var(--text-dim);letter-spacing:.05em;margin-top:2px}
+
+.legend{display:flex;gap:16px;font-size:.72rem;color:var(--text-dim);margin-bottom:12px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+.grid-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--border);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:.8rem}
+th{text-align:left;color:var(--text-dim);font-size:.68rem;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+th.pointcol{position:sticky;left:0;z-index:2;background:var(--panel)}
+td{padding:6px 8px;border-bottom:1px solid rgba(12,40,64,.4);text-align:center}
+td.pointcol{text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--panel);font-size:.78rem}
+td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
+.cell{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.7rem;color:#022;font-weight:700;transition:transform .1s}
+.cell:hover{transform:scale(1.15)}
+.cell.ok{background:var(--green)}
+.cell.pending{background:var(--patrol);color:#fff}
+.cell.overdue{background:var(--red);color:#fff}
+.empty{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:.85rem}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(1,6,14,.82);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border-hi);border-radius:4px;width:100%;max-width:340px}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.modal-head .mt{font-family:var(--font-head);font-size:.95rem;font-weight:700;color:var(--patrol)}
+.modal-head .x{margin-left:auto;cursor:pointer;color:var(--text-dim);font-size:1.1rem}
+.modal-body{padding:16px 18px;font-size:.82rem;line-height:1.8}
+.hist-row{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid rgba(12,40,64,.5);font-size:.78rem}
+.hist-row:first-child{border-top:none}
+</style>
+<link rel="stylesheet" href="light-mode-fix.css">
+</head>
+<body>
+<nav class="navbar">
+  <div>
+    <div class="nav-title">◈ 駐衛警巡檢系統</div>
+    <div class="nav-sub">巡檢稽核總覽 · 臺北農產 第一果菜市場</div>
+  </div>
+  <div class="nav-space"></div>
+  <a href="patrolshifts.html"><button class="nav-back">班別排程管理</button></a>
+  <a href="patrollist.html"><button class="nav-back">巡邏點清單</button></a>
+  <a href="admin.html#modelhub"><button class="nav-back">後台</button></a>
+</nav>
+
+<div class="content">
+  <div class="hint">
+    依「班別排程管理」設定的當天班別，對照巡邏點 QR 簽到記錄，即時算出每個巡檢點在每個班別的稽核狀態。點選圓點可查看簽到明細。
+  </div>
+
+  <div class="datebar">
+    <button class="mini" onclick="shiftDate(-1)">◀</button>
+    <input type="date" id="datePick" onchange="load()">
+    <button class="mini" onclick="shiftDate(1)">▶</button>
+    <button class="mini" onclick="goToday()">今天</button>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card ok"><div class="n" id="s-ok">0</div><div class="l">已打卡</div></div>
+    <div class="stat-card pending"><div class="n" id="s-pending">0</div><div class="l">待打卡</div></div>
+    <div class="stat-card overdue"><div class="n" id="s-overdue">0</div><div class="l">逾期未打卡</div></div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--green)"></i>已打卡</span>
+    <span><i style="background:var(--patrol)"></i>待打卡（班別進行中）</span>
+    <span><i style="background:var(--red)"></i>逾期未打卡</span>
+  </div>
+
+  <div class="grid-wrap"><div id="grid"></div></div>
+</div>
+
+<div class="modal-bg" id="m-detail">
+  <div class="modal">
+    <div class="modal-head"><span class="mt" id="dtTitle"></span><span class="x" onclick="closeModal()">✕</span></div>
+    <div class="modal-body" id="dtBody"></div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol.html');}})();
+function translateError(msg){
+  if(!msg) return '未知錯誤';
+  if(msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定（system/sql/patrol_shifts.sql）';
+  if(msg.includes('permission denied')||msg.includes('violates row-level security')) return '無操作權限';
+  if(msg.includes('Failed to fetch')||msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtHM(t){return String(t||'').slice(0,5);}
+function fmtDT(t){const d=new Date(t);const p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;}
+
+function todayStr(){return PatrolStatus.dateStrOf(new Date());}
+function goToday(){document.getElementById('datePick').value=todayStr();load();}
+function shiftDate(delta){
+  const el=document.getElementById('datePick');
+  const d=new Date(el.value+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  el.value=PatrolStatus.dateStrOf(d);
+  load();
+}
+
+let lastResult=null;
+
+async function load(){
+  const dateStr=document.getElementById('datePick').value;
+  document.getElementById('grid').innerHTML='<div class="empty">載入中…</div>';
+  let result;
+  try{ result=await PatrolStatus.computeMatrix(db,dateStr); }
+  catch(e){ document.getElementById('grid').innerHTML='<div class="empty">讀取失敗：'+esc(translateError(e.message))+'</div>'; return; }
+  lastResult=result;
+  render(result);
+}
+
+function render(result){
+  const {shifts,markers,matrix}=result;
+  const grid=document.getElementById('grid');
+  if(!shifts.length){grid.innerHTML='<div class="empty">這天尚未設定班別。請至「班別排程管理」設定後再回來查看。</div>';document.getElementById('s-ok').textContent='0';document.getElementById('s-pending').textContent='0';document.getElementById('s-overdue').textContent='0';return;}
+  if(!markers.length){grid.innerHTML='<div class="empty">目前沒有巡邏點資料。請至「整合標記系統」平面圖新增巡邏點標示。</div>';return;}
+
+  let ok=0,pending=0,overdue=0;
+  matrix.forEach(v=>{if(v==='ok')ok++;else if(v==='pending')pending++;else overdue++;});
+  document.getElementById('s-ok').textContent=ok;
+  document.getElementById('s-pending').textContent=pending;
+  document.getElementById('s-overdue').textContent=overdue;
+
+  const STATE_LABEL={ok:'✓',pending:'…',overdue:'✕'};
+  grid.innerHTML=`<table>
+    <tr><th class="pointcol">巡檢點</th>${shifts.map(s=>`<th>${esc(s.name)}<br>${fmtHM(s.start_time)}–${fmtHM(s.end_time)}</th>`).join('')}</tr>
+    ${markers.map(m=>`<tr>
+      <td class="pointcol"><span class="fl">${esc(m.floor_id)}</span>${esc(m.label)}</td>
+      ${shifts.map(s=>{
+        const state=matrix.get(s.shift_id+'|'+m.marker_id)||'pending';
+        return `<td><span class="cell ${state}" onclick="showDetail('${s.shift_id}','${m.marker_id}')">${STATE_LABEL[state]}</span></td>`;
+      }).join('')}
+    </tr>`).join('')}
+  </table>`;
+}
+
+function closeModal(){document.getElementById('m-detail').classList.remove('show');}
+
+async function showDetail(shiftId,markerId){
+  const {shifts,markers}=lastResult;
+  const shift=shifts.find(s=>s.shift_id===shiftId);
+  const marker=markers.find(m=>m.marker_id===markerId);
+  if(!shift||!marker)return;
+  document.getElementById('dtTitle').textContent=marker.label+'　·　'+shift.name;
+  document.getElementById('dtBody').innerHTML='載入中…';
+  document.getElementById('m-detail').classList.add('show');
+
+  const {data,error}=await db.from('checkin_logs').select('user_name,checkin_at')
+    .eq('target_type','marker').eq('target_id',markerId)
+    .gte('checkin_at',shift.range.start.toISOString()).lte('checkin_at',shift.range.end.toISOString())
+    .order('checkin_at',{ascending:false});
+  if(error){document.getElementById('dtBody').innerHTML='讀取失敗：'+esc(translateError(error.message));return;}
+  if(!data||!data.length){
+    document.getElementById('dtBody').innerHTML=`<div>樓層：${esc(marker.floor_id)}</div><div>時段：${fmtHM(shift.start_time)}–${fmtHM(shift.end_time)}</div><div style="margin-top:10px;color:var(--text-dim)">此時段尚無簽到記錄。</div>`;
+    return;
+  }
+  document.getElementById('dtBody').innerHTML=
+    `<div>樓層：${esc(marker.floor_id)}</div><div style="margin-bottom:6px">時段：${fmtHM(shift.start_time)}–${fmtHM(shift.end_time)}</div>`+
+    data.map(r=>`<div class="hist-row"><span>${esc(r.user_name||'')}</span><span>${fmtDT(r.checkin_at)}</span></div>`).join('');
+}
+
+document.getElementById('m-detail').addEventListener('click',e=>{if(e.target.id==='m-detail')closeModal();});
+
+document.getElementById('datePick').value=todayStr();
+load();
+setInterval(load,60000);
+</script>
+</body>
+</html>

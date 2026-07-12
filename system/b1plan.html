@@ -155,6 +155,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="patrolstatus.js"></script>
 <script>
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
@@ -209,6 +210,7 @@ function onLoad(){
   prog(100,'完成');
   setTimeout(()=>{ const l=document.getElementById('loading'); l.style.transition='opacity .4s'; l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); },150);
   showFloor('B1'); updHud(); loadPlanMarkers();
+  setInterval(refreshPatrolStatus,60000);
 }
 
 function item(i){ return i==null?null:viewer.world.getItemAt(i); }
@@ -227,12 +229,23 @@ const MK_COL={equipment:'#00d4ff',space:'#00ff9d',patrol:'#c77dff',repair:'#ff54
 const KV={equipment:true,space:true,patrol:true,repair:true,note:true};
 let planMarkers=[], showLab=false;
 function escB(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+let patrolStatusMap=new Map();
 async function loadPlanMarkers(){
   try{
-    const {data,error}=await db.from('plan_markers').select('floor_id,x,y,kind,label').eq('status','active');
+    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,kind,label').eq('status','active');
     if(!error) planMarkers=data||[];
   }catch(e){}
   drawPlanMarkers();
+  refreshPatrolStatus();
+}
+async function refreshPatrolStatus(){
+  try{ const r=await PatrolStatus.compute(db); patrolStatusMap=r.map; }
+  catch(e){ /* patrol_shifts 尚未建表時，靜默略過，圖釘維持原色 */ }
+  drawPlanMarkers();
+}
+function markerColor(m){
+  if(m.kind==='patrol' && patrolStatusMap.has(m.marker_id)) return PatrolStatus.COLORS[patrolStatusMap.get(m.marker_id)];
+  return MK_COL[m.kind]||'#ffb300';
 }
 function drawPlanMarkers(){
   if(!viewer.viewport) return;
@@ -240,7 +253,7 @@ function drawPlanMarkers(){
   const list=planMarkers.filter(m=>m.floor_id===curFloor && KV[m.kind]!==false);
   list.forEach(m=>{
     const el=document.createElement('div'); el.className='pin'+(showLab?' show-lab':'');
-    const col=MK_COL[m.kind]||'#ffb300';
+    const col=markerColor(m);
     el.innerHTML=`<div class="pdot" style="background:${col}"></div><div class="plab">${escB(m.label)}</div>`;
     viewer.addOverlay({element:el, location:new OpenSeadragon.Point(m.x,m.y), placement:OpenSeadragon.Placement.CENTER, checkResize:false});
   });
