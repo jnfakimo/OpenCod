@@ -181,8 +181,8 @@ body.panel-open #panelToggle{display:none}
       <select id="fltKind" onchange="renderList()">
         <option value="markers">本層標記</option>
         <option value="equipment">設備清單</option>
-        <option value="space">空間清單（區域位置表）</option>
-        <option value="patrol">巡邏點標示清單</option>
+        <option value="space">空間清單（區域位置）</option>
+        <option value="patrol">巡邏點標示</option>
         <option value="repair">報修案件</option>
       </select>
     </div>
@@ -199,7 +199,7 @@ body.panel-open #panelToggle{display:none}
   <div class="pn-legend">
     <span><i style="background:var(--eq)"></i>設備</span>
     <span><i style="background:var(--sp)"></i>空間</span>
-    <span><i style="background:var(--pt)"></i>巡邏點標示</span>
+    <span><i style="background:var(--pt)"></i>巡邏點</span>
     <span><i style="background:var(--rp)"></i>報修點</span>
     <span><i style="background:var(--nt)"></i>一般</span>
   </div>
@@ -247,7 +247,7 @@ body.panel-open #panelToggle{display:none}
         <div class="kind-row" id="kindRow">
           <button type="button" class="kbtn" data-k="equipment" style="--c:var(--eq)" onclick="pickKind('equipment')">設備</button>
           <button type="button" class="kbtn" data-k="space" style="--c:var(--sp)" onclick="pickKind('space')">空間</button>
-          <button type="button" class="kbtn" data-k="patrol" style="--c:var(--pt)" onclick="pickKind('patrol')">巡邏點標示</button>
+          <button type="button" class="kbtn" data-k="patrol" style="--c:var(--pt)" onclick="pickKind('patrol')">巡邏點</button>
           <button type="button" class="kbtn" data-k="repair" style="--c:var(--rp)" onclick="pickKind('repair')">報修點</button>
           <button type="button" class="kbtn" data-k="note" style="--c:var(--nt)" onclick="pickKind('note')">一般</button>
         </div>
@@ -292,7 +292,7 @@ const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
-const KIND={equipment:{c:'#00d4ff',n:'設備'},space:{c:'#00ff9d',n:'空間'},patrol:{c:'#c77dff',n:'巡邏點標示'},repair:{c:'#ff5470',n:'報修點'},note:{c:'#ffb300',n:'一般'}};
+const KIND={equipment:{c:'#00d4ff',n:'設備'},space:{c:'#00ff9d',n:'空間'},patrol:{c:'#c77dff',n:'巡邏點'},repair:{c:'#ff5470',n:'報修點'},note:{c:'#ffb300',n:'一般'}};
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function translateError(msg) {
@@ -485,8 +485,8 @@ function renderList(){
         <span class="cdot" style="background:${col}"></span>
         <span class="mk-name">${esc(m.label)}</span>
         <span class="mk-kind">${KIND[m.kind]?.n||''}</span></div>`;
-    }).join(''):'<div class="pn-empty">此樓層尚無巡邏點標示。<br>可按「放置標記模式」新增。</div>';
-    document.getElementById('pnCount').textContent=`巡邏點標示：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
+    }).join(''):'<div class="pn-empty">此樓層尚無巡邏點。<br>可按「放置標記模式」新增。</div>';
+    document.getElementById('pnCount').textContent=`巡邏點：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
     return;
   }
   // ── 主資料清單瀏覽 ──
