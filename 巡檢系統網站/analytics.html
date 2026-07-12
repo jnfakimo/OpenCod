@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>統計分析 — 報修派工管理系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
+  --cyan:#00d4ff;--blue:#1a7fff;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;--purple:#b48aff;
+  --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif;--font-mono:'Share Tech Mono',monospace}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--purple:#7c3aed;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+a{color:inherit;text-decoration:none}
+.navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--cyan);letter-spacing:.06em;text-shadow:0 0 14px rgba(0,212,255,.5)}
+.nav-sub{font-size:.7rem;color:var(--text-dim)}.nav-space{flex:1}
+.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;transition:all .2s}
+.nav-back:hover{border-color:var(--cyan);color:var(--cyan)}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar input[type=date]{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:2px;font-size:.78rem;outline:none}
+.qbtn{font-size:.72rem;color:var(--text-dim);border:1px solid var(--border);padding:6px 12px;border-radius:2px;cursor:pointer;background:none}
+.qbtn:hover{border-color:var(--cyan);color:var(--cyan)}.tspace{flex:1}
+.exp{font-size:.72rem;border:1px solid var(--border);padding:6px 12px;border-radius:2px;cursor:pointer;background:none;color:var(--text-dim);transition:all .2s}
+.exp:hover{border-color:var(--green);color:var(--green)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:14px 16px}
+.card h3{font-family:var(--font-head);font-size:.9rem;color:var(--cyan);letter-spacing:.05em;margin-bottom:10px;font-weight:700;display:flex;align-items:center;gap:6px}
+.card h3 .ex{margin-left:auto;display:flex;gap:5px}
+.card h3 .ex button{font-size:.6rem;border:1px solid var(--border);background:none;color:var(--text-dim);padding:2px 7px;border-radius:2px;cursor:pointer}
+.card h3 .ex button:hover{border-color:var(--green);color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:.74rem}
+th{text-align:left;color:var(--text-dim);padding:5px 8px;border-bottom:1px solid var(--border);font-weight:600}
+td{padding:6px 8px;border-bottom:1px solid rgba(12,40,64,.4)}
+td.num,th.num{text-align:right;font-family:var(--font-mono);color:var(--cyan)}
+.empty{color:var(--text-dim);text-align:center;padding:20px;font-size:.78rem}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.kp{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:10px 16px;min-width:130px}
+.kp .n{font-family:var(--font-head);font-size:1.5rem;color:var(--cyan)}.kp .l{font-size:.66rem;color:var(--text-dim)}
+@media print{.navbar,.toolbar,.nav-back,.card h3 .ex{display:none}body{background:#fff;color:#000}.card{border:1px solid #999;break-inside:avoid}.card h3{color:#000}td,th{color:#000}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div><div class="nav-title">📊 統計分析</div><div class="nav-sub">報表 · KPI · 匯出 PDF/Excel/CSV</div></div>
+  <div class="nav-space"></div>
+<a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
+<a href="workorder.html"><button class="nav-back">⚒ 報修系統</button></a>
+<a href="dispatch.html"><button class="nav-back">◪ 派工系統</button></a>
+<a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
+  <a href="admin.html"><button class="nav-back">← 後台</button></a>
+</nav>
+<div class="wrap">
+  <div class="toolbar">
+    <button class="qbtn" onclick="quick('month')">本月</button>
+    <button class="qbtn" onclick="quick('quarter')">本季</button>
+    <button class="qbtn" onclick="quick('year')">本年</button>
+    <input type="date" id="from"> ~ <input type="date" id="to">
+    <button class="qbtn" onclick="load()">查詢</button>
+    <div class="tspace"></div>
+    <button class="exp" onclick="window.print()">🖨 全部列印 / PDF</button>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid" id="grid"></div>
+</div>
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+let reports=[]; // {title, cols, rows}
+function ymd(d){return d.toISOString().slice(0,10);}
+function quick(r){const now=new Date();let f;
+  if(r==='month')f=new Date(now.getFullYear(),now.getMonth(),1);
+  else if(r==='quarter')f=new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3,1);
+  else f=new Date(now.getFullYear(),0,1);
+  document.getElementById('from').value=ymd(f);document.getElementById('to').value=ymd(now);load();}
+
+async function fetchSafe(q,fallbackCols){const res=await q;if(res.error)return [];return res.data||[];}
+
+async function load(){
+  const from=document.getElementById('from').value,to=document.getElementById('to').value,toEnd=to+'T23:59:59';
+  let reqs=await fetchSafe(db.from('repair_requests').select('request_id,department,equipment_id,status,fault_type,created_at,desired_finish,equipment(name,category)').gte('created_at',from).lte('created_at',toEnd).limit(8000));
+  if(!reqs.length){reqs=await fetchSafe(db.from('repair_requests').select('request_id,department,equipment_id,status,created_at,equipment(name)').gte('created_at',from).lte('created_at',toEnd).limit(8000));}
+  let ords=await fetchSafe(db.from('maintenance_orders').select('order_id,request_id,assignee_id,status,start_time,finish_time,created_at,expected_finish,fault_cause,labor_hours,vendor,users:assignee_id(name)').limit(8000));
+  let costs=await fetchSafe(db.from('cost_records').select('cost_type,amount,vendor,cost_date,equipment_id,equipment(name)').gte('cost_date',from).lte('cost_date',to).limit(8000));
+  build(reqs,ords,costs,from,to);
+}
+
+function countBy(arr,fn){const m={};arr.forEach(x=>{const k=fn(x)??'（未填）';m[k]=(m[k]||0)+1;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+function sumBy(arr,keyFn,valFn){const m={};arr.forEach(x=>{const k=keyFn(x)??'（未填）';m[k]=(m[k]||0)+Number(valFn(x)||0);});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
+
+function build(reqs,ords,costs,from,to){
+  reports=[];
+  const reqMap={};reqs.forEach(r=>reqMap[r.request_id]=r);
+  const doneO=ords.filter(o=>['completed','closed'].includes(o.status)&&o.finish_time);
+  // KPIs
+  const mttr=avg(doneO.filter(o=>o.start_time).map(o=>(new Date(o.finish_time)-new Date(o.start_time))/3600000));
+  const dispatchT=avg(ords.map(o=>{const r=reqMap[o.request_id];return r?(new Date(o.created_at)-new Date(r.created_at))/3600000:null;}).filter(v=>v!=null&&v>=0));
+  const onTime=doneO.filter(o=>o.expected_finish?new Date(o.finish_time)<=new Date(o.expected_finish):true).length;
+  const sla=doneO.length?Math.round(onTime/doneO.length*100):null;
+  document.getElementById('kpis').innerHTML=
+    kp(reqs.length,'報修總件數')+kp(doneO.length,'完成維修')+kp(sla==null?'—':sla+'%','SLA 達成率')+
+    kp(mttr==null?'—':mttr.toFixed(1)+'h','平均修復 MTTR')+kp(dispatchT==null?'—':dispatchT.toFixed(1)+'h','平均派工時間');
+  // reports
+  reports.push({title:'設備故障排行',cols:['設備','次數'],rows:countBy(reqs,r=>r.equipment?.name)});
+  reports.push({title:'單位報修排行',cols:['單位','件數'],rows:countBy(reqs,r=>r.department)});
+  reports.push({title:'維修人員工作量',cols:['維修人員','案件數','總工時'],rows:techWorkload(ords)});
+  reports.push({title:'故障原因分析',cols:['故障類型','次數'],rows:countBy(reqs,r=>r.fault_type)});
+  reports.push({title:'各月份報修趨勢',cols:['月份','件數'],rows:monthly(reqs)});
+  reports.push({title:'材料/零件成本',cols:['設備','金額'],rows:sumBy(costs.filter(c=>['parts','labor'].includes(c.cost_type)),c=>c.equipment?.name,c=>c.amount).map(([k,v])=>[k,money(v)])});
+  reports.push({title:'委外成本分析',cols:['廠商','金額'],rows:sumBy(costs.filter(c=>c.cost_type==='outsource'),c=>c.vendor,c=>c.amount).map(([k,v])=>[k,money(v)])});
+  reports.push({title:'SLA 達成分析',cols:['項目','數值'],rows:[['完成案件',doneO.length],['準時完成',onTime],['SLA 達成率',sla==null?'—':sla+'%'],['平均修復時間',mttr==null?'—':mttr.toFixed(1)+' 小時'],['平均派工時間',dispatchT==null?'—':dispatchT.toFixed(1)+' 小時']]});
+  render();
+}
+function techWorkload(ords){const m={};ords.forEach(o=>{const k=o.users?.name||'（未指派）';if(!m[k])m[k]=[0,0];m[k][0]++;m[k][1]+=Number(o.labor_hours||0);});return Object.entries(m).map(([k,v])=>[k,v[0],v[1].toFixed(1)]).sort((a,b)=>b[1]-a[1]);}
+function monthly(reqs){const m={};reqs.forEach(r=>{const k=r.created_at?.slice(0,7);m[k]=(m[k]||0)+1;});return Object.entries(m).sort();}
+function avg(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:null;}
+function money(v){return '$'+Number(v).toLocaleString();}
+function kp(n,l){return `<div class="kp"><div class="n">${n}</div><div class="l">${l}</div></div>`;}
+
+function render(){
+  document.getElementById('grid').innerHTML=reports.map((rp,i)=>`
+    <div class="card"><h3>${rp.title}<span class="ex">
+      <button onclick="exp(${i},'csv')">CSV</button><button onclick="exp(${i},'xlsx')">Excel</button>
+    </span></h3>
+    ${rp.rows.length?`<table><tr>${rp.cols.map((c,n)=>`<th class="${n>0?'num':''}">${escHtml(c)}</th>`).join('')}</tr>${rp.rows.slice(0,20).map(row=>`<tr>${row.map((c,n)=>`<td class="${n>0?'num':''}">${escHtml(c)}</td>`).join('')}</tr>`).join('')}</table>`:'<div class="empty">無資料</div>'}
+    </div>`).join('');
+}
+function exp(i,type){
+  const rp=reports[i];const aoa=[rp.cols,...rp.rows];
+  if(type==='csv'){
+    const csv='﻿'+aoa.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    dl(new Blob([csv],{type:'text/csv;charset=utf-8'}),rp.title+'.csv');
+  }else{
+    const ws=XLSX.utils.aoa_to_sheet(aoa);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'報表');
+    XLSX.writeFile(wb,rp.title+'.xlsx');
+  }
+}
+function dl(blob,name){const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+quick('month');
+</script>
+</body>
+</html>

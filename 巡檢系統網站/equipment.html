@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>設備履歷管理 — 報修派工管理系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
+  --cyan:#00d4ff;--blue:#1a7fff;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;--purple:#b48aff;
+  --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif;--font-mono:'Share Tech Mono',monospace}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--purple:#7c3aed;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] .modal-bg{background:rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+a{color:inherit;text-decoration:none}
+.navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--cyan);letter-spacing:.06em;text-shadow:0 0 14px rgba(0,212,255,.5)}
+.nav-sub{font-size:.7rem;color:var(--text-dim)}.nav-space{flex:1}
+.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;transition:all .2s}
+.nav-back:hover{border-color:var(--cyan);color:var(--cyan)}
+.wrap{max-width:1180px;margin:0 auto;padding:14px 16px}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar select,.toolbar input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:2px;font-size:.76rem;outline:none}
+.toolbar input:focus,.toolbar select:focus{border-color:var(--cyan)}.tspace{flex:1}
+.btn-add{background:rgba(0,212,255,.1);border:1px solid var(--cyan);color:var(--cyan);padding:7px 16px;border-radius:2px;cursor:pointer;font-size:.76rem;font-family:var(--font-head);letter-spacing:.04em;transition:all .2s}
+.btn-add:hover{background:rgba(0,212,255,.2)}
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+thead th{text-align:left;color:var(--text-dim);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);font-size:.7rem}
+tbody td{padding:9px 10px;border-bottom:1px solid rgba(12,40,64,.5)}
+tbody tr{cursor:pointer;transition:background .15s}tbody tr:hover{background:rgba(0,212,255,.04)}
+.qr{font-family:var(--font-mono);color:var(--cyan);font-size:.72rem}
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.66rem;font-weight:700}
+.b-on{background:rgba(0,255,157,.1);color:var(--green);border:1px solid rgba(0,255,157,.3)}
+.b-off{background:rgba(255,59,59,.08);color:var(--red);border:1px solid rgba(255,59,59,.3)}
+.empty{text-align:center;color:var(--text-dim);padding:36px;font-size:.82rem}
+.modal-bg{position:fixed;inset:0;background:rgba(1,5,15,.86);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow:auto}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border-hi);border-radius:5px;width:100%;max-width:720px;position:relative;margin:auto}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--cyan),var(--blue));border-radius:5px 5px 0 0}
+.modal-h{display:flex;align-items:center;gap:10px;padding:15px 20px;border-bottom:1px solid var(--border)}
+.modal-h .t{font-family:var(--font-head);font-size:1.05rem;color:var(--cyan);font-weight:700}
+.modal-h .x{margin-left:auto;background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:1.2rem}.modal-h .x:hover{color:var(--text)}
+.modal-b{padding:16px 20px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin:-4px 0 12px;flex-wrap:wrap}
+.tab{padding:8px 14px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-dim);cursor:pointer;font-size:.76rem;font-family:var(--font-head);letter-spacing:.04em}
+.tab.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+.pane{display:none}.pane.on{display:block}
+.d-info{display:grid;grid-template-columns:1fr 1fr;gap:7px 16px;font-size:.78rem}
+.d-info .k{color:var(--text-dim)}.d-info .v{color:var(--text-hi)}.d-info .full{grid-column:1/3}
+.mini{width:100%;border-collapse:collapse;font-size:.72rem}
+.mini th{text-align:left;color:var(--text-dim);padding:5px 8px;border-bottom:1px solid var(--border)}
+.mini td{padding:6px 8px;border-bottom:1px solid rgba(12,40,64,.4)}
+.field{margin-bottom:11px}.field label{display:block;font-size:.66rem;color:var(--text-dim);margin-bottom:5px}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:2px;font-size:.8rem;outline:none}
+.field input:focus,.field select:focus{border-color:var(--cyan)}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-primary{padding:10px 16px;background:rgba(0,212,255,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:2px;cursor:pointer;font-size:.8rem;font-family:var(--font-head);letter-spacing:.05em}
+.btn-primary:hover{background:rgba(0,212,255,.22)}
+.warn{color:var(--amber);font-size:.7rem}
+.msg{font-size:.72rem;text-align:center;padding:5px;min-height:1.2em}.msg.ok{color:var(--green)}.msg.err{color:var(--red)}
+.kcard{display:inline-block;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:8px 14px;margin:0 8px 8px 0}
+.kcard .n{font-family:var(--font-head);font-size:1.3rem;color:var(--cyan)}.kcard .l{font-size:.64rem;color:var(--text-dim)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border-hi);color:var(--text);padding:10px 20px;border-radius:4px;font-size:.78rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none}.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div><div class="nav-title">◉ 設備履歷管理</div><div class="nav-sub">設備主檔 · 完整生命週期履歷</div></div>
+  <div class="nav-space"></div>
+<a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
+<a href="workorder.html"><button class="nav-back">⚒ 報修系統</button></a>
+<a href="dispatch.html"><button class="nav-back">◪ 派工系統</button></a>
+<a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
+  <a href="admin.html"><button class="nav-back">← 後台</button></a>
+</nav>
+<div class="wrap">
+  <div class="toolbar">
+    <select id="fCat"><option value="">全部分類</option></select>
+    <select id="fStatus"><option value="">全部狀態</option><option value="active">啟用</option><option value="inactive">停用</option><option value="retired">汰除</option></select>
+    <input id="fQ" placeholder="搜尋 名稱 / QR / 序號…" style="width:220px" oninput="renderList()">
+    <div class="tspace"></div>
+    <button class="btn-add" onclick="openEdit()">＋ 新增設備</button>
+  </div>
+  <table><thead><tr><th>設備名稱</th><th>分類</th><th>QR Code</th><th>位置</th><th>狀態</th><th></th></tr></thead>
+  <tbody id="list"><tr><td colspan="6" class="empty">載入中…</td></tr></tbody></table>
+</div>
+
+<!-- 設備履歷 -->
+<div class="modal-bg" id="m-hist"><div class="modal">
+  <div class="modal-h"><span class="t" id="h-title">設備履歷</span><button class="btn-add" style="margin-left:auto" onclick="openEdit(curEq)">✎ 編輯</button><button class="x" onclick="closeM('m-hist')">✕</button></div>
+  <div class="modal-b">
+    <div id="h-kpi" style="margin-bottom:12px"></div>
+    <div class="tabs">
+      <button class="tab on" onclick="tab(0)">基本資料</button>
+      <button class="tab" onclick="tab(1)">報修/維修</button>
+      <button class="tab" onclick="tab(2)">巡檢</button>
+      <button class="tab" onclick="tab(3)">成本/零件</button>
+    </div>
+    <div class="pane on" id="p0"></div>
+    <div class="pane" id="p1"></div>
+    <div class="pane" id="p2"></div>
+    <div class="pane" id="p3"></div>
+  </div>
+</div></div>
+
+<!-- 新增/編輯設備 -->
+<div class="modal-bg" id="m-edit"><div class="modal" style="max-width:560px">
+  <div class="modal-h"><span class="t" id="e-title">新增設備</span><button class="x" onclick="closeM('m-edit')">✕</button></div>
+  <div class="modal-b">
+    <input type="hidden" id="e-id">
+    <div class="row2">
+      <div class="field"><label>設備名稱 *</label><input id="e-name"></div>
+      <div class="field"><label>QR Code *</label><input id="e-qr"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>分類</label><input id="e-cat" list="catList"><datalist id="catList"></datalist></div>
+      <div class="field"><label>廠牌</label><input id="e-brand"></div>
+      <div class="field"><label>型號</label><input id="e-model"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>序號</label><input id="e-serial"></div>
+      <div class="field"><label>購置日期</label><input id="e-pdate" type="date"></div>
+      <div class="field"><label>購置成本</label><input id="e-pcost" type="number" min="0"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>保固到期</label><input id="e-warr" type="date"></div>
+      <div class="field"><label>使用年限(年)</label><input id="e-life" type="number" min="0"></div>
+      <div class="field"><label>狀態</label><select id="e-status"><option value="active">啟用</option><option value="inactive">停用</option><option value="retired">汰除</option></select></div>
+    </div>
+    <div class="field"><label>位置</label><select id="e-loc"><option value="">（選填）</option></select></div>
+    <div class="field"><label>說明書連結</label><input id="e-manual" placeholder="https://…"></div>
+    <div id="e-msg" class="msg"></div>
+    <button class="btn-primary" style="width:100%" onclick="saveEq()">儲存</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
+function safeUrl(u){return u&&/^https?:\/\//i.test(u)?escHtml(u):'';}
+let eqs=[],locs=[],curEq=null;
+function fmt(t){if(!t)return'—';const d=new Date(t);return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+function fmtD(t){if(!t)return'—';const d=new Date(t);return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;}
+
+async function init(){
+  const [{data:e},{data:l}]=await Promise.all([
+    db.from('equipment').select('*').order('name').limit(2000),
+    db.from('locations').select('location_id,floor,area,detail,markets(name)').limit(2000)
+  ]);
+  eqs=e||[]; locs=l||[];
+  const cats=[...new Set(eqs.map(x=>x.category).filter(Boolean))];
+  document.getElementById('fCat').innerHTML='<option value="">全部分類</option>'+cats.map(c=>`<option>${escHtml(c)}</option>`).join('');
+  document.getElementById('catList').innerHTML=cats.map(c=>`<option>${escHtml(c)}</option>`).join('');
+  document.getElementById('e-loc').innerHTML='<option value="">（選填）</option>'+locs.map(x=>`<option value="${x.location_id}">${escHtml([x.markets?.name,x.floor,x.area,x.detail].filter(Boolean).join(' / '))}</option>`).join('');
+  document.getElementById('fCat').onchange=renderList; document.getElementById('fStatus').onchange=renderList;
+  renderList();
+  // QR quick lookup ?qr=
+  const qr=new URLSearchParams(location.search).get('qr');
+  if(qr){const f=eqs.find(x=>x.qr_code===qr);if(f)openHist(f.equipment_id);}
+}
+function locName(id){const l=locs.find(x=>x.location_id===id);return l?[l.markets?.name,l.floor,l.area,l.detail].filter(Boolean).join(' / '):(null);}
+
+function renderList(){
+  const cat=document.getElementById('fCat').value,st=document.getElementById('fStatus').value,q=(document.getElementById('fQ').value||'').toLowerCase();
+  let rows=eqs.filter(e=>(!cat||e.category===cat)&&(!st||e.status===st)&&(!q||[e.name,e.qr_code,e.serial_no].join(' ').toLowerCase().includes(q)));
+  const tb=document.getElementById('list');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="empty">無符合設備</td></tr>';return;}
+  tb.innerHTML=rows.map(e=>`<tr onclick="openHist('${e.equipment_id}')">
+    <td style="color:var(--text-hi)">${escHtml(e.name)}</td><td>${escHtml(e.category||'—')}</td>
+    <td class="qr">${escHtml(e.qr_code||'—')}</td><td style="color:var(--text-dim)">${escHtml(locName(e.location_id)||e.location||'—')}</td>
+    <td><span class="badge ${e.status==='active'?'b-on':'b-off'}">${({active:'啟用',inactive:'停用',retired:'汰除'})[e.status]||e.status}</span></td>
+    <td style="color:var(--cyan)">履歷 ›</td></tr>`).join('');
+}
+
+let _h={};
+async function openHist(id){
+  curEq=eqs.find(e=>e.equipment_id===id); if(!curEq)return;
+  document.getElementById('h-title').textContent=curEq.name;
+  ['p0','p1','p2','p3'].forEach(p=>document.getElementById(p).innerHTML='<div class="empty">載入中…</div>'); tab(0); show('m-hist');
+  const [{data:reqs},{data:ords},{data:insp},{data:costs}]=await Promise.all([
+    db.from('repair_requests').select('request_id,req_no,fault_type,fault_desc,status,created_at').eq('equipment_id',id).order('created_at',{ascending:false}).limit(200),
+    db.from('maintenance_orders').select('wo_no,status,fault_cause,handle_method,parts_used,labor_hours,finish_time,users:assignee_id(name)').eq('equipment_id',id).order('created_at',{ascending:false}).limit(200),
+    db.from('inspection_records').select('inspect_time,run_status,light_status,abnormal_note,users:inspector_id(name)').eq('equipment_id',id).order('inspect_time',{ascending:false}).limit(200),
+    db.from('cost_records').select('cost_type,amount,vendor,cost_date,note').eq('equipment_id',id).order('cost_date',{ascending:false}).limit(200)
+  ]);
+  _h={reqs:reqs||[],ords:ords||[],insp:insp||[],costs:costs||[]};
+  // KPI
+  const totalCost=(_h.costs).reduce((s,c)=>s+Number(c.amount||0),0);
+  const abn=_h.insp.filter(i=>i.run_status==='abnormal').length;
+  document.getElementById('h-kpi').innerHTML=
+    `<span class="kcard"><div class="n">${_h.reqs.length}</div><div class="l">報修次數</div></span>`+
+    `<span class="kcard"><div class="n">${_h.ords.filter(o=>['completed','closed'].includes(o.status)).length}</div><div class="l">完成維修</div></span>`+
+    `<span class="kcard"><div class="n">${_h.insp.length}</div><div class="l">巡檢次數</div></span>`+
+    `<span class="kcard"><div class="n">${abn}</div><div class="l">巡檢異常</div></span>`+
+    `<span class="kcard"><div class="n">$${totalCost.toLocaleString()}</div><div class="l">維修總成本</div></span>`;
+  // p0 basic
+  const warnW=curEq.warranty_until&&new Date(curEq.warranty_until)<new Date();
+  document.getElementById('p0').innerHTML=`<div class="d-info">
+    <div><span class="k">分類：</span><span class="v">${curEq.category||'—'}</span></div>
+    <div><span class="k">QR Code：</span><span class="v">${curEq.qr_code||'—'}</span></div>
+    <div><span class="k">廠牌：</span><span class="v">${curEq.brand||'—'}</span></div>
+    <div><span class="k">型號：</span><span class="v">${curEq.model||'—'}</span></div>
+    <div><span class="k">序號：</span><span class="v">${curEq.serial_no||'—'}</span></div>
+    <div><span class="k">狀態：</span><span class="v">${({active:'啟用',inactive:'停用',retired:'汰除'})[curEq.status]||curEq.status}</span></div>
+    <div><span class="k">購置日期：</span><span class="v">${fmtD(curEq.purchase_date)}</span></div>
+    <div><span class="k">購置成本：</span><span class="v">${curEq.purchase_cost?'$'+Number(curEq.purchase_cost).toLocaleString():'—'}</span></div>
+    <div><span class="k">保固到期：</span><span class="v">${fmtD(curEq.warranty_until)} ${warnW?'<span class=warn>（已過保）</span>':''}</span></div>
+    <div><span class="k">使用年限：</span><span class="v">${curEq.service_life_y?curEq.service_life_y+' 年':'—'}</span></div>
+    <div class="full"><span class="k">位置：</span><span class="v">${escHtml(locName(curEq.location_id)||curEq.location||'—')}</span></div>
+    <div class="full"><span class="k">說明書：</span><span class="v">${safeUrl(curEq.manual_url)?`<a href="${safeUrl(curEq.manual_url)}" target="_blank" style="color:var(--blue)">開啟說明書 ↗</a>`:'—'}</span></div>
+  </div>`;
+  // p1 repair+maint
+  document.getElementById('p1').innerHTML=
+    `<div style="font-size:.74rem;color:var(--cyan);margin-bottom:6px">報修紀錄</div>`+
+    (_h.reqs.length?`<table class="mini"><tr><th>報修單號</th><th>故障</th><th>狀態</th><th>時間</th></tr>`+
+      _h.reqs.map(r=>`<tr><td class="qr">${escHtml(r.req_no||'—')}</td><td>${escHtml(r.fault_type||'')} ${escHtml(r.fault_desc||'')}</td><td>${escHtml(r.status)}</td><td>${fmt(r.created_at)}</td></tr>`).join('')+`</table>`:'<div class="empty">無報修紀錄</div>')+
+    `<div style="font-size:.74rem;color:var(--cyan);margin:12px 0 6px">維修紀錄</div>`+
+    (_h.ords.length?`<table class="mini"><tr><th>派工單號</th><th>技師</th><th>故障原因/處理</th><th>工時</th><th>完成</th></tr>`+
+      _h.ords.map(o=>`<tr><td class="qr">${escHtml(o.wo_no||'—')}</td><td>${escHtml(o.users?.name||'—')}</td><td>${escHtml([o.fault_cause,o.handle_method].filter(Boolean).join(' / ')||'—')}</td><td>${escHtml(o.labor_hours||'—')}</td><td>${fmt(o.finish_time)}</td></tr>`).join('')+`</table>`:'<div class="empty">無維修紀錄</div>');
+  // p2 inspection
+  document.getElementById('p2').innerHTML=_h.insp.length?`<table class="mini"><tr><th>巡檢時間</th><th>巡檢人</th><th>狀態</th><th>異常說明</th></tr>`+
+    _h.insp.map(i=>`<tr><td>${fmt(i.inspect_time)}</td><td>${escHtml(i.users?.name||'—')}</td><td>${i.run_status==='abnormal'?'<span style=color:var(--red)>異常</span>':'<span style=color:var(--green)>正常</span>'}</td><td>${escHtml(i.abnormal_note||'—')}</td></tr>`).join('')+`</table>`:'<div class="empty">無巡檢紀錄</div>';
+  // p3 cost
+  const ctype={purchase:'購置',outsource:'委外',parts:'零件',labor:'工資',other:'其他'};
+  document.getElementById('p3').innerHTML=_h.costs.length?`<table class="mini"><tr><th>日期</th><th>類別</th><th>金額</th><th>廠商</th><th>備註</th></tr>`+
+    _h.costs.map(c=>`<tr><td>${fmtD(c.cost_date)}</td><td>${escHtml(ctype[c.cost_type]||c.cost_type)}</td><td style="color:var(--cyan)">$${Number(c.amount).toLocaleString()}</td><td>${escHtml(c.vendor||'—')}</td><td>${escHtml(c.note||'—')}</td></tr>`).join('')+`</table>`:'<div class="empty">無成本紀錄</div>';
+}
+function tab(i){document.querySelectorAll('#m-hist .tab').forEach((t,n)=>t.classList.toggle('on',n===i));document.querySelectorAll('#m-hist .pane').forEach((p,n)=>p.classList.toggle('on',n===i));}
+
+// edit
+function openEdit(e){
+  e=e&&e.equipment_id?e:null;
+  document.getElementById('e-title').textContent=e?'編輯設備':'新增設備';
+  document.getElementById('e-id').value=e?.equipment_id||'';
+  const g=(id,v)=>document.getElementById(id).value=v??'';
+  g('e-name',e?.name);g('e-qr',e?.qr_code);g('e-cat',e?.category);g('e-brand',e?.brand);g('e-model',e?.model);
+  g('e-serial',e?.serial_no);g('e-pdate',e?.purchase_date);g('e-pcost',e?.purchase_cost);g('e-warr',e?.warranty_until);
+  g('e-life',e?.service_life_y);g('e-manual',e?.manual_url);
+  document.getElementById('e-status').value=e?.status||'active';
+  document.getElementById('e-loc').value=e?.location_id||'';
+  document.getElementById('e-msg').textContent='';
+  if(document.getElementById('m-hist').classList.contains('show'))closeM('m-hist');
+  show('m-edit');
+}
+async function saveEq(){
+  const id=document.getElementById('e-id').value,msg=document.getElementById('e-msg');
+  const name=document.getElementById('e-name').value.trim(),qr=document.getElementById('e-qr').value.trim();
+  if(!name||!qr){msg.textContent='請填寫名稱與 QR Code';msg.className='msg err';return;}
+  const rec={name,qr_code:qr,category:document.getElementById('e-cat').value.trim()||null,brand:document.getElementById('e-brand').value.trim()||null,
+    model:document.getElementById('e-model').value.trim()||null,serial_no:document.getElementById('e-serial').value.trim()||null,
+    purchase_date:document.getElementById('e-pdate').value||null,purchase_cost:parseFloat(document.getElementById('e-pcost').value)||null,
+    warranty_until:document.getElementById('e-warr').value||null,service_life_y:parseInt(document.getElementById('e-life').value)||null,
+    manual_url:document.getElementById('e-manual').value.trim()||null,status:document.getElementById('e-status').value,location_id:document.getElementById('e-loc').value||null};
+  let err;
+  if(id){({error:err}=await db.from('equipment').update(rec).eq('equipment_id',id));}
+  else{({error:err}=await db.from('equipment').insert(rec));}
+  if(err){msg.textContent='錯誤：'+translateError(err.message);msg.className='msg err';return;}
+  closeM('m-edit');toast(id?'已更新設備':'已新增設備');
+  const {data}=await db.from('equipment').select('*').order('name').limit(2000);eqs=data||[];renderList();
+}
+function show(id){document.getElementById(id).classList.add('show');}
+function closeM(id){document.getElementById(id).classList.remove('show');}
+let _tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=err?'var(--red)':'var(--border-hi)';el.style.color=err?'var(--red)':'var(--text)';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400);}
+init().catch(e=>{document.getElementById('list').innerHTML=`<tr><td colspan="6" class="empty" style="color:var(--red)">載入失敗：${escHtml(translateError(e.message))}</td></tr>`;});
+</script>
+</body>
+</html>

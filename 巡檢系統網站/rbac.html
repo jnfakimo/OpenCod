@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>權限管理 RBAC — 報修派工管理系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
+  --cyan:#00d4ff;--blue:#1a7fff;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;
+  --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+a{color:inherit;text-decoration:none}
+.navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--cyan);letter-spacing:.06em;text-shadow:0 0 14px rgba(0,212,255,.5)}
+.nav-sub{font-size:.7rem;color:var(--text-dim)}.nav-space{flex:1}
+.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;transition:all .2s}
+.nav-back:hover{border-color:var(--cyan);color:var(--cyan)}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px}
+.tab{padding:9px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--text-dim);cursor:pointer;font-size:.8rem;font-family:var(--font-head);letter-spacing:.04em}
+.tab.on{color:var(--cyan);border-bottom-color:var(--cyan)}
+.pane{display:none}.pane.on{display:block}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px;margin-bottom:14px}
+.card h3{font-family:var(--font-head);font-size:.92rem;color:var(--cyan);margin-bottom:12px;letter-spacing:.04em}
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+th{color:var(--text-dim);padding:8px;border-bottom:1px solid var(--border);font-weight:600;font-size:.7rem}
+td{padding:8px;border-bottom:1px solid rgba(12,40,64,.4);text-align:center}
+td.rolename{text-align:left;color:var(--text-hi);font-weight:600;white-space:nowrap}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--cyan);cursor:pointer}
+select{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:2px;font-size:.76rem;outline:none}
+select:focus{border-color:var(--cyan)}
+.hint{font-size:.68rem;color:var(--text-dim);margin-top:8px;line-height:1.7}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border-hi);color:var(--text);padding:9px 18px;border-radius:4px;font-size:.76rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none}.toast.show{opacity:1}
+.empty{color:var(--text-dim);text-align:center;padding:24px;font-size:.8rem}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div><div class="nav-title">⊞ 權限管理 RBAC</div><div class="nav-sub">角色權限矩陣 · 使用者角色指派</div></div>
+  <div class="nav-space"></div>
+<a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
+<a href="workorder.html"><button class="nav-back">⚒ 報修系統</button></a>
+<a href="dispatch.html"><button class="nav-back">◪ 派工系統</button></a>
+<a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
+  <a href="admin.html"><button class="nav-back">← 後台</button></a>
+</nav>
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab on" onclick="tab(0)">◈ 角色權限矩陣</button>
+    <button class="tab" onclick="tab(1)">⬡ 使用者角色</button>
+  </div>
+  <div class="pane on" id="p0">
+    <div class="card"><h3>角色 × 權限（勾選即時儲存）</h3>
+      <div id="matrix"><div class="empty">載入中…</div></div>
+      <div class="hint">權限說明：新增/修改/刪除/查詢/派工/結案/簽核/匯出/後台管理。<br>※ 此為權限設定資料，前端各頁可依登入者角色讀取 role_permissions 控制按鈕顯示（將於各頁逐步套用）。</div>
+    </div>
+  </div>
+  <div class="pane" id="p1">
+    <div class="card"><h3>使用者角色指派</h3>
+      <div id="userTbl"><div class="empty">載入中…</div></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
+function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
+const PERMS=[['create','新增'],['update','修改'],['delete','刪除'],['read','查詢'],['dispatch','派工'],['close','結案'],['sign','簽核'],['export','匯出'],['admin','後台管理']];
+const LEGACY_ROLE_BY_RBAC={reporter:'inspector',duty:'maintenance',dispatcher:'maintenance',technician:'maintenance',unit_supervisor:'supervisor',mgmt_supervisor:'supervisor',sysadmin:'admin'};
+const MENU_PRESETS={
+  reporter:{maintenance:true,repair:true},
+  duty:{maintenance:true,handover:true,repair:true},
+  dispatcher:{maintenance:true,repair:true},
+  technician:{maintenance:true},
+  unit_supervisor:{maintenance:true,handover:true,repair:true},
+  mgmt_supervisor:{maintenance:true,handover:true},
+  sysadmin:{inspector:true,maintenance:true,handover:true,repair:true}
+};
+let roles=[],perms={};
+function tab(i){document.querySelectorAll('.tab').forEach((t,n)=>t.classList.toggle('on',n===i));document.querySelectorAll('.pane').forEach((p,n)=>p.classList.toggle('on',n===i));}
+function permissionsForRole(role){
+  const out={inspector:false,maintenance:false,handover:false,repair:false};
+  Object.assign(out,MENU_PRESETS[role]||{});
+  PERMS.forEach(p=>{out[p[0]]=perms[role+'|'+p[0]]===true;});
+  return out;
+}
+
+async function init(){
+  const [{data:r,error:re},{data:rp}]=await Promise.all([
+    db.from('roles').select('*').order('sort_order'),
+    db.from('role_permissions').select('*')
+  ]);
+  if(re){document.getElementById('matrix').innerHTML='<div class="empty" style="color:var(--amber)">尚未建立 roles 表，請先執行 work_order_schema.sql</div>';return;}
+  roles=r||[]; perms={}; (rp||[]).forEach(x=>{perms[x.role_id+'|'+x.perm]=x.allowed;});
+  renderMatrix(); renderUsers();
+}
+function renderMatrix(){
+  let h='<table><tr><th class="rolename" style="text-align:left">角色＼權限</th>'+PERMS.map(p=>`<th>${p[1]}</th>`).join('')+'</tr>';
+  roles.forEach(r=>{
+    h+=`<tr><td class="rolename">${escHtml(r.name)}</td>`+PERMS.map(p=>{
+      const on=perms[r.role_id+'|'+p[0]]===true;
+      return `<td><input type="checkbox" ${on?'checked':''} onchange="togglePerm('${r.role_id}','${p[0]}',this.checked)"></td>`;
+    }).join('')+'</tr>';
+  });
+  h+='</table>';document.getElementById('matrix').innerHTML=h;
+}
+async function togglePerm(role,perm,val){
+  perms[role+'|'+perm]=val;
+  const {error}=await db.from('role_permissions').upsert({role_id:role,perm,allowed:val},{onConflict:'role_id,perm'});
+  toast(error?('儲存失敗：'+translateError(error.message)):'已更新',!!error);
+}
+async function renderUsers(){
+  const {data:users}=await db.from('users').select('user_id,name,role,rbac_role,department').eq('status','active').order('name');
+  const box=document.getElementById('userTbl');
+  if(!users||!users.length){box.innerHTML='<div class="empty">無使用者</div>';return;}
+  box.innerHTML='<table><tr><th style="text-align:left">姓名</th><th style="text-align:left">單位</th><th style="text-align:left">系統角色(RBAC)</th></tr>'+
+    users.map(u=>`<tr><td class="rolename">${escHtml(u.name)}</td><td style="text-align:left;color:var(--text-dim)">${escHtml(u.department||'—')}</td>
+      <td style="text-align:left"><select onchange="setUserRole('${u.user_id}',this.value)">
+        <option value="">（未指定）</option>${roles.map(r=>`<option value="${r.role_id}" ${u.rbac_role===r.role_id?'selected':''}>${escHtml(r.name)}</option>`).join('')}
+      </select></td></tr>`).join('')+'</table>';
+}
+async function setUserRole(uid,role){
+  const updates = role ? { rbac_role:role, role:LEGACY_ROLE_BY_RBAC[role] || 'inspector', permissions:permissionsForRole(role) } : { rbac_role:null };
+  const {error}=await db.from('users').update(updates).eq('user_id',uid);
+  toast(error?('儲存失敗：'+translateError(error.message)):'已指派角色',!!error);
+}
+let _tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=err?'var(--red)':'var(--border-hi)';el.style.color=err?'var(--red)':'var(--text)';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2200);}
+init();
+</script>
+</body>
+</html>

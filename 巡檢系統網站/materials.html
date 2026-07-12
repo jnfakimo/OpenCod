@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<title>設備材料管理 Material Master — 臺北農產</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
+  --cyan:#00d4ff;--cyan-glow:0 0 14px rgba(0,212,255,.5);--blue:#1a7fff;--green:#00ff9d;
+  --amber:#ffb300;--red:#ff3b3b;--text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-glow:none;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] .modal-bg{background:rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;
+  background-image:linear-gradient(rgba(0,212,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.015) 1px,transparent 1px);background-size:40px 40px}
+a{color:inherit;text-decoration:none}
+.navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;overflow-x:auto}
+.navbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--cyan),var(--blue) 40%,transparent);opacity:.5}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--cyan);letter-spacing:.05em;text-shadow:var(--cyan-glow);white-space:nowrap}
+.nav-sub{font-size:.68rem;color:var(--text-dim);white-space:nowrap}
+.nav-space{flex:1 0 auto}
+.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;transition:all .2s;font-family:var(--font-head);white-space:nowrap;flex:0 0 auto}
+.nav-back:hover{border-color:var(--cyan);color:var(--cyan)}
+.content{padding:14px 16px;max-width:1500px;margin:0 auto}
+.stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:9px 16px;min-width:110px}
+.stat-card .n{font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:var(--cyan)}
+.stat-card .n.warn{color:var(--amber)} .stat-card .n.bad{color:var(--red)}
+.stat-card .l{font-size:.66rem;color:var(--text-dim);margin-top:2px}
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.toolbar select,.toolbar input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:2px;font-size:.78rem;outline:none;font-family:inherit}
+.toolbar select:focus,.toolbar input:focus{border-color:var(--cyan)}
+.t-space{flex:1}
+.btn{padding:7px 13px;border-radius:2px;cursor:pointer;font-size:.74rem;font-family:var(--font-head);letter-spacing:.03em;transition:all .2s;border:1px solid var(--border);background:none;color:var(--text-dim)}
+.btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-add{background:rgba(0,212,255,.1);border-color:var(--cyan);color:var(--cyan)}
+.btn-add:hover{background:rgba(0,212,255,.2)}
+.btn-blue{border-color:var(--blue);color:#6fb4ff}
+.btn-blue:hover{border-color:var(--blue);color:#a9d4ff;background:rgba(26,127,255,.15)}
+.btn-green{border-color:rgba(0,255,157,.4);color:var(--green)}
+.btn-green:hover{background:rgba(0,255,157,.1);border-color:var(--green)}
+/* TABLE */
+.tbl-wrap{border:1px solid var(--border);border-radius:3px;overflow-x:auto;background:var(--panel)}
+table{width:100%;border-collapse:collapse;font-size:.76rem;white-space:nowrap}
+th{background:var(--surface);color:var(--cyan);text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);font-weight:600;position:sticky;top:0;font-size:.72rem;letter-spacing:.03em}
+td{padding:8px 10px;border-bottom:1px solid rgba(12,40,64,.5);color:var(--text)}
+tr:hover td{background:rgba(0,212,255,.04)}
+.floor-cell{font-family:var(--font-head);font-weight:700;color:var(--cyan);background:rgba(0,212,255,.06)}
+.code-cell{font-family:'Share Tech Mono',monospace;color:var(--text-hi);font-size:.74rem}
+.pill{display:inline-block;border:1px solid var(--border);border-radius:9px;padding:1px 8px;font-size:.66rem;color:var(--text-dim)}
+.pill.on{border-color:rgba(0,255,157,.5);color:var(--green);background:rgba(0,255,157,.1)}
+.pill.off{border-color:rgba(255,59,59,.4);color:var(--red)}
+.stk-low{color:var(--red);font-weight:700}
+.lnk{color:var(--cyan);cursor:pointer;border:1px solid var(--border);border-radius:2px;padding:2px 6px;font-size:.66rem;margin-right:3px;display:inline-block}
+.lnk:hover{border-color:var(--cyan);background:rgba(0,212,255,.1)}
+.lnk.dim{color:var(--text-dim);cursor:default;opacity:.4}
+.act{cursor:pointer;color:var(--text-dim);padding:2px 6px;border:1px solid var(--border);border-radius:2px;font-size:.66rem;margin-right:3px}
+.act:hover{border-color:var(--cyan);color:var(--cyan)}
+.act.del:hover{border-color:var(--red);color:var(--red)}
+.empty{text-align:center;padding:50px;color:var(--text-dim)}
+/* PAGER */
+.pager{display:flex;align-items:center;gap:8px;justify-content:flex-end;padding:12px 4px;font-size:.72rem;color:var(--text-dim)}
+.pager .info{margin-right:auto}
+.pbtn{padding:5px 11px;border:1px solid var(--border);border-radius:2px;background:var(--surface);color:var(--text);cursor:pointer;font-size:.7rem}
+.pbtn:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan)}
+.pbtn:disabled{opacity:.35;cursor:not-allowed}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(1,6,14,.85);z-index:200;align-items:flex-start;justify-content:center;overflow:auto;padding:40px 16px}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border-hi);border-radius:4px;width:100%;max-width:860px;box-shadow:0 0 40px rgba(0,212,255,.15)}
+.modal.sm{max-width:340px}
+.mh{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.mh .mt{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--cyan)}
+.mh .x{margin-left:auto;cursor:pointer;color:var(--text-dim);font-size:1.2rem}
+.mh .x:hover{color:var(--red)}
+.mb{padding:16px 18px}
+.grp{margin-bottom:14px;border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.grp-h{background:var(--surface);padding:7px 12px;font-size:.75rem;color:var(--cyan);font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px}
+.grp-h .cv{transition:transform .2s;font-size:.7rem}
+.grp.collapsed .grp-h .cv{transform:rotate(-90deg)}
+.grp-b{padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.grp.collapsed .grp-b{display:none}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld.wide{grid-column:1/-1}
+.fld label{font-size:.68rem;color:var(--text-dim)}
+.fld input,.fld select,.fld textarea{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:7px 9px;border-radius:2px;font-size:.8rem;outline:none;font-family:inherit;width:100%}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--cyan)}
+.fld textarea{resize:vertical;min-height:44px}
+.fld input[readonly]{color:var(--cyan);font-family:'Share Tech Mono',monospace}
+.mfoot{display:flex;gap:8px;padding:14px 18px;border-top:1px solid var(--border)}
+.btn-primary{flex:1;background:rgba(0,212,255,.14);border:1px solid var(--cyan);color:var(--cyan);padding:11px;border-radius:2px;cursor:pointer;font-size:.85rem;font-family:var(--font-head);font-weight:700}
+.btn-primary:hover{background:rgba(0,212,255,.24)}
+.mmsg{font-size:.74rem;color:var(--red);align-self:center}
+#qrbox{display:flex;flex-direction:column;align-items:center;gap:10px;padding:6px}
+#qrimg{background:#fff;padding:10px;border-radius:4px}
+#qrbox .qt{font-family:'Share Tech Mono',monospace;color:var(--text-hi);font-size:.8rem}
+#qrbox .ql{font-size:.66rem;color:var(--text-dim);word-break:break-all;text-align:center;max-width:260px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel);border:1px solid var(--cyan);color:var(--text-hi);padding:11px 20px;border-radius:3px;font-size:.8rem;z-index:400;transition:transform .3s;box-shadow:0 0 24px rgba(0,212,255,.25)}
+.toast.show{transform:translateX(-50%) translateY(0)} .toast.err{border-color:var(--red)}
+@media(max-width:720px){.grp-b{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.grp-b{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div><div class="nav-title">◧ 設備材料管理</div><div class="nav-sub">Material Master · 臺北農產 第一果菜市場</div></div>
+  <div class="nav-space"></div>
+  <a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
+  <a href="workorder.html"><button class="nav-back">◪ 報修系統</button></a>
+  <a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
+  <a href="admin.html"><button class="nav-back">← 後台</button></a>
+</nav>
+
+<div class="content">
+  <div class="stats-row">
+    <div class="stat-card"><div class="n" id="s-total">0</div><div class="l">材料總筆數</div></div>
+    <div class="stat-card"><div class="n" id="s-cat">0</div><div class="l">分類數</div></div>
+    <div class="stat-card"><div class="n warn" id="s-insp">0</div><div class="l">需巡檢</div></div>
+    <div class="stat-card"><div class="n bad" id="s-low">0</div><div class="l">低於安全庫存</div></div>
+  </div>
+
+  <div class="toolbar">
+    <select id="f-floor" onchange="page=1;render()"><option value="">全部樓層</option></select>
+    <select id="f-cat" onchange="page=1;render()"><option value="">全部分類</option></select>
+    <select id="f-status" onchange="page=1;render()"><option value="">全部狀態</option><option value="active">啟用</option><option value="inactive">停用</option></select>
+    <input id="f-q" placeholder="搜尋 編號/名稱/品牌/型號…" oninput="page=1;render()" style="width:210px">
+    <div class="t-space"></div>
+    <button class="btn btn-add" onclick="openAdd()">＋ 新增材料</button>
+    <button class="btn btn-blue" onclick="document.getElementById('impFile').click()">⭳ 匯入XLSX</button>
+    <button class="btn btn-green" onclick="exportXLSX('xlsx')">⭱ 匯出XLSX</button>
+    <button class="btn" onclick="downloadTemplate()">▤ 範本</button>
+    <input type="file" id="impFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="onImportFile(event)">
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th>樓層</th><th>材料編號</th><th>名稱</th><th>分類</th><th>型號 / 規格</th><th>品牌</th>
+        <th>狀態</th><th>庫存(現/安)</th><th>巡檢</th><th>連結檔</th><th>QR</th><th>操作</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="pager">
+    <span class="info" id="pInfo">—</span>
+    <button class="pbtn" id="pPrev" onclick="goPage(page-1)">‹ 上一頁</button>
+    <span id="pNum">1 / 1</span>
+    <button class="pbtn" id="pNext" onclick="goPage(page+1)">下一頁 ›</button>
+  </div>
+</div>
+
+<!-- Add / Edit modal -->
+<div class="modal-bg" id="m-edit">
+  <div class="modal">
+    <div class="mh"><span class="mt" id="mTitle">新增材料</span><span class="x" onclick="closeM('m-edit')">✕</span></div>
+    <div class="mb" id="mForm"></div>
+    <div class="mfoot"><span class="mmsg" id="mMsg"></span><button class="btn-primary" onclick="saveMaterial()">儲存</button></div>
+  </div>
+</div>
+
+<!-- QR modal -->
+<div class="modal-bg" id="m-qr">
+  <div class="modal sm">
+    <div class="mh"><span class="mt">QR 掃描 → 設備連結檔</span><span class="x" onclick="closeM('m-qr')">✕</span></div>
+    <div class="mb"><div id="qrbox">
+      <div class="qt" id="qrCode"></div>
+      <div id="qrimg"></div>
+      <div class="ql" id="qrLink"></div>
+      <button class="btn btn-green" id="qrOpen" onclick="openQrTarget()">開啟連結檔</button>
+    </div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
+const PER=10;              // 每 10 筆一頁
+let mats=[], cats=[], spaces=[], page=1, editId=null, qrTargetUrl='';
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
+// 全系統統一日期格式：西元 YYYY-MM-DD
+function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtDate(v){if(!v)return '—';const d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function toast(m,e){const t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(e?' err':'');setTimeout(()=>t.className='toast',2200);}
+function floorOrder(f){const s=String(f||'').trim().toUpperCase();const b=s.match(/^B(\d+)F?$/);if(b)return 100-+b[1];if(s==='RF')return 900;const n=s.match(/^(\d+)F?$/);if(n)return 100+ +n[1];return 500;}
+function catName(id){const c=cats.find(x=>x.category_id===id);return c?c.name:'';}
+function catCode(id){const c=cats.find(x=>x.category_id===id);return c?c.code:'OTH';}
+
+// ── 表單欄位設定（八大類）────────────────────────────────
+const GROUPS=[
+ {t:'一、基本識別',f:[
+   ['material_code','材料編號（自動）','ro'],['material_name','材料名稱*','text'],['material_alias','材料別名','text'],
+   ['category_id','材料分類','cat'],['sub_category','材料子分類','text'],['material_type','材料類型','text'],
+   ['floor','樓層','floor'],['space_id','平面空間（區域位置表）','space'],['status','使用狀態','status']]},
+ {t:'二、規格屬性',f:[
+   ['brand','品牌','text'],['manufacturer','製造商','text'],['model','型號','text'],
+   ['specification','規格','text'],['size','尺寸','text'],['color','顏色','text'],
+   ['material_txt','材質','text'],['unit','計量單位','text'],['weight','重量','text'],
+   ['capacity','容量','text'],['voltage','電壓','text'],['current_a','電流','text'],
+   ['power','功率','text'],['frequency','頻率','text'],['pressure','壓力','text'],
+   ['temperature_range','適用溫度','text'],['waterproof_level','防水等級','text'],['ip_rating','IP 防護等級','text']]},
+ {t:'三、採購資訊',f:[
+   ['supplier','供應商','text'],['supplier_code','供應商代碼','text'],['original_manufacturer','原廠名稱','text'],
+   ['country','產地','text'],['purchase_price','採購單價','num'],['currency','幣別','text'],
+   ['warranty','保固期限','text'],['lead_time','交貨天數','num']]},
+ {t:'四、庫存資訊',f:[
+   ['safety_stock','安全庫存','num'],['current_stock','目前庫存','num'],['maximum_stock','最大庫存','num'],
+   ['minimum_stock','最低庫存','num'],['storage_location','儲位','text'],['shelf','貨架','text'],
+   ['batch_number','批號','text'],['expiry_date','有效期限','date']]},
+ {t:'五、管理資訊',f:[
+   ['barcode','條碼','text'],['rfid','RFID 編號','text'],['asset_tag','資產標籤','text']]},
+ {t:'六、附件資訊（檔案連結，供 QR 掃描開啟）',f:[
+   ['product_image','產品照片 URL','url'],['datasheet_url','規格書 URL','url'],['manual_url','操作手冊 URL','url'],
+   ['sds_url','安全資料表 SDS URL','url'],['certificate_url','認證文件 URL','url'],
+   ['cad_file_url','CAD 圖檔 URL','url'],['bim_file_url','BIM 模型 URL','url']]},
+ {t:'七、巡檢相關屬性',f:[
+   ['inspection_required','是否需要巡檢','bool'],['inspection_cycle','巡檢週期','text'],['maintenance_cycle','保養週期','text'],
+   ['replacement_cycle','建議更換週期','text'],['critical_level','重要程度','level'],['risk_level','風險等級','level']]},
+ {t:'八、備註',f:[
+   ['description','材料說明','area'],['remark','備註','area']]},
+];
+
+async function load(){
+  const [m,c,s]=await Promise.all([
+    db.from('materials').select('*').limit(5000),
+    db.from('material_categories').select('*').eq('status','active').order('sort_order'),
+    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').limit(5000)
+  ]);
+  if(m.error){document.getElementById('tbody').innerHTML='<tr><td colspan="12" class="empty">無法讀取。請先於 Supabase 執行 sql/material_master.sql 建表。</td></tr>';return;}
+  mats=m.data||[]; cats=c.data||[]; spaces=s.data||[];
+  buildFilters();
+  // 深連結 ?m=code → 直接開該材料 QR
+  const q=new URLSearchParams(location.search).get('m');
+  render();
+  if(q){const t=mats.find(x=>x.material_code===q||x.material_id===q);if(t)showQR(t.material_id);}
+}
+
+function buildFilters(){
+  const floors=[...new Set([...mats.map(x=>x.floor),...spaces.map(x=>x.floor)].filter(Boolean))].sort((a,b)=>floorOrder(a)-floorOrder(b));
+  document.getElementById('f-floor').innerHTML='<option value="">全部樓層</option>'+floors.map(f=>`<option>${esc(f)}</option>`).join('');
+  document.getElementById('f-cat').innerHTML='<option value="">全部分類</option>'+cats.map(c=>`<option value="${c.category_id}">${esc(c.name)}</option>`).join('');
+}
+
+function filtered(){
+  const ff=document.getElementById('f-floor').value, fc=document.getElementById('f-cat').value,
+        fs=document.getElementById('f-status').value, q=document.getElementById('f-q').value.trim().toLowerCase();
+  let list=mats.slice();
+  if(ff) list=list.filter(x=>x.floor===ff);
+  if(fc) list=list.filter(x=>x.category_id===fc);
+  if(fs) list=list.filter(x=>x.status===fs);
+  if(q) list=list.filter(x=>[x.material_code,x.material_name,x.brand,x.model,x.specification,x.material_alias].some(v=>(v||'').toLowerCase().includes(q)));
+  // 第一欄樓層排序
+  list.sort((a,b)=>floorOrder(a.floor)-floorOrder(b.floor) || (a.material_code||'').localeCompare(b.material_code||''));
+  return list;
+}
+
+function fileLink(url,label){return url?`<a class="lnk" href="${esc(url)}" target="_blank" rel="noopener">${label}</a>`:`<span class="lnk dim">${label}</span>`;}
+
+function render(){
+  document.getElementById('s-total').textContent=mats.length;
+  document.getElementById('s-cat').textContent=new Set(mats.map(x=>x.category_id).filter(Boolean)).size;
+  document.getElementById('s-insp').textContent=mats.filter(x=>x.inspection_required).length;
+  document.getElementById('s-low').textContent=mats.filter(x=>x.safety_stock!=null&&x.current_stock!=null&&+x.current_stock<+x.safety_stock).length;
+
+  const list=filtered();
+  const pages=Math.max(1,Math.ceil(list.length/PER));
+  if(page>pages)page=pages;
+  const slice=list.slice((page-1)*PER,page*PER);
+  const tb=document.getElementById('tbody');
+  if(!slice.length){tb.innerHTML='<tr><td colspan="12" class="empty">尚無資料，請「新增材料」。</td></tr>';}
+  else tb.innerHTML=slice.map(m=>{
+    const low=m.safety_stock!=null&&m.current_stock!=null&&+m.current_stock<+m.safety_stock;
+    const files=fileLink(m.cad_file_url,'CAD')+fileLink(m.datasheet_url,'規格')+fileLink(m.manual_url,'手冊');
+    return `<tr>
+      <td class="floor-cell">${esc(m.floor||'—')}</td>
+      <td class="code-cell">${esc(m.material_code||'—')}</td>
+      <td>${esc(m.material_name||'')}</td>
+      <td>${esc(catName(m.category_id)||'—')}</td>
+      <td>${esc(m.model||m.specification||'—')}</td>
+      <td>${esc(m.brand||'—')}</td>
+      <td><span class="pill ${m.status==='active'?'on':'off'}">${m.status==='active'?'啟用':'停用'}</span></td>
+      <td>${m.current_stock==null?'—':`<span class="${low?'stk-low':''}">${m.current_stock}</span>`} / ${m.safety_stock==null?'—':m.safety_stock}</td>
+      <td>${m.inspection_required?'<span class="pill on">需</span>':'<span class="pill">否</span>'}</td>
+      <td>${files}</td>
+      <td><span class="act" onclick="showQR('${m.material_id}')">◱ QR</span></td>
+      <td><span class="act" onclick="openEdit('${m.material_id}')">編輯</span><span class="act del" onclick="delMaterial('${m.material_id}')">刪除</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('pInfo').textContent=`共 ${list.length} 筆 · 每頁 ${PER} 筆`;
+  document.getElementById('pNum').textContent=`${page} / ${pages}`;
+  document.getElementById('pPrev').disabled=page<=1;
+  document.getElementById('pNext').disabled=page>=pages;
+}
+function goPage(p){const pages=Math.max(1,Math.ceil(filtered().length/PER));page=Math.min(Math.max(1,p),pages);render();}
+
+// ── 表單建立 ──────────────────────────────────────────────
+function buildForm(m){
+  const box=document.getElementById('mForm');
+  const filed=editId?fmtDate(m.created_at):todayISO();   // 填表日期（統一 YYYY-MM-DD）
+  const header=`<div style="display:flex;justify-content:flex-end;gap:6px;font-size:.72rem;color:var(--text-dim);margin-bottom:8px">填表日期：<b style="color:var(--cyan);font-family:'Share Tech Mono',monospace">${filed}</b></div>`;
+  box.innerHTML=header+GROUPS.map((g,gi)=>{
+    const fields=g.f.map(([k,lab,type])=>{
+      const v=m[k];
+      let ctrl;
+      if(type==='cat') ctrl=`<select id="fx-${k}" onchange="autoCode()"><option value="">—</option>`+cats.map(c=>`<option value="${c.category_id}" ${v===c.category_id?'selected':''}>${esc(c.name)}</option>`).join('')+`</select>`;
+      else if(type==='space') ctrl=`<select id="fx-${k}"><option value="">—</option>`+spaces.slice().sort((a,b)=>floorOrder(a.floor)-floorOrder(b.floor)).map(s=>`<option value="${s.space_id}" ${v===s.space_id?'selected':''}>${esc(s.floor)} · ${esc(s.space_name)}</option>`).join('')+`</select>`;
+      else if(type==='floor') ctrl=`<input id="fx-${k}" list="floorDL" value="${esc(v||'')}" onchange="autoCode()">`;
+      else if(type==='status') ctrl=`<select id="fx-${k}"><option value="active" ${v!=='inactive'?'selected':''}>啟用</option><option value="inactive" ${v==='inactive'?'selected':''}>停用</option></select>`;
+      else if(type==='bool') ctrl=`<select id="fx-${k}"><option value="false" ${!v?'selected':''}>否</option><option value="true" ${v?'selected':''}>是</option></select>`;
+      else if(type==='level') ctrl=`<select id="fx-${k}"><option value="">—</option>`+['低','中','高','極高'].map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')+`</select>`;
+      else if(type==='area') ctrl=`<textarea id="fx-${k}">${esc(v||'')}</textarea>`;
+      else if(type==='ro') ctrl=`<input id="fx-${k}" value="${esc(v||'')}" readonly placeholder="選分類與樓層後自動產生">`;
+      else ctrl=`<input id="fx-${k}" type="${type==='num'?'number':type==='date'?'date':'text'}" value="${esc(v==null?'':v)}">`;
+      const wide=(type==='area')?' wide':'';
+      return `<div class="fld${wide}"><label>${esc(lab)}</label>${ctrl}</div>`;
+    }).join('');
+    return `<div class="grp${gi>0?' collapsed':''}"><div class="grp-h" onclick="this.parentNode.classList.toggle('collapsed')"><span class="cv">▾</span>${esc(g.t)}</div><div class="grp-b">${fields}</div></div>`;
+  }).join('')+`<datalist id="floorDL">${[...new Set([...spaces.map(s=>s.floor),'B1','1F','2F','3F','4F','RF'])].map(f=>`<option>${esc(f)}</option>`).join('')}</datalist>`;
+}
+function fval(k){const el=document.getElementById('fx-'+k);return el?el.value:'';}
+// 材料編號邏輯：分類代碼-樓層-流水號（ELE-B1-0001）
+function autoCode(){
+  if(editId) return;                    // 編輯時不改號
+  const cat=catCode(fval('category_id')), fl=(fval('floor')||'NA').toUpperCase().replace(/\s/g,'');
+  if(!fval('category_id')||!fval('floor')){document.getElementById('fx-material_code').value='';return;}
+  const pre=`${cat}-${fl}-`;
+  let max=0; mats.forEach(m=>{if((m.material_code||'').startsWith(pre)){const n=parseInt((m.material_code.split('-')[2]||'0'),10);if(n>max)max=n;}});
+  document.getElementById('fx-material_code').value=pre+String(max+1).padStart(4,'0');
+}
+function openAdd(){editId=null;document.getElementById('mTitle').textContent='新增材料';document.getElementById('mMsg').textContent='';buildForm({status:'active'});show('m-edit');}
+function openEdit(id){const m=mats.find(x=>x.material_id===id);if(!m)return;editId=id;document.getElementById('mTitle').textContent='編輯材料 '+(m.material_code||'');document.getElementById('mMsg').textContent='';buildForm(m);show('m-edit');}
+
+async function saveMaterial(){
+  const msg=document.getElementById('mMsg');
+  const name=fval('material_name').trim();
+  if(!name){msg.textContent='請輸入材料名稱';return;}
+  const rec={};
+  GROUPS.forEach(g=>g.f.forEach(([k,,type])=>{
+    let v=fval(k); if(type==='ro'&&k==='material_code') v=fval('material_code');
+    if(v==='') { rec[k]=null; return; }
+    if(type==='num') rec[k]=Number(v);
+    else if(type==='bool') rec[k]=(v==='true');
+    else rec[k]=v;
+  }));
+  if(!rec.material_code){ // 保底自動產生
+    const cat=catCode(rec.category_id), fl=(rec.floor||'NA');
+    const pre=`${cat}-${fl}-`; let max=0; mats.forEach(m=>{if((m.material_code||'').startsWith(pre)){const n=parseInt((m.material_code.split('-')[2]||'0'),10);if(n>max)max=n;}});
+    rec.material_code=pre+String(max+1).padStart(4,'0');
+  }
+  let error;
+  if(editId){({error}=await db.from('materials').update(rec).eq('material_id',editId));}
+  else{({error}=await db.from('materials').insert(rec));}
+  if(error){msg.textContent=(error.code==='23505'?'材料編號重複':'儲存失敗：'+translateError(error.message));return;}
+  closeM('m-edit');toast(editId?'已更新':'已新增');await load();
+}
+async function delMaterial(id){const m=mats.find(x=>x.material_id===id);if(!m)return;
+  if(!confirm(`確定刪除「${m.material_code||''} ${m.material_name}」？`))return;
+  const {error}=await db.from('materials').delete().eq('material_id',id);
+  if(error){toast('刪除失敗：'+translateError(error.message),true);return;}
+  toast('已刪除');await load();
+}
+
+// ── QR：掃描導向設備連結檔（CAD/規格書/手冊…），無檔則導向明細 ──
+function qrTargetOf(m){
+  return m.cad_file_url||m.datasheet_url||m.manual_url||m.bim_file_url||m.product_image||
+    (location.origin+location.pathname+'?m='+encodeURIComponent(m.material_code||m.material_id));
+}
+function showQR(id){
+  const m=mats.find(x=>x.material_id===id);if(!m)return;
+  qrTargetUrl=qrTargetOf(m);
+  document.getElementById('qrCode').textContent=m.material_code||m.material_name;
+  document.getElementById('qrLink').textContent=qrTargetUrl;
+  const box=document.getElementById('qrimg');box.innerHTML='';
+  new QRCode(box,{text:qrTargetUrl,width:200,height:200,correctLevel:QRCode.CorrectLevel.M});
+  show('m-qr');
+}
+function openQrTarget(){if(qrTargetUrl)window.open(qrTargetUrl,'_blank','noopener');}
+
+// 匯出/匯入共用欄位（順序一致，方便匯出後修改再匯入）
+const IE_COLS=['floor','material_code','material_name','material_alias','category','sub_category','material_type','status',
+  'brand','manufacturer','model','specification','unit','purchase_price','currency','safety_stock','current_stock',
+  'storage_location','shelf','inspection_required','inspection_cycle','maintenance_cycle','critical_level','risk_level',
+  'cad_file_url','datasheet_url','manual_url','qr_code','remark'];
+const IE_HEAD=['樓層','材料編號','名稱','別名','分類','子分類','類型','狀態','品牌','製造商','型號','規格','單位','採購單價','幣別',
+  '安全庫存','目前庫存','儲位','貨架','需巡檢','巡檢週期','保養週期','重要程度','風險等級','CAD','規格書','手冊','QR','備註'];
+const NUM_FIELDS=new Set(['purchase_price','safety_stock','current_stock','maximum_stock','minimum_stock','lead_time']);
+
+function exportXLSX(fmt){
+  fmt=fmt||'xlsx';
+  const rows=filtered().map(m=>IE_COLS.map(c=>c==='category'?catName(m.category_id):(c==='inspection_required'?(m[c]?'是':'否'):(c==='status'?(m[c]==='inactive'?'停用':'啟用'):(m[c]==null?'':m[c])))));
+  const ws=XLSX.utils.aoa_to_sheet([IE_HEAD,...rows]);const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'MaterialMaster');
+  XLSX.writeFile(wb,`設備材料主檔_${todayISO()}.${fmt}`,{bookType:fmt});
+  toast('已匯出 '+fmt.toUpperCase());
+}
+function downloadTemplate(){
+  const sample=['B1','ELE-B1-0001','範例：低壓配電盤','','電氣材料','','設備','啟用','品牌A','製造商A','型號X','規格說明','台','120000','TWD','1','2','B1配電室','A-01','是','每月','每季','高','中','','','','','範例備註'];
+  const ws=XLSX.utils.aoa_to_sheet([IE_HEAD,sample]);const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'MaterialMaster');
+  XLSX.writeFile(wb,'設備材料主檔_匯入範本.xlsx');
+}
+
+// ── 整筆匯入（XLSX / CSV）──────────────────────────────────
+function catIdByName(n){const c=cats.find(x=>x.name===String(n).trim()||x.code===String(n).trim().toUpperCase());return c?c.category_id:null;}
+function onImportFile(ev){
+  const file=ev.target.files[0];ev.target.value='';if(!file)return;
+  const r=new FileReader();
+  r.onload=async e=>{try{
+    const wb=XLSX.read(e.target.result,{type:'array'});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    await importAoa(XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false}));
+  }catch(err){toast('匯入失敗：'+translateError(err.message),true);}};
+  r.readAsArrayBuffer(file);
+}
+async function importAoa(aoa){
+  if(!aoa||aoa.length<2){toast('檔案無資料列',true);return;}
+  const head=aoa[0].map(c=>String(c||'').trim());
+  // 標題 → 欄位索引（依中文標題對應；找不到就用欄位順序）
+  const idx={};
+  IE_HEAD.forEach((h,i)=>{const p=head.indexOf(h);idx[IE_COLS[i]]=(p>=0?p:i);});
+  const seqCounter={};                       // 產生新編號用
+  const nextCode=(cat,fl)=>{const pre=`${cat||'OTH'}-${(fl||'NA').toUpperCase().replace(/\s/g,'')}-`;
+    if(seqCounter[pre]==null){let mx=0;mats.forEach(m=>{if((m.material_code||'').startsWith(pre)){const n=parseInt(m.material_code.split('-')[2]||'0',10);if(n>mx)mx=n;}});seqCounter[pre]=mx;}
+    return pre+String(++seqCounter[pre]).padStart(4,'0');};
+  const withCode=[], noCode=[];
+  for(let i=1;i<aoa.length;i++){
+    const row=aoa[i]||[]; const g=k=>{const v=row[idx[k]];return v==null?'':String(v).trim();};
+    const name=g('material_name'); if(!name)continue;
+    const rec={material_name:name};
+    IE_COLS.forEach(c=>{if(c==='material_name'||c==='category')return;let v=g(c);if(v==='')return;
+      if(c==='status')rec[c]=(v==='停用'||v.toLowerCase()==='inactive')?'inactive':'active';
+      else if(c==='inspection_required')rec[c]=/^(是|Y|yes|true|需|1)$/i.test(v);
+      else if(NUM_FIELDS.has(c))rec[c]=Number(v);
+      else rec[c]=v;});
+    const catId=catIdByName(g('category')); if(catId)rec.category_id=catId;
+    if(!rec.status)rec.status='active';
+    if(!rec.material_code){rec.material_code=nextCode(catCode(rec.category_id),rec.floor);noCode.push(rec);}
+    else withCode.push(rec);
+  }
+  if(!withCode.length&&!noCode.length){toast('未讀取到有效資料',true);return;}
+  let ok=0,err=null;
+  if(withCode.length){const {error}=await db.from('materials').upsert(withCode,{onConflict:'material_code'});if(error)err=error;else ok+=withCode.length;}
+  if(noCode.length){const {error}=await db.from('materials').insert(noCode);if(error)err=error;else ok+=noCode.length;}
+  if(err){toast('匯入部分失敗：'+translateError(err.message),true);}
+  else toast(`已匯入 ${ok} 筆`);
+  await load();
+}
+
+function show(id){document.getElementById(id).classList.add('show');}
+function closeM(id){document.getElementById(id).classList.remove('show');}
+document.getElementById('m-edit').addEventListener('click',e=>{if(e.target.id==='m-edit')closeM('m-edit');});
+document.getElementById('m-qr').addEventListener('click',e=>{if(e.target.id==='m-qr')closeM('m-qr');});
+load();
+</script>
+</body>
+</html>

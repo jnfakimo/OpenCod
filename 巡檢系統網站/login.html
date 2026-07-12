@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>臺北農產運銷股份有限公司 第一果菜市場 設備巡檢維修系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 25px 50px rgba(0,0,0,.5)}
+h1{font-size:1.5rem;font-weight:700;color:#f8fafc;margin-bottom:6px;text-align:center}
+.subtitle{font-size:.85rem;color:#64748b;text-align:center;margin-bottom:32px}
+.field{margin-bottom:18px}
+label{display:block;font-size:.82rem;color:#94a3b8;margin-bottom:6px;font-weight:500}
+input{width:100%;padding:12px 16px;background:#0f172a;border:2px solid #334155;border-radius:10px;color:#f1f5f9;font-size:1rem;outline:none;transition:border-color .2s}
+input:focus{border-color:#6366f1}
+.btn{width:100%;padding:13px;background:#6366f1;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s;margin-top:8px}
+.btn:hover{background:#4f46e5}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1px solid #334155;color:#94a3b8;font-size:.85rem;padding:10px;margin-top:6px}
+.btn-ghost:hover{background:rgba(255,255,255,.05)}
+.err{color:#f87171;font-size:.83rem;margin-top:10px;text-align:center;min-height:20px}
+.ok{color:#4ade80;font-size:.83rem;margin-top:10px;text-align:center;min-height:20px}
+.logo{text-align:center;font-size:2.5rem;margin-bottom:16px}
+.forgot-link{display:block;text-align:center;margin-top:14px;color:#6366f1;font-size:.83rem;cursor:pointer;text-decoration:underline}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;align-items:center;justify-content:center;padding:24px}
+.overlay.show{display:flex}
+
+:root[data-theme="light"] body{background:#f4f6fa;color:#1e293b}
+:root[data-theme="light"] .card{background:#ffffff;border-color:#e2e8f0;box-shadow:0 10px 30px rgba(15,23,42,.08)}
+:root[data-theme="light"] h1{color:#0f172a}
+:root[data-theme="light"] .subtitle{color:#64748b}
+:root[data-theme="light"] label{color:#64748b}
+:root[data-theme="light"] input{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+:root[data-theme="light"] .btn-ghost{border-color:#cbd5e1;color:#64748b}
+:root[data-theme="light"] .btn-ghost:hover{background:rgba(0,0,0,.04)}
+:root[data-theme="light"] .err{color:#dc2626}
+:root[data-theme="light"] .ok{color:#16a34a}
+</style>
+</head>
+<body>
+<div class="card" id="loginCard">
+  <div class="logo">🔧</div>
+  <h1>臺北農產運銷股份有限公司</h1>
+  <div class="subtitle" style="font-size:.95rem;color:#94a3b8;margin-bottom:4px">第一果菜市場 設備巡檢維修系統</div>
+  <div class="subtitle">請使用帳號登入</div>
+  <div class="field">
+    <label>帳號（英數字）</label>
+    <input id="username" type="text" placeholder="例：tcfm_admin" autocomplete="username">
+  </div>
+  <div class="field">
+    <label>密碼</label>
+    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
+  </div>
+  <button class="btn" id="loginBtn">登入</button>
+  <a class="forgot-link" id="forgotLink">忘記密碼？</a>
+  <div class="err" id="errMsg"></div>
+</div>
+
+<!-- 忘記密碼 modal -->
+<div class="overlay" id="forgotOverlay">
+  <div class="card" style="max-width:380px">
+    <div class="logo" style="font-size:1.8rem;margin-bottom:12px">✉</div>
+    <h1 style="font-size:1.2rem;margin-bottom:6px">重設密碼</h1>
+    <div class="subtitle" style="margin-bottom:24px">請輸入您帳號對應的 Email，系統將寄送重設連結</div>
+    <div class="field">
+      <label>Email</label>
+      <input id="forgotEmail" type="email" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <button class="btn" id="forgotSendBtn">寄送重設連結</button>
+    <button class="btn btn-ghost" id="forgotBackBtn">返回登入</button>
+    <div class="err" id="forgotErr"></div>
+    <div class="ok" id="forgotOk"></div>
+  </div>
+</div>
+
+<!-- 設定新密碼 modal（從 Email 連結進入） -->
+<div class="overlay" id="resetOverlay">
+  <div class="card" style="max-width:380px">
+    <div class="logo" style="font-size:1.8rem;margin-bottom:12px">🔑</div>
+    <h1 style="font-size:1.2rem;margin-bottom:6px">設定新密碼</h1>
+    <div class="subtitle" style="margin-bottom:24px">請輸入您的新密碼（至少 8 個字元）</div>
+    <div class="field">
+      <label>新密碼</label>
+      <input id="resetPw" type="password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label>確認新密碼</label>
+      <input id="resetPw2" type="password" placeholder="••••••••" autocomplete="new-password">
+    </div>
+    <button class="btn" id="resetSaveBtn">設定新密碼</button>
+    <div class="err" id="resetErr"></div>
+    <div class="ok" id="resetOk"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://qztffronusdhgxhjjubt.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const ROLE_ROUTES = {
+  admin:       'admin.html',
+  supervisor:  'admin.html',
+  inspector:   'app.html',
+  maintenance: 'workorder.html?v=reporter-20260701',
+};
+const RBAC_ROLES = {
+  reporter:'一般報修人員',
+  duty:'值班人員',
+  dispatcher:'派工管理員',
+  technician:'維修技術人員',
+  unit_supervisor:'單位主管',
+  mgmt_supervisor:'管理部主管',
+  sysadmin:'系統管理員'
+};
+const LEGACY_TO_RBAC = { admin:'sysadmin', supervisor:'unit_supervisor', maintenance:'technician', inspector:'reporter' };
+const ROLE_PERMISSION_PRESETS = {
+  reporter:{ maintenance:true, repair:true, read:true, create:true },
+  duty:{ maintenance:true, handover:true, repair:true, read:true, create:true, dispatch:true },
+  dispatcher:{ maintenance:true, repair:true, read:true, create:true, update:true, dispatch:true, export:true },
+  technician:{ maintenance:true, read:true, update:true, dispatch:true },
+  unit_supervisor:{ maintenance:true, handover:true, repair:true, read:true, create:true, dispatch:true, close:true, sign:true, export:true },
+  mgmt_supervisor:{ maintenance:true, handover:true, read:true, close:true, sign:true, export:true },
+  sysadmin:{ inspector:true, maintenance:true, handover:true, repair:true, read:true, create:true, update:true, delete:true, dispatch:true, close:true, sign:true, export:true, admin:true }
+};
+
+function normalizeRoleId(profile) {
+  const role = profile?.rbac_role || profile?.role;
+  if (RBAC_ROLES[role]) return role;
+  return LEGACY_TO_RBAC[role] || 'reporter';
+}
+
+function hasPermission(profile, key) {
+  const p = profile.permissions || {};
+  if (typeof p[key] === 'boolean') return p[key];
+  return ROLE_PERMISSION_PRESETS[normalizeRoleId(profile)]?.[key] === true;
+}
+
+function safeRedirect(target) {
+  if (!target) return null;
+  if (/^[A-Za-z0-9_\-]+\.html(\?[A-Za-z0-9_\-=&%.]*)?$/.test(target)) return target;
+  return null;
+}
+function getRedirectTarget(profile) {
+  return safeRedirect(new URLSearchParams(window.location.search).get('redirect')) || getLoginRoute(profile);
+}
+function getLoginRoute(profile) {
+  if (!profile.rbac_role) {
+    const p = profile.permissions || {};
+    if (profile.role === 'admin' || profile.role === 'supervisor') return 'admin.html';
+    if (profile.role === 'inspector') {
+      if (p.inspector !== false) return 'app.html';
+      if (p.handover !== false) return 'handover.html';
+      if (p.maintenance !== false) return 'workorder.html?v=reporter-20260701';
+      return 'app.html';
+    }
+    if (profile.role === 'maintenance') {
+      if (p.maintenance !== false) return 'workorder.html?v=reporter-20260701';
+      if (p.inspector !== false) return 'app.html';
+      if (p.handover !== false) return 'handover.html';
+      return 'workorder.html?v=reporter-20260701';
+    }
+    return ROLE_ROUTES[profile.role] || 'app.html';
+  }
+
+  const roleId = normalizeRoleId(profile);
+  if (roleId === 'sysadmin' || hasPermission(profile, 'admin')) return 'admin.html';
+  if (roleId === 'unit_supervisor' || roleId === 'mgmt_supervisor') return 'admin.html';
+  if (hasPermission(profile, 'maintenance') || hasPermission(profile, 'dispatch') || hasPermission(profile, 'update') || hasPermission(profile, 'create') || hasPermission(profile, 'repair')) return 'workorder.html?v=reporter-20260701';
+  if (hasPermission(profile, 'handover')) return 'handover.html';
+  if (hasPermission(profile, 'inspector')) return 'app.html';
+  return ROLE_ROUTES[profile.role] || 'workorder.html?v=reporter-20260701';
+}
+
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('User already registered')) return '此 Email 已被註冊';
+  if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
+  if (msg.includes('Email not confirmed')) return 'Email 尚未驗證，請檢查信箱';
+  if (msg.includes('New password should be different')) return '新密碼不能與舊密碼相同';
+  if (msg.includes('Password should be at least')) return '密碼長度不足，請輸入更長的密碼';
+  if (msg.includes('Signup requires a valid password')) return '請輸入有效密碼';
+  if (msg.includes('For security purposes') && msg.includes('second')) return '操作過於頻繁，請稍後再試';
+  if (msg.includes('Email link is invalid or has expired') || msg.includes('otp_expired')) return '連結已失效或過期，請重新申請';
+  if (msg.includes('invalid format')) return 'Email 格式不正確';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
+
+// ── Handle password-reset link (#type=recovery / #error=...) ──────────────────
+(async () => {
+  const hash = window.location.hash;
+  if (hash.includes('type=recovery')) {
+    document.getElementById('loginCard').style.display = 'none';
+    document.getElementById('resetOverlay').classList.add('show');
+    return;
+  }
+  if (hash.includes('error=')) {
+    const params = new URLSearchParams(hash.replace(/^#/, ''));
+    const desc = params.get('error_description') || params.get('error_code') || params.get('error') || '';
+    document.getElementById('errMsg').textContent = translateError(desc.replace(/\+/g, ' '));
+    window.location.hash = '';
+    return;
+  }
+
+  // Already logged in?
+  const { data: { session } } = await db.auth.getSession();
+  if (session) {
+    const { data: profile } = await db.from('users').select('role,rbac_role,permissions').eq('auth_id', session.user.id).single();
+    if (profile) { window.location.href = getRedirectTarget(profile); return; }
+  }
+})();
+
+// ── Login ─────────────────────────────────────────────────────────────────────
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('username').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('password').focus(); });
+document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+async function doLogin() {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('errMsg');
+  err.textContent = '';
+  if (!username || !password) { err.textContent = '請填寫帳號與密碼'; return; }
+  btn.disabled = true; btn.textContent = '登入中…';
+
+  const { data: loginEmail, error: lookupErr } = await db.rpc('login_lookup_email', { p_username: username });
+  if (lookupErr || !loginEmail) {
+    err.textContent = '找不到帳號，請確認帳號是否正確';
+    btn.disabled = false; btn.textContent = '登入';
+    return;
+  }
+
+  const { data, error } = await db.auth.signInWithPassword({ email: loginEmail, password });
+  if (error) {
+    err.textContent = '密碼錯誤';
+    btn.disabled = false; btn.textContent = '登入';
+    return;
+  }
+
+  const { data: profile } = await db.from('users').select('user_id,username,role,rbac_role,name,phone,permissions,dept_id,department').eq('auth_id', data.user.id).single();
+  if (!profile) {
+    err.textContent = '找不到使用者資料，請聯絡管理員';
+    btn.disabled = false; btn.textContent = '登入';
+    await db.auth.signOut();
+    return;
+  }
+
+  sessionStorage.setItem('user_role', profile.role);
+  sessionStorage.setItem('user_rbac_role', profile.rbac_role || '');
+  sessionStorage.setItem('user_name', profile.name);
+  if (profile.username) sessionStorage.setItem('user_username', profile.username);
+  else sessionStorage.removeItem('user_username');
+  if (profile.user_id) sessionStorage.setItem('user_id', profile.user_id);
+  if (profile.dept_id) sessionStorage.setItem('user_dept_id', profile.dept_id);
+  if (profile.department) sessionStorage.setItem('user_department', profile.department);
+  if (profile.phone) sessionStorage.setItem('user_phone', profile.phone);
+  else sessionStorage.removeItem('user_phone');
+  window.location.href = getRedirectTarget(profile);
+}
+
+// ── 忘記密碼 ──────────────────────────────────────────────────────────────────
+document.getElementById('forgotLink').addEventListener('click', () => {
+  document.getElementById('forgotEmail').value = '';
+  document.getElementById('forgotErr').textContent = '';
+  document.getElementById('forgotOk').textContent = '';
+  document.getElementById('forgotOverlay').classList.add('show');
+});
+
+document.getElementById('forgotBackBtn').addEventListener('click', () => {
+  document.getElementById('forgotOverlay').classList.remove('show');
+});
+
+document.getElementById('forgotSendBtn').addEventListener('click', async () => {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const btn = document.getElementById('forgotSendBtn');
+  const err = document.getElementById('forgotErr');
+  const ok  = document.getElementById('forgotOk');
+  err.textContent = ''; ok.textContent = '';
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    err.textContent = '請輸入有效的 Email 地址'; return;
+  }
+  btn.disabled = true; btn.textContent = '寄送中…';
+  const redirectTo = window.location.origin + window.location.pathname;
+  const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo });
+  btn.disabled = false; btn.textContent = '寄送重設連結';
+  if (error) {
+    err.textContent = '寄送失敗：' + translateError(error.message);
+  } else {
+    ok.textContent = '重設連結已寄出，請檢查您的信箱（含垃圾郵件）';
+    btn.disabled = true;
+  }
+});
+
+// ── 設定新密碼 ────────────────────────────────────────────────────────────────
+document.getElementById('resetSaveBtn').addEventListener('click', async () => {
+  const pw  = document.getElementById('resetPw').value;
+  const pw2 = document.getElementById('resetPw2').value;
+  const btn = document.getElementById('resetSaveBtn');
+  const err = document.getElementById('resetErr');
+  const ok  = document.getElementById('resetOk');
+  err.textContent = ''; ok.textContent = '';
+  if (pw.length < 8) { err.textContent = '密碼至少需要 8 個字元'; return; }
+  if (pw !== pw2) { err.textContent = '兩次密碼不一致'; return; }
+  btn.disabled = true; btn.textContent = '儲存中…';
+  const { error } = await db.auth.updateUser({ password: pw });
+  btn.disabled = false; btn.textContent = '設定新密碼';
+  if (error) {
+    err.textContent = '設定失敗：' + translateError(error.message);
+  } else {
+    ok.textContent = '密碼已更新！即將跳轉至登入頁面…';
+    setTimeout(() => {
+      window.location.hash = '';
+      window.location.reload();
+    }, 2000);
+  }
+});
+</script>
+</body>
+</html>
