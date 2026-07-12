@@ -298,8 +298,7 @@ function printAllQr(){
     '.tag .n{font-size:14px;font-weight:700;margin-top:6px}'+
     '.tag .f{font-size:11px;color:#666}'+
     '@media print{.tag{border:1px solid #ccc}}'+
-    '
-</style></head><body><div class="grid" id="g"></div></body></html>');
+    '</style></head><body><div class="grid" id="g"></div></body></html>');
   win.document.close();
   const g=win.document.getElementById('g');
   const sorted=rows.slice().sort((a,b)=>(floorOrder(a.floor_id)-floorOrder(b.floor_id))||(a.label||'').localeCompare(b.label||'','zh-Hant'));
