@@ -11,6 +11,20 @@
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0;
   --eq:#00d4ff;--sp:#00ff9d;--pt:#c77dff;--rp:#ff5470;--nt:#ffb300}
 :root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b;--eq:#0284c7;--sp:#059669;--pt:#9333ea;--rp:#dc2626;--nt:#b45309}
+/* light mode overrides */
+:root[data-theme="light"] #topbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] #osd{background:#f8fafc;color:#1e293b}
+:root[data-theme="light"] #floors select{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+:root[data-theme="light"] #floors option{background:#ffffff;color:#1e293b}
+:root[data-theme="light"] .tbtn{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] .tbtn:hover{background:#e2e8f0}
+:root[data-theme="light"] #hud{background:rgba(255,255,255,.92);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #panel{background:rgba(255,255,255,.97);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #panelToggle{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] .mk-item{background:#f8fafc;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #mouseHint{background:rgba(255,255,255,.92);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] .pin .plab{background:rgba(255,255,255,.92);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] .modal-bg{background:rgba(0,0,0,.4)}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
 
@@ -145,7 +159,9 @@ body.panel-open #panelToggle{display:none}
   #bottomRightRow{display:none}
   #osdNav{bottom:114px!important;width:130px!important;height:100px!important}
 }
+
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
 

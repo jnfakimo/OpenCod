@@ -40,6 +40,16 @@
   --font-head:'Rajdhani',sans-serif;
 }
 :root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-dim:transparent;--cyan-glow:none;--blue:#2563eb;--green:#059669;--green-dim:transparent;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] .sidebar{background:linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%)}
+:root[data-theme="light"] .sidebar::before{opacity:.3}
+:root[data-theme="light"] .org-label{text-shadow:none}
+:root[data-theme="light"] .sidebar-logo h1{text-shadow:none}
+:root[data-theme="light"] .field input,.field select,.field textarea{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+:root[data-theme="light"] .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan)}
 
 /* ===== BODY ===== */
 body{
@@ -572,7 +582,9 @@ body{
 .line-toggle input:checked+.line-toggle-slider{background:rgba(0,212,255,.25);border-color:var(--cyan)}
 .line-toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:var(--text-dim);border-radius:50%;transition:.25s}
 .line-toggle input:checked+.line-toggle-slider:before{transform:translateX(20px);background:var(--cyan)}
+
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
 
