@@ -182,6 +182,7 @@ body.panel-open #panelToggle{display:none}
         <option value="markers">本層標記</option>
         <option value="equipment">設備清單</option>
         <option value="space">空間清單（區域位置表）</option>
+        <option value="patrol">巡邏點標示清單</option>
         <option value="repair">報修案件</option>
       </select>
     </div>
@@ -471,6 +472,21 @@ function renderList(){
         <span class="mk-kind">${KIND[m.kind]?.n||''}</span></div>`;
     }).join(''):'<div class="pn-empty">此樓層尚無標記。<br>可從「設備清單／空間清單」點選項目放置，或按「放置標記模式」自訂新增。</div>';
     document.getElementById('pnCount').textContent=`本層標記：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
+    return;
+  }
+  if(src==='patrol'){
+    let list=markers.filter(m=>m.floor_id===curFloor && m.kind==='patrol');
+    const total=list.length;
+    if(q) list=list.filter(m=>(m.label||'').toLowerCase().includes(q)||(m.note||'').toLowerCase().includes(q));
+    if(placeStatus==='unplaced') list=[];
+    box.innerHTML=list.length?list.map(m=>{
+      const col=m.color||KIND[m.kind]?.c||'#ffb300';
+      return `<div class="mk-item" onclick="focusMarker('${m.marker_id}')">
+        <span class="cdot" style="background:${col}"></span>
+        <span class="mk-name">${esc(m.label)}</span>
+        <span class="mk-kind">${KIND[m.kind]?.n||''}</span></div>`;
+    }).join(''):'<div class="pn-empty">此樓層尚無巡邏點標示。<br>可按「放置標記模式」新增。</div>';
+    document.getElementById('pnCount').textContent=`巡邏點標示：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
     return;
   }
   // ── 主資料清單瀏覽 ──
