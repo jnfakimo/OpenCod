@@ -101,6 +101,7 @@ a{color:inherit;text-decoration:none}
 .qr-modal .btn-row{display:flex;gap:8px;margin-top:12px}
 .qr-modal .mini{flex:1;padding:7px}
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
 <nav class="navbar">
@@ -298,7 +299,6 @@ function printAllQr(){
     '.tag .f{font-size:11px;color:#666}'+
     '@media print{.tag{border:1px solid #ccc}}'+
     '
-<link rel="stylesheet" href="light-mode-fix.css">
 </style></head><body><div class="grid" id="g"></div></body></html>');
   win.document.close();
   const g=win.document.getElementById('g');
