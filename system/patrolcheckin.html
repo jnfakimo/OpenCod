@@ -63,18 +63,23 @@ function fmt(t){
   return `${d.getFullYear()}/${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 
-function showState(icon,iconClass,title,sub){
+function showState(icon,iconClass,title,sub,backHref,backLabel){
   document.getElementById('card').innerHTML=`
     <div class="icon ${iconClass}">${icon}</div>
     <h1>${esc(title)}</h1>
     <div class="sub">${esc(sub)}</div>
-    <a class="btn" href="patrollist.html">◀ 返回巡邏點清單</a>`;
+    <a class="btn" href="${esc(backHref||'patrollist.html')}">◀ ${esc(backLabel||'返回巡邏點清單')}</a>`;
 }
 
 (async()=>{
   const params=new URLSearchParams(location.search);
-  const mid=params.get('marker');
-  if(!mid){ showState('✕','err','無效的連結','缺少巡邏點代碼，請重新掃描 QR code'); return; }
+  const markerId=params.get('marker');
+  const spaceId=params.get('space');
+  const targetType=markerId?'marker':(spaceId?'space':null);
+  const targetId=markerId||spaceId;
+  if(!targetType){ showState('✕','err','無效的連結','缺少地點代碼，請重新掃描 QR code'); return; }
+  const backHref=targetType==='marker'?'patrollist.html':'arealist.html';
+  const backLabel=targetType==='marker'?'返回巡邏點清單':'返回區域位置表';
 
   const {data:{session}}=await db.auth.getSession();
   if(!session){
@@ -86,41 +91,54 @@ function showState(icon,iconClass,title,sub){
   const userId=profile?.user_id||null;
   const userName=profile?.name||'（未知人員）';
 
-  const {data:marker,error:mErr}=await db.from('plan_markers')
-    .select('marker_id,floor_id,label,kind,status').eq('marker_id',mid).single();
-  if(mErr||!marker||marker.kind!=='patrol'||marker.status!=='active'){
-    showState('✕','err','找不到此巡邏點','此巡邏點可能已被刪除或停用，請聯絡管理員確認');
-    return;
+  let point; // {label, floor_id}
+  if(targetType==='marker'){
+    const {data:marker,error:mErr}=await db.from('plan_markers')
+      .select('marker_id,floor_id,label,kind,status').eq('marker_id',targetId).single();
+    if(mErr||!marker||marker.kind!=='patrol'||marker.status!=='active'){
+      showState('✕','err','找不到此巡邏點','此巡邏點可能已被刪除或停用，請聯絡管理員確認',backHref,backLabel);
+      return;
+    }
+    point={label:marker.label,floor_id:marker.floor_id};
+  }else{
+    const {data:space,error:sErr}=await db.from('floor_spaces')
+      .select('space_id,floor,space_name').eq('space_id',targetId).single();
+    if(sErr||!space){
+      showState('✕','err','找不到此空間','此空間可能已被刪除，請聯絡管理員確認',backHref,backLabel);
+      return;
+    }
+    point={label:space.space_name,floor_id:space.floor};
   }
 
-  const {error:insErr}=await db.from('patrol_checkins').insert({
-    marker_id:marker.marker_id, floor_id:marker.floor_id, label:marker.label,
+  const {error:insErr}=await db.from('checkin_logs').insert({
+    target_type:targetType, target_id:targetId, floor_id:point.floor_id, label:point.label,
     user_id:userId, user_name:userName
   });
   if(insErr){
-    showState('✕','err','簽到失敗',translateError(insErr.message));
+    showState('✕','err','簽到失敗',translateError(insErr.message),backHref,backLabel);
     return;
   }
 
   const now=new Date();
+  const pointLabel=targetType==='marker'?'巡邏點':'空間';
   document.getElementById('card').innerHTML=`
     <div class="icon ok">✓</div>
     <h1>簽到成功</h1>
-    <div class="sub">已記錄本次巡邏</div>
+    <div class="sub">已記錄本次到場</div>
     <div class="detail">
-      <div><span class="k">巡邏點</span><b>${esc(marker.label)}</b></div>
-      <div><span class="k">樓層</span><b>${esc(marker.floor_id)}</b></div>
+      <div><span class="k">${esc(pointLabel)}</span><b>${esc(point.label)}</b></div>
+      <div><span class="k">樓層</span><b>${esc(point.floor_id)}</b></div>
       <div><span class="k">人員</span><b>${esc(userName)}</b></div>
       <div><span class="k">時間</span><b>${esc(fmt(now))}</b></div>
     </div>
-    <a class="btn" href="patrollist.html">◀ 返回巡邏點清單</a>
+    <a class="btn" href="${esc(backHref)}">◀ ${esc(backLabel)}</a>
     <div class="hist" id="hist"></div>`;
 
-  const {data:recent}=await db.from('patrol_checkins').select('user_name,checkin_at')
-    .eq('marker_id',marker.marker_id).order('checkin_at',{ascending:false}).limit(5);
+  const {data:recent}=await db.from('checkin_logs').select('user_name,checkin_at')
+    .eq('target_type',targetType).eq('target_id',targetId).order('checkin_at',{ascending:false}).limit(5);
   if(recent&&recent.length){
     document.getElementById('hist').innerHTML=
-      '<div class="hist-t">此巡邏點最近簽到記錄</div>'+
+      `<div class="hist-t">此${esc(pointLabel)}最近簽到記錄</div>`+
       recent.map(r=>`<div class="hist-row"><span class="u">${esc(r.user_name||'')}</span><span>${esc(fmt(r.checkin_at))}</span></div>`).join('');
   }
 })();

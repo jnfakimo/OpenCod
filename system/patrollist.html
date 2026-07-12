@@ -192,9 +192,9 @@ async function load(){
   if(!collapsedReady){ collapsedReady=true; } // 預設全部展開
 
   lastCheckin=new Map();
-  const {data:ck}=await db.from('patrol_checkins').select('marker_id,checkin_at')
-    .order('checkin_at',{ascending:false}).limit(1000);
-  (ck||[]).forEach(r=>{ if(!lastCheckin.has(r.marker_id)) lastCheckin.set(r.marker_id,r.checkin_at); });
+  const {data:ck}=await db.from('checkin_logs').select('target_id,checkin_at')
+    .eq('target_type','marker').order('checkin_at',{ascending:false}).limit(1000);
+  (ck||[]).forEach(r=>{ if(!lastCheckin.has(r.target_id)) lastCheckin.set(r.target_id,r.checkin_at); });
 
   render();
 }

@@ -9,6 +9,7 @@
 <title>區域位置表 — 臺北農產巡檢系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
   --cyan:#00d4ff;--cyan-glow:0 0 14px rgba(0,212,255,.5);--blue:#1a7fff;--green:#00ff9d;
@@ -80,7 +81,7 @@ a{color:inherit;text-decoration:none}
 .space-head .h-name{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .space-head .h-use,.space-row .use-col{width:132px;flex:none;text-align:center}
 .space-head .h-use{display:flex;flex-direction:column;align-items:center;gap:4px}
-.space-head .h-act{width:92px;flex:none}
+.space-head .h-act{width:190px;flex:none}
 .name-filter{width:220px;max-width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
 .name-filter:focus{border-color:var(--cyan)}
 .use-filter{width:126px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
@@ -131,6 +132,12 @@ a{color:inherit;text-decoration:none}
 .hint{font-size:.72rem;color:var(--text-dim);margin-bottom:12px;line-height:1.6;
   background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--cyan);
   border-radius:2px;padding:9px 12px}
+
+.qr-modal{width:100%;max-width:280px;text-align:center}
+.qr-modal-body{padding:22px}
+.qr-modal #qrCanvas{margin:10px auto;display:flex;justify-content:center;background:#fff;padding:8px;border-radius:4px;width:fit-content}
+.qr-modal .qname{font-family:var(--font-head);font-size:1rem;color:var(--text-hi);margin-bottom:2px}
+.qr-modal .qfloor{font-size:.72rem;color:var(--text-dim);margin-bottom:6px}
 
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
   background:var(--panel);border:1px solid var(--cyan);color:var(--text-hi);padding:11px 20px;
@@ -212,6 +219,19 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- QR modal -->
+<div class="modal-bg" id="m-qr">
+  <div class="modal qr-modal">
+    <div class="modal-head"><span class="mt">空間 QR code</span><span class="x" onclick="closeModal('m-qr')">✕</span></div>
+    <div class="qr-modal-body">
+      <div class="qname" id="qrName"></div>
+      <div class="qfloor" id="qrFloor"></div>
+      <div id="qrCanvas"></div>
+      <button class="btn-primary" onclick="window.print()">🖶 列印</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -238,6 +258,9 @@ const MARKET='market1';
 
 let rows=[];                 // floor_spaces records
 let usedSpaces=new Map();    // space_id -> marked floor ids
+let spaceMarker=new Map();   // space_id -> marker_id（用於「定位」跳轉）
+let lastCheckin=new Map();   // space_id -> checkin_at（最近一次）
+const CHECKIN_BASE=location.origin+location.pathname.replace(/arealist\.html$/,'patrolcheckin.html');
 let editId=null;
 const collapsed=new Set();
 let collapsedReady=false;
@@ -253,6 +276,11 @@ function floorOrder(f){
   return 500;
 }
 function normFloor(f){ return String(f||'').trim().toUpperCase().replace(/\s+/g,''); }
+function fmtTime(t){
+  const d=new Date(t);
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
 
 // ── Toast ──────────────────────────────────────────────────
 function toast(m,err){const t=document.getElementById('toast');t.textContent=m;
@@ -260,9 +288,10 @@ function toast(m,err){const t=document.getElementById('toast');t.textContent=m;
 
 // ── Load ───────────────────────────────────────────────────
 async function load(){
-  const [spaceRes,markRes]=await Promise.all([
+  const [spaceRes,markRes,ckRes]=await Promise.all([
     db.from('floor_spaces').select('*').eq('market_id',MARKET).order('floor_order').order('sort_order').order('space_name'),
-    db.from('plan_markers').select('space_id,floor_id,status').not('space_id','is',null)
+    db.from('plan_markers').select('marker_id,space_id,floor_id,status').not('space_id','is',null),
+    db.from('checkin_logs').select('target_id,checkin_at').eq('target_type','space').order('checkin_at',{ascending:false}).limit(1000)
   ]);
   const {data,error}=spaceRes;
   if(error){toast('讀取失敗：'+translateError(error.message),true);
@@ -270,13 +299,17 @@ async function load(){
     return;}
   rows=data||[];
   usedSpaces=new Map();
+  spaceMarker=new Map();
   if(!markRes.error){
     (markRes.data||[]).filter(m=>!m.status||m.status==='active').forEach(m=>{
       if(!m.space_id)return;
       if(!usedSpaces.has(m.space_id))usedSpaces.set(m.space_id,new Set());
       if(m.floor_id)usedSpaces.get(m.space_id).add(m.floor_id);
+      if(!spaceMarker.has(m.space_id))spaceMarker.set(m.space_id,m.marker_id);
     });
   }
+  lastCheckin=new Map();
+  (ckRes?.data||[]).forEach(r=>{ if(!lastCheckin.has(r.target_id)) lastCheckin.set(r.target_id,r.checkin_at); });
   buildFloorFilter();
   const floors=floorsSorted();
   [...collapsed].forEach(f=>{if(!floors.includes(f))collapsed.delete(f);});
@@ -378,15 +411,17 @@ function render(){
           <span class="h-use"><span>空間是否使用</span><select class="use-filter" onchange="syncUseFilter(this.value)">${useFilterOptions(fUse)}</select></span>
           <span class="h-act"></span>
         </div>
-        ${pageItems.map(r=>`<div class="space-row">
+        ${pageItems.map(r=>{const lc=lastCheckin.get(r.space_id);return `<div class="space-row">
           <span class="dot"></span>
-          <span class="sname">${esc(r.space_name)}</span>
+          <span class="sname">${esc(r.space_name)}${lc?` <small style="color:var(--text-dim);font-size:.68rem">· 上次簽到 ${esc(fmtTime(lc))}</small>`:''}</span>
           <span class="use-col"><span class="use-pill ${isSpaceUsed(r.space_id)?'used':''}">${spaceUseText(r.space_id)}</span></span>
           <span class="acts">
+            <button class="mini" onclick="openQr('${r.space_id}')">QR</button>
+            <button class="mini" onclick="locateSpace('${r.space_id}')">定位</button>
             <button class="mini" onclick="openEdit('${r.space_id}')">編輯</button>
             <button class="mini del" onclick="delSpace('${r.space_id}')">刪除</button>
           </span>
-        </div>`).join('')}
+        </div>`;}).join('')}
         <div class="pager">
           <span class="page-info">每頁 10 筆，目前 ${from}-${to} 筆，共 ${items.length} 筆，第 ${page}/${totalPages} 頁</span>
           <button class="page-btn" onclick="setFloorPage('${esc(f)}',${page-1})" ${page<=1?'disabled':''}>上一頁</button>
@@ -413,6 +448,23 @@ function openEdit(id){const r=rows.find(x=>x.space_id===id);if(!r)return;editId=
   document.getElementById('m-edit').classList.add('show');}
 
 function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+// ── QR / 定位 ──────────────────────────────────────────────
+function openQr(spaceId){
+  const r=rows.find(x=>x.space_id===spaceId);if(!r)return;
+  document.getElementById('qrName').textContent=r.space_name;
+  document.getElementById('qrFloor').textContent=r.floor;
+  const url=CHECKIN_BASE+'?space='+encodeURIComponent(spaceId);
+  const box=document.getElementById('qrCanvas');
+  box.innerHTML='';
+  new QRCode(box,{text:url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
+  document.getElementById('m-qr').classList.add('show');
+}
+function locateSpace(spaceId){
+  const markerId=spaceMarker.get(spaceId);
+  if(!markerId){alert('此空間尚未於平面圖標記，請先至「整合標記系統」新增標記後再定位。');return;}
+  location.href='b1_integrated_marker_system.html?marker='+encodeURIComponent(markerId);
+}
 
 async function saveSpace(){
   const floor=normFloor(document.getElementById('f-floor').value);
@@ -592,6 +644,7 @@ function importSample(list){
 
 // close modal on backdrop
 document.getElementById('m-edit').addEventListener('click',e=>{if(e.target.id==='m-edit')closeModal('m-edit');});
+document.getElementById('m-qr').addEventListener('click',e=>{if(e.target.id==='m-qr')closeModal('m-qr');});
 
 load();
 </script>
