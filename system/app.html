@@ -35,6 +35,16 @@
   --font-head:'Rajdhani',sans-serif;
 }
 :root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-glow:none;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .navbar::after{opacity:.3}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] .tabs{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .tabs::before{opacity:.2}
+:root[data-theme="light"] .tab.active{background:rgba(2,132,199,.06);text-shadow:none}
+:root[data-theme="light"] .badge-count{background:rgba(219,228,238,.6)}
+:root[data-theme="light"] .offline-banner{background:rgba(180,83,9,.1);border-color:rgba(180,83,9,.3)}
 
 body{
   font-family:'Noto Sans TC',system-ui,sans-serif;
@@ -442,7 +452,9 @@ body{
   .page{padding:12px}
 }
 
+
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
 <div class="offline-banner" id="offlineBanner">⚡ 目前離線，資料將暫存於裝置</div>

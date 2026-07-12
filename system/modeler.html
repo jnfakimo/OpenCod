@@ -16,6 +16,10 @@
   --cyan:#00d4ff;--pink:#ff5ea0;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;
   --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif}
 :root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--pink:#db2777;--green:#059669;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);padding:10px 16px;
@@ -55,7 +59,9 @@ select:focus,input:focus{border-color:var(--cyan)}
 .links a{flex:1;text-align:center;font-size:.72rem;color:var(--cyan);border:1px solid var(--border);padding:7px;border-radius:2px;text-decoration:none;transition:all .2s}
 .links a:hover{border-color:var(--cyan);background:rgba(0,212,255,.06)}
 .hintbox{font-size:.68rem;color:var(--text-dim);line-height:1.7;margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
 <nav class="navbar">

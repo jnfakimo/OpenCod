@@ -17,6 +17,11 @@
   --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;
   --font-head:'Rajdhani',sans-serif}
 :root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-glow:none;--blue:#2563eb;--patrol:#9333ea;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] .modal-bg{background:rgba(0,0,0,.4)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);
   background-image:linear-gradient(rgba(0,212,255,.015) 1px,transparent 1px),
@@ -96,6 +101,7 @@ a{color:inherit;text-decoration:none}
 .qr-modal .btn-row{display:flex;gap:8px;margin-top:12px}
 .qr-modal .mini{flex:1;padding:7px}
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
 <nav class="navbar">
@@ -292,7 +298,8 @@ function printAllQr(){
     '.tag .n{font-size:14px;font-weight:700;margin-top:6px}'+
     '.tag .f{font-size:11px;color:#666}'+
     '@media print{.tag{border:1px solid #ccc}}'+
-    '</style></head><body><div class="grid" id="g"></div></body></html>');
+    '
+</style></head><body><div class="grid" id="g"></div></body></html>');
   win.document.close();
   const g=win.document.getElementById('g');
   const sorted=rows.slice().sort((a,b)=>(floorOrder(a.floor_id)-floorOrder(b.floor_id))||(a.label||'').localeCompare(b.label||'','zh-Hant'));
