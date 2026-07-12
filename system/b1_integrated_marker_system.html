@@ -7,7 +7,7 @@
 <title>臺北農產 第一果菜市場 — 整合標記系統</title>
 <style>
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0;
-  --eq:#00d4ff;--sp:#c77dff;--rp:#ff5470;--nt:#ffb300}
+  --eq:#00d4ff;--sp:#00ff9d;--pt:#c77dff;--rp:#ff5470;--nt:#ffb300}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
 
@@ -197,7 +197,8 @@ body.panel-open #panelToggle{display:none}
   <div class="pn-count" id="pnCount">—</div>
   <div class="pn-legend">
     <span><i style="background:var(--eq)"></i>設備</span>
-    <span><i style="background:var(--sp)"></i>巡邏點</span>
+    <span><i style="background:var(--sp)"></i>空間</span>
+    <span><i style="background:var(--pt)"></i>巡邏點標示</span>
     <span><i style="background:var(--rp)"></i>報修點</span>
     <span><i style="background:var(--nt)"></i>一般</span>
   </div>
@@ -244,7 +245,8 @@ body.panel-open #panelToggle{display:none}
         <label>類型</label>
         <div class="kind-row" id="kindRow">
           <button type="button" class="kbtn" data-k="equipment" style="--c:var(--eq)" onclick="pickKind('equipment')">設備</button>
-          <button type="button" class="kbtn" data-k="space" style="--c:var(--sp)" onclick="pickKind('space')">巡邏點</button>
+          <button type="button" class="kbtn" data-k="space" style="--c:var(--sp)" onclick="pickKind('space')">空間</button>
+          <button type="button" class="kbtn" data-k="patrol" style="--c:var(--pt)" onclick="pickKind('patrol')">巡邏點標示</button>
           <button type="button" class="kbtn" data-k="repair" style="--c:var(--rp)" onclick="pickKind('repair')">報修點</button>
           <button type="button" class="kbtn" data-k="note" style="--c:var(--nt)" onclick="pickKind('note')">一般</button>
         </div>
@@ -289,7 +291,7 @@ const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
-const KIND={equipment:{c:'#00d4ff',n:'設備'},space:{c:'#c77dff',n:'巡邏點'},repair:{c:'#ff5470',n:'報修點'},note:{c:'#ffb300',n:'一般'}};
+const KIND={equipment:{c:'#00d4ff',n:'設備'},space:{c:'#00ff9d',n:'空間'},patrol:{c:'#c77dff',n:'巡邏點標示'},repair:{c:'#ff5470',n:'報修點'},note:{c:'#ffb300',n:'一般'}};
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function translateError(msg) {

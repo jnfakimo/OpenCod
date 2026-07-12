@@ -164,7 +164,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
     </span>
   </div>
   <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備標記</label>
-  <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#c77dff">●</span> 巡邏點標記</label>
+  <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間標記</label>
+  <label><input type="checkbox" id="mk-patrol" checked onchange="toggleMarkKind('patrol',this.checked)"><span style="color:#c77dff">●</span> 巡邏點標示</label>
   <label><input type="checkbox" id="mk-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點標記</label>
   <label><input type="checkbox" id="mk-note" checked onchange="toggleMarkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般標記</label>
   <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 文字標籤</label>
@@ -264,8 +265,8 @@ function layoutFloors(){
 
 // ── 整合標記系統 → 3D 拋轉 ──────────────────────────────────
 const MARK_H=6;                                  // 標記懸浮高度 (m)
-const MARK_COL={equipment:0x00d4ff,space:0xc77dff,repair:0xff5470,note:0xffb300};
-const kindVis={equipment:true,space:true,repair:true,note:true};
+const MARK_COL={equipment:0x00d4ff,space:0x00ff9d,patrol:0xc77dff,repair:0xff5470,note:0xffb300};
+const kindVis={equipment:true,space:true,patrol:true,repair:true,note:true};
 let markerObjs=[];                               // {group,fl,kind,label}
 let showLabels3D=false;
 async function loadMarkers(){
