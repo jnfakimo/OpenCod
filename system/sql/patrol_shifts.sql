@@ -13,8 +13,11 @@ create table if not exists patrol_shift_template (
   name        text not null,
   start_time  time not null,
   end_time    time not null,
-  sort_order  int not null default 0
+  sort_order  int not null default 0,
+  status      text not null default 'active' check (status in ('active','inactive'))
 );
+
+alter table patrol_shift_template add column if not exists status text not null default 'active';
 
 create table if not exists patrol_shifts (
   shift_id    uuid primary key default gen_random_uuid(),

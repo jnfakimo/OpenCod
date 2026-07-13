@@ -75,7 +75,9 @@ begin
 end $$;
 
 -- ---- users: any logged-in user may read (needed for name/dept
---      dropdowns everywhere); only admins may insert/update/delete,
+--      dropdowns everywhere); only admins may insert/update.
+--      Physical deletion is intentionally unavailable: personnel records
+--      are retained permanently and must be deactivated instead.
 --      so a regular staff member cannot PATCH their own row to
 --      grant themselves role='admin' / rbac_role='admin'. ----
 drop policy if exists "allow_all_for_now" on users;
@@ -87,7 +89,6 @@ drop policy if exists "users_admin_delete" on users;
 create policy "users_select"       on users for select using (auth.uid() is not null);
 create policy "users_admin_insert" on users for insert with check (is_admin());
 create policy "users_admin_update" on users for update using (is_admin()) with check (is_admin());
-create policy "users_admin_delete" on users for delete using (is_admin());
 
 -- ---- system_settings: hide line_channel_token (LINE bot secret)
 --      from every client; everything else (org name, feature

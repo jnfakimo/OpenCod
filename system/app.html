@@ -739,7 +739,7 @@ async function lpLoadData() {
   const [{ data: mkt }, { data: locs }, { data: depts }] = await Promise.all([
     db.from('markets').select('market_id,name').eq('status','active').order('sort_order'),
     db.from('locations').select('location_id,market_id,floor,floor_order,area,area_order,detail,detail_order').eq('status','active').order('floor_order').order('area_order').order('detail_order'),
-    db.from('departments').select('dept_id,parent_id,name,sort_order').order('sort_order')
+    db.from('departments').select('dept_id,parent_id,name,sort_order').eq('status','active').order('sort_order')
   ]);
   _lpMarkets = mkt || [];
   _lpLocs    = locs || [];

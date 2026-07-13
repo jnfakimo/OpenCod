@@ -254,9 +254,9 @@ const GROUPS=[
 
 async function load(){
   const [m,c,s]=await Promise.all([
-    db.from('materials').select('*').limit(5000),
+    db.from('materials').select('*').eq('status','active').limit(5000),
     db.from('material_categories').select('*').eq('status','active').order('sort_order'),
-    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').limit(5000)
+    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').eq('status','active').limit(5000)
   ]);
   if(m.error){document.getElementById('tbody').innerHTML='<tr><td colspan="12" class="empty">無法讀取。請先於 Supabase 執行 sql/material_master.sql 建表。</td></tr>';return;}
   mats=m.data||[]; cats=c.data||[]; spaces=s.data||[];
@@ -315,7 +315,7 @@ function render(){
       <td>${m.inspection_required?'<span class="pill on">需</span>':'<span class="pill">否</span>'}</td>
       <td>${files}</td>
       <td><span class="act" onclick="showQR('${m.material_id}')">◱ QR</span></td>
-      <td><span class="act" onclick="openEdit('${m.material_id}')">編輯</span><span class="act del" onclick="delMaterial('${m.material_id}')">刪除</span></td>
+      <td><span class="act" onclick="openEdit('${m.material_id}')">編輯</span><span class="act del" onclick="delMaterial('${m.material_id}')">停用</span></td>
     </tr>`;
   }).join('');
   document.getElementById('pInfo').textContent=`共 ${list.length} 筆 · 每頁 ${PER} 筆`;
@@ -386,10 +386,10 @@ async function saveMaterial(){
   closeM('m-edit');toast(editId?'已更新':'已新增');await load();
 }
 async function delMaterial(id){const m=mats.find(x=>x.material_id===id);if(!m)return;
-  if(!confirm(`確定刪除「${m.material_code||''} ${m.material_name}」？`))return;
-  const {error}=await db.from('materials').delete().eq('material_id',id);
-  if(error){toast('刪除失敗：'+translateError(error.message),true);return;}
-  toast('已刪除');await load();
+  if(!confirm(`確定停用「${m.material_code||''} ${m.material_name}」？歷史資料會永久保留。`))return;
+  const {error}=await db.from('materials').update({status:'inactive'}).eq('material_id',id);
+  if(error){toast('停用失敗：'+translateError(error.message),true);return;}
+  toast('已停用，歷史資料仍保留');await load();
 }
 
 // ── QR：掃描導向設備連結檔（CAD/規格書/手冊…），無檔則導向明細 ──

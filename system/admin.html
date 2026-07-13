@@ -1615,7 +1615,7 @@ async function loadAll() {
   const [{ data: us }, { data: eqs }, { data: depts }, { data: rolePerms }] = await Promise.all([
     db.from('users').select('*').order('name'),
     db.from('equipment').select('*').order('name'),
-    db.from('departments').select('*').order('sort_order'),
+    db.from('departments').select('*').eq('status','active').order('sort_order'),
     db.from('role_permissions').select('role_id,perm,allowed'),
   ]);
   allUsers = us || []; allEquipment = eqs || []; allDepts = depts || [];
@@ -2712,7 +2712,7 @@ function buildL1Block(d) {
       ${c.code ? `<span class="dept-code-badge">${escHtml(c.code)}</span>` : ''}
       <div class="dept-acts">
         <button class="dept-btn-edit" onclick="startEditDept('${c.dept_id}')">編輯</button>
-        <button class="dept-btn-del"  onclick="deleteDept('${c.dept_id}')">刪除</button>
+        <button class="dept-btn-del"  onclick="deleteDept('${c.dept_id}')">停用</button>
       </div>
     </div>
     <div id="edit-${c.dept_id}" style="display:none"></div>
@@ -2729,7 +2729,7 @@ function buildL1Block(d) {
           ${d.code ? `<span class="dept-code-badge">${escHtml(d.code)}</span>` : ''}
           <div class="dept-acts">
             <button class="dept-btn-edit" onclick="startEditDept('${d.dept_id}')">編輯</button>
-            <button class="dept-btn-del"  onclick="deleteDept('${d.dept_id}')">刪除</button>
+            <button class="dept-btn-del"  onclick="deleteDept('${d.dept_id}')">停用</button>
           </div>
         </div>
         <div id="edit-${d.dept_id}" style="display:none"></div>
@@ -2825,17 +2825,17 @@ async function confirmAddDept(parentId) {
 async function deleteDept(deptId) {
   const dept = deptMap[deptId];
   const hasChildren = allDepts.some(d => d.parent_id === deptId);
-  if (hasChildren) { showToast('請先刪除下層部門', true); return; }
-  if (!confirm(`確定刪除「${dept?.name}」？此操作無法復原。`)) return;
-  const { error } = await db.from('departments').delete().eq('dept_id', deptId);
-  if (error) { showToast('刪除失敗：' + translateError(error.message), true); return; }
-  await writeAudit('departments', deptId, 'update', { name: dept?.name }, null);
-  showToast('部門已刪除');
+  if (hasChildren) { showToast('請先停用下層部門', true); return; }
+  if (!confirm(`確定停用「${dept?.name}」？既有資料與人員關聯會永久保留。`)) return;
+  const { error } = await db.from('departments').update({status:'inactive'}).eq('dept_id', deptId);
+  if (error) { showToast('停用失敗：' + translateError(error.message), true); return; }
+  await writeAudit('departments', deptId, 'update', { name: dept?.name, status:dept?.status }, {status:'inactive'});
+  showToast('部門已停用，歷史資料仍保留');
   await reloadDepts();
 }
 
 async function reloadDepts() {
-  const { data } = await db.from('departments').select('*').order('sort_order');
+  const { data } = await db.from('departments').select('*').eq('status','active').order('sort_order');
   allDepts = data || [];
   allDepts.forEach(d => deptMap[d.dept_id] = d);
   populateAdminDeptSelects();
@@ -2905,7 +2905,7 @@ async function loadModelHub() {
   set('mh-marked-count', '…');
   set('mh-unmarked-count', '…');
   const [{ data: spaces, error: spaceErr }, { data: markers, error: markerErr }] = await Promise.all([
-    db.from('floor_spaces').select('space_id').eq('market_id', 'market1').limit(5000),
+    db.from('floor_spaces').select('space_id').eq('market_id', 'market1').eq('status','active').limit(5000),
     db.from('plan_markers').select('space_id,status').not('space_id', 'is', null).eq('status', 'active').limit(5000)
   ]);
   if (spaceErr || markerErr) {

@@ -235,7 +235,7 @@ function renderTpl(){
       <td class="time">${fmtHM(s.start_time)} – ${fmtHM(s.end_time)}</td>
       <td><div class="acts">
         <button class="mini" onclick="openTplModal('${s.template_id}')">編輯</button>
-        <button class="mini del" onclick="delTpl('${s.template_id}')">刪除</button>
+        <span class="mini" title="班別範本永久保存">永久保留</span>
       </div></td>
     </tr>`).join('')+`</table>`;
 }
@@ -296,10 +296,7 @@ async function saveTpl(){
 }
 async function delTpl(id){
   const s=tplRows.find(x=>x.template_id===id);if(!s)return;
-  if(!confirm(`確定從範本刪除「${s.name}」？（會一併從所有日期的排班移除這個班別）`))return;
-  const {error}=await db.from('patrol_shift_template').delete().eq('template_id',id);
-  if(error){toast('刪除失敗：'+translateError(error.message),true);return;}
-  toast('已刪除');await loadTpl();await load();
+  toast(`「${s.name}」為永久資料，不能刪除`,true);
 }
 
 document.getElementById('m-shift').addEventListener('click',e=>{if(e.target.id==='m-shift')closeModal('m-shift');});

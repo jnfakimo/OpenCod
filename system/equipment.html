@@ -171,7 +171,7 @@ function fmtD(t){if(!t)return'—';const d=new Date(t);return `${d.getFullYear()
 async function init(){
   const [{data:e},{data:l}]=await Promise.all([
     db.from('equipment').select('*').order('name').limit(2000),
-    db.from('locations').select('location_id,floor,area,detail,markets(name)').limit(2000)
+    db.from('locations').select('location_id,floor,area,detail,markets(name)').eq('status','active').limit(2000)
   ]);
   eqs=e||[]; locs=l||[];
   const cats=[...new Set(eqs.map(x=>x.category).filter(Boolean))];

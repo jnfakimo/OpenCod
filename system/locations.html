@@ -331,7 +331,7 @@ async function init(){
 }
 
 async function loadMarkets(){
-  let {data,error}=await db.from('markets').select('*').order('sort_order');
+  let {data,error}=await db.from('markets').select('*').eq('status','active').order('sort_order');
   allMkts=data||[];
   // 自動建立「第一市場 / 第二市場」(僅在市場表存在且為空時)
   if(!error && allMkts.length===0){
@@ -341,18 +341,18 @@ async function loadMarkets(){
     ];
     const ins=await db.from('markets').insert(seed);
     if(!ins.error){
-      ({data}=await db.from('markets').select('*').order('sort_order'));
+      ({data}=await db.from('markets').select('*').eq('status','active').order('sort_order'));
       allMkts=data||[];
       toast('已自動建立 第一市場 / 第二市場');
     }
   }
 }
 async function loadLocations(){
-  const {data}=await db.from('locations').select('*').order('floor_order').order('area_order').order('detail_order');
+  const {data}=await db.from('locations').select('*').eq('status','active').order('floor_order').order('area_order').order('detail_order');
   allLocs=data||[];
 }
 async function loadDepts(){
-  const {data}=await db.from('departments').select('*').order('sort_order');
+  const {data}=await db.from('departments').select('*').eq('status','active').order('sort_order');
   allDepts=data||[];
 }
 

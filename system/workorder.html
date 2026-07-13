@@ -343,7 +343,7 @@ async function hydrateOperatorDepartment(){
   if(explicit){me_.departmentName=explicit;sessionStorage.setItem('user_department',explicit);return;}
   if(!me_?.dept_id)return;
   try{
-    const {data}=await db.from('departments').select('dept_id,name,parent_id').limit(1000);
+    const {data}=await db.from('departments').select('dept_id,name,parent_id').eq('status','active').limit(1000);
     const map=Object.fromEntries((data||[]).map(d=>[d.dept_id,d]));
     const path=[];let cur=map[me_.dept_id],guard=0;
     while(cur&&guard++<8){path.unshift(cur.name);cur=cur.parent_id?map[cur.parent_id]:null;}

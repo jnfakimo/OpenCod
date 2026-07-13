@@ -753,7 +753,7 @@ function applyPerms() {
   await loadShiftsFromSettings();
 
   const [{ data: depts }, { data: users }] = await Promise.all([
-    db.from('departments').select('*').order('sort_order'),
+    db.from('departments').select('*').eq('status','active').order('sort_order'),
     db.from('users').select('*').eq('status','active').order('name')
   ]);
   allDepts = depts || [];
