@@ -1,8 +1,0 @@
-- generic [active] [ref=f29e1]:
-  - generic [ref=f29e2]:
-    - generic [ref=f29e3]: ✕
-    - heading "無效的連結" [level=1] [ref=f29e4]
-    - generic [ref=f29e5]: 缺少地點代碼，請重新掃描 QR code
-    - link "◀ 返回巡邏點清單" [ref=f29e6] [cursor=pointer]:
-      - /url: patrollist.html
-  - button "切換介面風格" [ref=f29e7] [cursor=pointer]: 🌙

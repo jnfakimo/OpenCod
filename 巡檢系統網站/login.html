@@ -5,7 +5,7 @@
 <script src="theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>?��?農產?�銷?�份?��??�司 第�??��?市場 設�?巡檢維修系統</title>
+<title>臺北農產運銷股份有限公司 第一果菜市場 設備巡檢維修系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -41,59 +41,59 @@ input:focus{border-color:#6366f1}
 :root[data-theme="light"] .ok{color:#16a34a}
 
 </style>
-<link rel="stylesheet" href="light-mode-fix.css?v=2">
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
 <div class="card" id="loginCard">
-  <div class="logo">?��</div>
-  <h1>?��?農產?�銷?�份?��??�司</h1>
-  <div class="subtitle" style="font-size:.95rem;color:#94a3b8;margin-bottom:4px">第�??��?市場 設�?巡檢維修系統</div>
-  <div class="subtitle">請使?�帳?�登??/div>
+  <div class="logo">🔧</div>
+  <h1>臺北農產運銷股份有限公司</h1>
+  <div class="subtitle" style="font-size:.95rem;color:#94a3b8;margin-bottom:4px">第一果菜市場 設備巡檢維修系統</div>
+  <div class="subtitle">請使用帳號登入</div>
   <div class="field">
-    <label>帳�?（英?��?�?/label>
-    <input id="username" type="text" placeholder="例�?tcfm_admin" autocomplete="username">
+    <label>帳號（英數字）</label>
+    <input id="username" type="text" placeholder="例：tcfm_admin" autocomplete="username">
   </div>
   <div class="field">
     <label>密碼</label>
-    <input id="password" type="password" placeholder="?�••••••�? autocomplete="current-password">
+    <input id="password" type="password" placeholder="••••••••" autocomplete="current-password">
   </div>
-  <button class="btn" id="loginBtn">?�入</button>
-  <a class="forgot-link" id="forgotLink">忘�?密碼�?/a>
+  <button class="btn" id="loginBtn">登入</button>
+  <a class="forgot-link" id="forgotLink">忘記密碼？</a>
   <div class="err" id="errMsg"></div>
 </div>
 
-<!-- 忘�?密碼 modal -->
+<!-- 忘記密碼 modal -->
 <div class="overlay" id="forgotOverlay">
   <div class="card" style="max-width:380px">
-    <div class="logo" style="font-size:1.8rem;margin-bottom:12px">??/div>
-    <h1 style="font-size:1.2rem;margin-bottom:6px">?�設密碼</h1>
-    <div class="subtitle" style="margin-bottom:24px">請輸?�您帳�?對�???Email，系統�?寄送�?設�??</div>
+    <div class="logo" style="font-size:1.8rem;margin-bottom:12px">✉</div>
+    <h1 style="font-size:1.2rem;margin-bottom:6px">重設密碼</h1>
+    <div class="subtitle" style="margin-bottom:24px">請輸入您帳號對應的 Email，系統將寄送重設連結</div>
     <div class="field">
       <label>Email</label>
       <input id="forgotEmail" type="email" placeholder="your@email.com" autocomplete="email">
     </div>
-    <button class="btn" id="forgotSendBtn">寄送�?設�??</button>
-    <button class="btn btn-ghost" id="forgotBackBtn">返�??�入</button>
+    <button class="btn" id="forgotSendBtn">寄送重設連結</button>
+    <button class="btn btn-ghost" id="forgotBackBtn">返回登入</button>
     <div class="err" id="forgotErr"></div>
     <div class="ok" id="forgotOk"></div>
   </div>
 </div>
 
-<!-- 設�??��?�?modal（�? Email ????�入�?-->
+<!-- 設定新密碼 modal（從 Email 連結進入） -->
 <div class="overlay" id="resetOverlay">
   <div class="card" style="max-width:380px">
-    <div class="logo" style="font-size:1.8rem;margin-bottom:12px">??</div>
-    <h1 style="font-size:1.2rem;margin-bottom:6px">設�??��?�?/h1>
-    <div class="subtitle" style="margin-bottom:24px">請輸?�您?�新密碼（至�?8 ?��??��?</div>
+    <div class="logo" style="font-size:1.8rem;margin-bottom:12px">🔑</div>
+    <h1 style="font-size:1.2rem;margin-bottom:6px">設定新密碼</h1>
+    <div class="subtitle" style="margin-bottom:24px">請輸入您的新密碼（至少 8 個字元）</div>
     <div class="field">
-      <label>?��?�?/label>
-      <input id="resetPw" type="password" placeholder="?�••••••�? autocomplete="new-password">
+      <label>新密碼</label>
+      <input id="resetPw" type="password" placeholder="••••••••" autocomplete="new-password">
     </div>
     <div class="field">
-      <label>確�??��?�?/label>
-      <input id="resetPw2" type="password" placeholder="?�••••••�? autocomplete="new-password">
+      <label>確認新密碼</label>
+      <input id="resetPw2" type="password" placeholder="••••••••" autocomplete="new-password">
     </div>
-    <button class="btn" id="resetSaveBtn">設�??��?�?/button>
+    <button class="btn" id="resetSaveBtn">設定新密碼</button>
     <div class="err" id="resetErr"></div>
     <div class="ok" id="resetOk"></div>
   </div>
@@ -111,13 +111,13 @@ const ROLE_ROUTES = {
   maintenance: 'workorder.html?v=reporter-20260701',
 };
 const RBAC_ROLES = {
-  reporter:'一?�報修人??,
-  duty:'?�班人員',
-  dispatcher:'派工管�???,
-  technician:'維修?�術人??,
-  unit_supervisor:'?��?主管',
-  mgmt_supervisor:'管�??�主�?,
-  sysadmin:'系統管�???
+  reporter:'一般報修人員',
+  duty:'值班人員',
+  dispatcher:'派工管理員',
+  technician:'維修技術人員',
+  unit_supervisor:'單位主管',
+  mgmt_supervisor:'管理部主管',
+  sysadmin:'系統管理員'
 };
 const LEGACY_TO_RBAC = { admin:'sysadmin', supervisor:'unit_supervisor', maintenance:'technician', inspector:'reporter' };
 const ROLE_PERMISSION_PRESETS = {
@@ -179,30 +179,30 @@ function getLoginRoute(profile) {
 }
 
 function translateError(msg) {
-  if (!msg) return '?�知?�誤';
-  if (msg.includes('User already registered')) return '�?Email 已被註�?';
-  if (msg.includes('Invalid login credentials')) return '帳�??��?碼錯�?;
-  if (msg.includes('Email not confirmed')) return 'Email 尚未驗�?，�?檢查信箱';
-  if (msg.includes('New password should be different')) return '?��?碼�??��??��?碼相??;
-  if (msg.includes('Password should be at least')) return '密碼?�度不足，�?輸入?�長?��?�?;
-  if (msg.includes('Signup requires a valid password')) return '請輸?��??��?�?;
-  if (msg.includes('For security purposes') && msg.includes('second')) return '?��??�於?��?，�?稍�??�試';
-  if (msg.includes('Email link is invalid or has expired') || msg.includes('otp_expired')) return '???已失?��??��?，�??�新?��?';
-  if (msg.includes('invalid format')) return 'Email ?��?不正�?;
-  if (msg.includes('duplicate key value')) return '資�??��?，�?確�??�否已�???;
-  if (msg.includes('null value in column')) return '必填欄�?不可空白';
-  if (msg.includes('violates foreign key constraint')) return '?�聯資�??�誤，無法刪??;
-  if (msg.includes('violates row-level security')) return '?��?作�???;
-  if (msg.includes('permission denied')) return '?��?作�???;
-  if (msg.includes('JWT expired')) return '?�入已�??��?請�??�整?��???;
-  if (msg.includes('relation') && msg.includes('does not exist')) return '資�?表�?存在，�?確�?資�?庫設�?;
-  if (msg.includes('value too long')) return '輸入?��???;
-  if (msg.includes('invalid input syntax')) return '輸入?��?不正�?;
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路???失�?，�?稍�??�試';
-  return '?��?失�?，�?稍�??�試?�聯絡系統管?�員';
+  if (!msg) return '未知錯誤';
+  if (msg.includes('User already registered')) return '此 Email 已被註冊';
+  if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
+  if (msg.includes('Email not confirmed')) return 'Email 尚未驗證，請檢查信箱';
+  if (msg.includes('New password should be different')) return '新密碼不能與舊密碼相同';
+  if (msg.includes('Password should be at least')) return '密碼長度不足，請輸入更長的密碼';
+  if (msg.includes('Signup requires a valid password')) return '請輸入有效密碼';
+  if (msg.includes('For security purposes') && msg.includes('second')) return '操作過於頻繁，請稍後再試';
+  if (msg.includes('Email link is invalid or has expired') || msg.includes('otp_expired')) return '連結已失效或過期，請重新申請';
+  if (msg.includes('invalid format')) return 'Email 格式不正確';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
 }
 
-// ?�?� Handle password-reset link (#type=recovery / #error=...) ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// ── Handle password-reset link (#type=recovery / #error=...) ──────────────────
 (async () => {
   const hash = window.location.hash;
   if (hash.includes('type=recovery')) {
@@ -226,7 +226,7 @@ function translateError(msg) {
   }
 })();
 
-// ?�?� Login ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// ── Login ─────────────────────────────────────────────────────────────────────
 document.getElementById('loginBtn').addEventListener('click', doLogin);
 document.getElementById('username').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('password').focus(); });
 document.getElementById('password').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
@@ -237,27 +237,27 @@ async function doLogin() {
   const btn = document.getElementById('loginBtn');
   const err = document.getElementById('errMsg');
   err.textContent = '';
-  if (!username || !password) { err.textContent = '請填寫帳?��?密碼'; return; }
-  btn.disabled = true; btn.textContent = '?�入中�?;
+  if (!username || !password) { err.textContent = '請填寫帳號與密碼'; return; }
+  btn.disabled = true; btn.textContent = '登入中…';
 
   const { data: loginEmail, error: lookupErr } = await db.rpc('login_lookup_email', { p_username: username });
   if (lookupErr || !loginEmail) {
-    err.textContent = '?��??�帳?��?請確認帳?�是?�正�?;
-    btn.disabled = false; btn.textContent = '?�入';
+    err.textContent = '找不到帳號，請確認帳號是否正確';
+    btn.disabled = false; btn.textContent = '登入';
     return;
   }
 
   const { data, error } = await db.auth.signInWithPassword({ email: loginEmail, password });
   if (error) {
-    err.textContent = '密碼?�誤';
-    btn.disabled = false; btn.textContent = '?�入';
+    err.textContent = '密碼錯誤';
+    btn.disabled = false; btn.textContent = '登入';
     return;
   }
 
   const { data: profile } = await db.from('users').select('user_id,username,role,rbac_role,name,phone,permissions,dept_id,department').eq('auth_id', data.user.id).single();
   if (!profile) {
-    err.textContent = '?��??�使?�者�??��?請聯絡管?�員';
-    btn.disabled = false; btn.textContent = '?�入';
+    err.textContent = '找不到使用者資料，請聯絡管理員';
+    btn.disabled = false; btn.textContent = '登入';
     await db.auth.signOut();
     return;
   }
@@ -275,7 +275,7 @@ async function doLogin() {
   window.location.href = getRedirectTarget(profile);
 }
 
-// ?�?� 忘�?密碼 ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// ── 忘記密碼 ──────────────────────────────────────────────────────────────────
 document.getElementById('forgotLink').addEventListener('click', () => {
   document.getElementById('forgotEmail').value = '';
   document.getElementById('forgotErr').textContent = '';
@@ -294,21 +294,21 @@ document.getElementById('forgotSendBtn').addEventListener('click', async () => {
   const ok  = document.getElementById('forgotOk');
   err.textContent = ''; ok.textContent = '';
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    err.textContent = '請輸?��??��? Email ?��?'; return;
+    err.textContent = '請輸入有效的 Email 地址'; return;
   }
-  btn.disabled = true; btn.textContent = '寄送中??;
+  btn.disabled = true; btn.textContent = '寄送中…';
   const redirectTo = window.location.origin + window.location.pathname;
   const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo });
-  btn.disabled = false; btn.textContent = '寄送�?設�??';
+  btn.disabled = false; btn.textContent = '寄送重設連結';
   if (error) {
-    err.textContent = '寄送失?��?' + translateError(error.message);
+    err.textContent = '寄送失敗：' + translateError(error.message);
   } else {
-    ok.textContent = '?�設???已�??��?請檢?�您?�信箱�??��??�郵件�?';
+    ok.textContent = '重設連結已寄出，請檢查您的信箱（含垃圾郵件）';
     btn.disabled = true;
   }
 });
 
-// ?�?� 設�??��?�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// ── 設定新密碼 ────────────────────────────────────────────────────────────────
 document.getElementById('resetSaveBtn').addEventListener('click', async () => {
   const pw  = document.getElementById('resetPw').value;
   const pw2 = document.getElementById('resetPw2').value;
@@ -316,15 +316,15 @@ document.getElementById('resetSaveBtn').addEventListener('click', async () => {
   const err = document.getElementById('resetErr');
   const ok  = document.getElementById('resetOk');
   err.textContent = ''; ok.textContent = '';
-  if (pw.length < 8) { err.textContent = '密碼?��??��?8 ?��???; return; }
-  if (pw !== pw2) { err.textContent = '?�次密碼不�???; return; }
-  btn.disabled = true; btn.textContent = '?��?中�?;
+  if (pw.length < 8) { err.textContent = '密碼至少需要 8 個字元'; return; }
+  if (pw !== pw2) { err.textContent = '兩次密碼不一致'; return; }
+  btn.disabled = true; btn.textContent = '儲存中…';
   const { error } = await db.auth.updateUser({ password: pw });
-  btn.disabled = false; btn.textContent = '設�??��?�?;
+  btn.disabled = false; btn.textContent = '設定新密碼';
   if (error) {
-    err.textContent = '設�?失�?�? + translateError(error.message);
+    err.textContent = '設定失敗：' + translateError(error.message);
   } else {
-    ok.textContent = '密碼已更?��??��?跳�??�登?��??��?;
+    ok.textContent = '密碼已更新！即將跳轉至登入頁面…';
     setTimeout(() => {
       window.location.hash = '';
       window.location.reload();

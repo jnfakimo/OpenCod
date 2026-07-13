@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<title>?�修系統 ???�修派工管�?系統</title>
+<title>報修系統 — 報修派工管理系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
@@ -141,89 +141,89 @@ tbody tr:hover{background:rgba(0,212,255,.04)}
 .toast.show{opacity:1}
 
 </style>
-<link rel="stylesheet" href="light-mode-fix.css?v=2">
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
 <nav class="navbar">
-  <div><div class="nav-title">???�修系統</div><div class="nav-sub">?�修 ??派工 ??維修 ??驗收 ??結�?</div></div>
+  <div><div class="nav-title">⚒ 報修系統</div><div class="nav-sub">報修 → 派工 → 維修 → 驗收 → 結案</div></div>
   <div class="nav-space"></div>
-  <span class="nav-sub" id="navUser">?�建�?/ ?��?�?/span>
-<a href="dashboard.html"><button class="nav-back">???��??�表板</button></a>
-<a href="workorder.html?v=reporter-20260701"><button class="nav-back">???�修系統</button></a>
-<a href="dispatch.html"><button class="nav-back">??派工系統</button></a>
-<a href="app.html"><button class="nav-back">??巡檢</button></a>
-  <a href="admin.html"><button class="nav-back">??後台</button></a>
+  <span class="nav-sub" id="navUser">改建室 / 吳玉美</span>
+<a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
+<a href="workorder.html?v=reporter-20260701"><button class="nav-back">◬ 報修系統</button></a>
+<a href="dispatch.html"><button class="nav-back">◪ 派工系統</button></a>
+<a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
+  <a href="admin.html"><button class="nav-back">← 後台</button></a>
 </nav>
 
 <div class="wrap">
   <div class="toolbar">
-    <input id="fQ" placeholder="?��? ?�修?��? / ?��?類�? / ?��??? style="width:220px" oninput="renderList()">
+    <input id="fQ" placeholder="搜尋 報修單號 / 故障類型 / 單位…" style="width:220px" oninput="renderList()">
     <div class="tspace"></div>
-    <button class="btn-add" onclick="openCreate()">�??��??�修</button>
+    <button class="btn-add" onclick="openCreate()">＋ 新增報修</button>
   </div>
   <div class="stat-row" id="chips"></div>
   <div class="table-scroll">
     <table>
       <thead><tr>
-        <th>?�修?��?</th>
-        <th><div class="th-filter"><span>?��?類�?</span><select id="fType" onchange="renderList()"><option value="">?�部類�?</option></select></div></th>
-        <th><div class="th-filter"><span>?��?</span><select id="fDept" onchange="renderList()"><option value="">?�部?��?</option></select></div></th>
-        <th><div class="th-filter"><span>?�??/span><select id="fStatus" onchange="renderList()"><option value="">?�部?�??/option></select></div></th>
-        <th>?�修?��?</th><th></th></tr></thead>
-      <tbody id="list"><tr><td colspan="6" class="empty">載入中�?/td></tr></tbody>
+        <th>報修單號</th>
+        <th><div class="th-filter"><span>故障類型</span><select id="fType" onchange="renderList()"><option value="">全部類型</option></select></div></th>
+        <th><div class="th-filter"><span>單位</span><select id="fDept" onchange="renderList()"><option value="">全部單位</option></select></div></th>
+        <th><div class="th-filter"><span>狀態</span><select id="fStatus" onchange="renderList()"><option value="">全部狀態</option></select></div></th>
+        <th>報修時間</th><th></th></tr></thead>
+      <tbody id="list"><tr><td colspan="6" class="empty">載入中…</td></tr></tbody>
     </table>
   </div>
   <div class="pager" id="pager"></div>
 </div>
 
-<!-- ?��??�修 -->
+<!-- 新增報修 -->
 <div class="modal-bg" id="m-create">
   <div class="modal">
-    <div class="modal-h"><span class="t">�??��??�修</span><button class="x" onclick="closeM('m-create')">??/button></div>
+    <div class="modal-h"><span class="t">＋ 新增報修</span><button class="x" onclick="closeM('m-create')">✕</button></div>
     <div class="modal-b">
-      <div style="display:flex;justify-content:flex-end;gap:6px;font-size:.72rem;color:#3a6a8a;margin-bottom:6px">填表?��?�?b id="c-filed" style="color:#00d4ff;font-family:monospace"></b></div>
+      <div style="display:flex;justify-content:flex-end;gap:6px;font-size:.72rem;color:#3a6a8a;margin-bottom:6px">填表日期：<b id="c-filed" style="color:#00d4ff;font-family:monospace"></b></div>
       <div class="row2">
-        <div class="field"><label>?�修�?/label><select id="c-reporter"><option value="?�建�?/ ?��?�?>?�建�?/ ?��?�?/option></select></div>
-        <div class="field"><label>?�絡?�話</label><input id="c-phone"></div>
+        <div class="field"><label>報修人</label><select id="c-reporter"><option value="改建室 / 吳玉美">改建室 / 吳玉美</option></select></div>
+        <div class="field"><label>聯絡電話</label><input id="c-phone"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>?��?（�?填�?</label><input id="c-mobile" placeholder="請填?��??�碼" required></div>
-        <div class="field"><label>?�屬單�?/label><input id="c-dept" list="deptList" value="?�建�?><datalist id="deptList"></datalist></div>
+        <div class="field"><label>手機（必填）</label><input id="c-mobile" placeholder="請填手機號碼" required></div>
+        <div class="field"><label>所屬單位</label><input id="c-dept" list="deptList" value="改建室"><datalist id="deptList"></datalist></div>
       </div>
-      <select id="c-eqp" style="display:none" aria-hidden="true"><option value="">系統?��?帶入</option></select>
-      <div class="field"><label>?��?位置</label><input id="c-location-desc" placeholder="請�?述�??��?置�?例�?：第一市場 2F ?�電?��?"></div>
-      <div class="field"><label>?��?位置?��?（�?填�?請�??��?張照?��?</label><input id="c-location-photo" type="file" accept="image/*" required></div>
-      <div class="field"><label>?��?類�?</label><input id="c-ftype" list="ftypeList" placeholder="?�氣/機械/漏水??><datalist id="ftypeList"><option>?�氣</option><option>機械</option><option>漏水</option><option>?�音</option><option>?��?</option><option>?��?</option></datalist></div>
-      <div class="field"><label>?��??�述</label><textarea id="c-desc" placeholder="請�?述�??��?況�?></textarea></div>
+      <select id="c-eqp" style="display:none" aria-hidden="true"><option value="">系統自動帶入</option></select>
+      <div class="field"><label>故障位置</label><input id="c-location-desc" placeholder="請描述故障位置，例如：第一市場 2F 配電盤旁"></div>
+      <div class="field"><label>故障位置照片（必填，請上傳一張照片）</label><input id="c-location-photo" type="file" accept="image/*" required></div>
+      <div class="field"><label>故障類型</label><input id="c-ftype" list="ftypeList" placeholder="電氣/機械/漏水…"><datalist id="ftypeList"><option>電氣</option><option>機械</option><option>漏水</option><option>異音</option><option>停機</option><option>其他</option></datalist></div>
+      <div class="field"><label>故障描述</label><textarea id="c-desc" placeholder="請描述故障狀況…"></textarea></div>
       <div class="field date-field" id="desiredDateField">
-        <label>希�?完�??��?</label>
+        <label>希望完成日期</label>
         <input id="c-desired-view" readonly placeholder="yyyy/mm/dd" onclick="openDesiredCalendar()" onfocus="openDesiredCalendar()">
         <input id="c-desired" type="hidden">
         <div class="date-picker" id="desiredPicker">
           <div class="date-head">
-            <button type="button" class="date-nav" onclick="shiftDesiredMonth(-1)" aria-label="上�??��?">?�</button>
-            <div class="date-title" id="desiredMonthTitle">2026 �?7 ??/div>
-            <button type="button" class="date-nav" onclick="shiftDesiredMonth(1)" aria-label="下�??��?">??/button>
+            <button type="button" class="date-nav" onclick="shiftDesiredMonth(-1)" aria-label="上一個月">◀</button>
+            <div class="date-title" id="desiredMonthTitle">2026 年 7 月</div>
+            <button type="button" class="date-nav" onclick="shiftDesiredMonth(1)" aria-label="下一個月">▶</button>
           </div>
-          <div class="date-week"><span>??/span><span>一</span><span>�?/span><span>�?/span><span>??/span><span>�?/span><span>??/span></div>
+          <div class="date-week"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div>
           <div class="date-grid" id="desiredDateGrid"></div>
           <div class="date-actions">
             <button type="button" onclick="clearDesiredDate()">清除</button>
-            <button type="button" class="confirm" onclick="confirmDesiredDate()">確�?</button>
+            <button type="button" class="confirm" onclick="confirmDesiredDate()">確認</button>
           </div>
         </div>
       </div>
-      <div class="field"><label>?��??�件（照??影�?/PDF/Word/Excel，可多選�?/label><input id="c-files" type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"></div>
+      <div class="field"><label>其他附件（照片/影片/PDF/Word/Excel，可多選）</label><input id="c-files" type="file" multiple accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx"></div>
       <div id="c-msg" class="msg"></div>
-      <button class="btn-primary" style="width:100%" onclick="submitCreate()">?�出?�修</button>
+      <button class="btn-primary" style="width:100%" onclick="submitCreate()">送出報修</button>
     </div>
   </div>
 </div>
 
-<!-- 案件詳�? -->
+<!-- 案件詳情 -->
 <div class="modal-bg" id="m-detail">
   <div class="modal" style="max-width:680px">
-    <div class="modal-h"><span class="t" id="d-title">案件詳�?</span><span class="badge" id="d-badge"></span><button class="x" onclick="closeM('m-detail')">??/button></div>
+    <div class="modal-h"><span class="t" id="d-title">案件詳情</span><span class="badge" id="d-badge"></span><button class="x" onclick="closeM('m-detail')">✕</button></div>
     <div class="modal-b" id="d-body"></div>
   </div>
 </div>
@@ -237,24 +237,24 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
 function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function translateError(msg) {
-  if (!msg) return '?�知?�誤';
-  if (msg.includes('User already registered')) return '�?Email 已被註�?';
-  if (msg.includes('Invalid login credentials')) return '帳�??��?碼錯�?;
-  if (msg.includes('Email not confirmed')) return 'Email 尚未驗�?，�?檢查信箱';
-  if (msg.includes('New password should be different')) return '?��?碼�??��??��?碼相??;
-  if (msg.includes('Password should be at least')) return '密碼?�度不足，�?輸入?�長?��?�?;
-  if (msg.includes('For security purposes') && msg.includes('second')) return '?��??�於?��?，�?稍�??�試';
-  if (msg.includes('duplicate key value')) return '資�??��?，�?確�??�否已�???;
-  if (msg.includes('null value in column')) return '必填欄�?不可空白';
-  if (msg.includes('violates foreign key constraint')) return '?�聯資�??�誤，無法刪??;
-  if (msg.includes('violates row-level security')) return '?��?作�???;
-  if (msg.includes('permission denied')) return '?��?作�???;
-  if (msg.includes('JWT expired')) return '?�入已�??��?請�??�整?��???;
-  if (msg.includes('relation') && msg.includes('does not exist')) return '資�?表�?存在，�?確�?資�?庫設�?;
-  if (msg.includes('value too long')) return '輸入?��???;
-  if (msg.includes('invalid input syntax')) return '輸入?��?不正�?;
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路???失�?，�?稍�??�試';
-  return '?��?失�?，�?稍�??�試?�聯絡系統管?�員';
+  if (!msg) return '未知錯誤';
+  if (msg.includes('User already registered')) return '此 Email 已被註冊';
+  if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
+  if (msg.includes('Email not confirmed')) return 'Email 尚未驗證，請檢查信箱';
+  if (msg.includes('New password should be different')) return '新密碼不能與舊密碼相同';
+  if (msg.includes('Password should be at least')) return '密碼長度不足，請輸入更長的密碼';
+  if (msg.includes('For security purposes') && msg.includes('second')) return '操作過於頻繁，請稍後再試';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
 }
 async function notifyLineRepair(record) {
   try {
@@ -274,13 +274,13 @@ async function notifyLineRepair(record) {
   }
 }
 
-const ST={pending:['待派�?,'#ffb300'],transferred:['已�?�?,'#1a7fff'],assigned:['待接??,'#1a7fff'],
-  accepted:['已接??,'#00d4ff'],in_progress:['維修�?,'#00d4ff'],waiting_parts:['等�??�件','#b48aff'],
-  waiting_vendor:['等�?廠�?','#b48aff'],pending_review:['待�???,'#00ff9d'],completed:['已�???,'#00ff9d'],
-  closed:['已�?�?,'#3a6a8a'],returned:['已退??,'#ff3b3b'],rejected:['已�?�?,'#ff3b3b'],cancelled:['已�?�?,'#3a6a8a'],overdue:['?��?','#ff3b3b']};
+const ST={pending:['待派工','#ffb300'],transferred:['已轉派','#1a7fff'],assigned:['待接單','#1a7fff'],
+  accepted:['已接單','#00d4ff'],in_progress:['維修中','#00d4ff'],waiting_parts:['等待料件','#b48aff'],
+  waiting_vendor:['等待廠商','#b48aff'],pending_review:['待驗收','#00ff9d'],completed:['已完成','#00ff9d'],
+  closed:['已結案','#3a6a8a'],returned:['已退回','#ff3b3b'],rejected:['已拒絕','#ff3b3b'],cancelled:['已取消','#3a6a8a'],overdue:['逾期','#ff3b3b']};
 function badge(s){const x=ST[s]||[s,'#888'];return `<span class="badge" style="background:${x[1]}22;color:${x[1]};border:1px solid ${x[1]}66">${x[0]}</span>`;}
 
-const RBAC_ROLES={reporter:'一?�報修人??,duty:'?�班人員',dispatcher:'派工管�???,technician:'維修?�術人??,unit_supervisor:'?��?主管',mgmt_supervisor:'管�??�主�?,sysadmin:'系統管�???};
+const RBAC_ROLES={reporter:'一般報修人員',duty:'值班人員',dispatcher:'派工管理員',technician:'維修技術人員',unit_supervisor:'單位主管',mgmt_supervisor:'管理部主管',sysadmin:'系統管理員'};
 const LEGACY_TO_RBAC={admin:'sysadmin',supervisor:'unit_supervisor',maintenance:'technician',inspector:'reporter'};
 const ROLE_PERMISSION_PRESETS={
   reporter:{maintenance:true,repair:true,read:true,create:true},
@@ -295,13 +295,13 @@ function normalizeRoleId(user){const role=user?.rbac_role||user?.role;if(RBAC_RO
 function hasPerm(key){const p=me_?.permissions||{};if(typeof p[key]==='boolean')return p[key];return ROLE_PERMISSION_PRESETS[normalizeRoleId(me_)]?.[key]===true;}
 function canAssign(user){return user?.role==='maintenance'||user?.role==='admin'||['technician','sysadmin'].includes(user?.rbac_role);}
 const WORKORDER_STATE_KEY='tcfm.workorder.state';
-const DEFAULT_OPERATOR_NAME='?��?�?;
+const DEFAULT_OPERATOR_NAME='吳玉美';
 const DEFAULT_OPERATOR_USERNAME='569146';
-const DEFAULT_OPERATOR_DEPARTMENT='?�建�?;
+const DEFAULT_OPERATOR_DEPARTMENT='改建室';
 
 function normalizeDepartmentName(value){
   const dept=(value||'').trim();
-  return dept==='?�建辦公�? ? DEFAULT_OPERATOR_DEPARTMENT : dept;
+  return dept==='改建辦公室' ? DEFAULT_OPERATOR_DEPARTMENT : dept;
 }
 function cleanOperatorName(value){
   const name=(value||'').trim();
@@ -429,13 +429,13 @@ async function loadRefs(){
   // fill selects
   const eq=document.getElementById('c-eqp');
   if(eq){
-    eq.innerHTML='<option value="">系統?��?帶入</option>'+equip.map(x=>`<option value="${x.equipment_id}">${escHtml(x.name)}${x.qr_code?' ('+escHtml(x.qr_code)+')':''}</option>`).join('');
+    eq.innerHTML='<option value="">系統自動帶入</option>'+equip.map(x=>`<option value="${x.equipment_id}">${escHtml(x.name)}${x.qr_code?' ('+escHtml(x.qr_code)+')':''}</option>`).join('');
     const d=defaultEquipment(); if(d)eq.value=d.equipment_id;
   }
   const dl=document.getElementById('deptList'); dl.innerHTML=[...new Set(reqs.map(r=>r.department).filter(Boolean))].map(d=>`<option>${escHtml(d)}</option>`).join('');
 }
 function defaultEquipment(){
-  return equip.find(x=>/?��?定|一?�|?�修|?��?/i.test(x.name||'')) || equip[0] || null;
+  return equip.find(x=>/未指定|一般|報修|其他/i.test(x.name||'')) || equip[0] || null;
 }
 
 async function loadCases(){
@@ -452,8 +452,8 @@ async function loadCases(){
   scopeReqsForRole();
 }
 
-// 依登?�帳?��?縮�?件�??��?一?�報修人?��??��??�己?�修；維修�?術人?��??��??�派給自�?
-// （若該�?術人?�帳?��??�具?�派工�??��??��??�派工人?��?不�?縮�??�?��??��?派工案件?�能派工）�??��?角色不�?�?
+// 依登入帳號限縮案件範圍：一般報修人員→只看自己報修；維修技術人員→只看指派給自己
+// （若該技術人員帳號同時具備派工權限，則視同派工人員，不限縮，需能看到待派工案件才能派工）；其餘角色不限縮
 function scopeReqsForRole(){
   const role=normalizeRoleId(me_);
   if(role==='reporter'){
@@ -467,7 +467,7 @@ function renderChips(){
   const counts={};reqs.forEach(r=>{const s=driver(r);counts[s]=(counts[s]||0)+1;});
   const order=['pending','assigned','in_progress','waiting_parts','pending_review','closed'];
   const box=document.getElementById('chips');
-  let html=`<div class="chip ${filterStatus===''?'on':''}" onclick="setFilter('')">?�部<b>${reqs.length}</b></div>`;
+  let html=`<div class="chip ${filterStatus===''?'on':''}" onclick="setFilter('')">全部<b>${reqs.length}</b></div>`;
   order.forEach(s=>{ if(counts[s]) html+=`<div class="chip ${filterStatus===s?'on':''}" onclick="setFilter('${s}')">${(ST[s]||[s])[0]}<b>${counts[s]}</b></div>`; });
   box.innerHTML=html;
 }
@@ -515,7 +515,7 @@ function displayReqNo(r){
     const d=new Date(r.created_at);
     return `${d.getFullYear()}-${two(d.getMonth()+1)}-${two(d.getDate())}-${String(r.request_id||'000').replace(/-/g,'').slice(-3).padStart(3,'0')}`;
   }
-  return '??;
+  return '—';
 }
 function renderTableFilters(){
   const keep={
@@ -527,12 +527,12 @@ function renderTableFilters(){
     const el=document.getElementById(id); if(!el)return;
     el.innerHTML=`<option value="">${all}</option>`+values.map(v=>`<option value="${v}">${labels[v]||v}</option>`).join('');
   };
-  const types=[...new Set(reqs.map(r=>r.fault_type||'?�填�?).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
-  const depts=[...new Set(reqs.map(r=>r.department||'?�填�?).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const types=[...new Set(reqs.map(r=>r.fault_type||'未填寫').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const depts=[...new Set(reqs.map(r=>r.department||'未填寫').filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
   const statuses=[...new Set(reqs.map(r=>driver(r)).filter(Boolean))];
-  fill('fType','?�部類�?',types);
-  fill('fDept','?�部?��?',depts);
-  fill('fStatus','?�部?�??,statuses,Object.fromEntries(Object.entries(ST).map(([k,v])=>[k,v[0]])));
+  fill('fType','全部類型',types);
+  fill('fDept','全部單位',depts);
+  fill('fStatus','全部狀態',statuses,Object.fromEntries(Object.entries(ST).map(([k,v])=>[k,v[0]])));
   if(document.getElementById('fType'))document.getElementById('fType').value=types.includes(keep.type)?keep.type:'';
   if(document.getElementById('fDept'))document.getElementById('fDept').value=depts.includes(keep.dept)?keep.dept:'';
   if(document.getElementById('fStatus'))document.getElementById('fStatus').value=statuses.includes(keep.status)?keep.status:'';
@@ -550,12 +550,12 @@ function renderPager(total,totalPages){
   const pages=[];
   for(let i=1;i<=totalPages;i++){
     if(totalPages<=7 || i===1 || i===totalPages || Math.abs(i-currentPage)<=1)pages.push(i);
-    else if(pages[pages.length-1]!=='??)pages.push('??);
+    else if(pages[pages.length-1]!=='…')pages.push('…');
   }
-  pager.innerHTML=`<span class="page-info">每�? 10 筆�?�?${currentPage} / ${totalPages} ?��???${total} �?/span>
-    <button class="page-btn" onclick="gotoPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>??/button>
-    ${pages.map(p=>p==='???'<span>??/span>':`<button class="page-btn ${p===currentPage?'on':''}" onclick="gotoPage(${p})">${p}</button>`).join('')}
-    <button class="page-btn" onclick="gotoPage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}>??/button>`;
+  pager.innerHTML=`<span class="page-info">每頁 10 筆，第 ${currentPage} / ${totalPages} 頁，共 ${total} 筆</span>
+    <button class="page-btn" onclick="gotoPage(${currentPage-1})" ${currentPage<=1?'disabled':''}>‹</button>
+    ${pages.map(p=>p==='…'?'<span>…</span>':`<button class="page-btn ${p===currentPage?'on':''}" onclick="gotoPage(${p})">${p}</button>`).join('')}
+    <button class="page-btn" onclick="gotoPage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}>›</button>`;
 }
 function gotoPage(page){
   currentPage=Math.max(1,Number(page)||1);
@@ -572,13 +572,13 @@ function renderList(){
     const s=driver(r);
     if(filterStatus && s!==filterStatus) return false;
     if(status && s!==status) return false;
-    if(type && (r.fault_type||'?�填�?)!==type) return false;
-    if(dept && (r.department||'?�填�?)!==dept) return false;
+    if(type && (r.fault_type||'未填寫')!==type) return false;
+    if(dept && (r.department||'未填寫')!==dept) return false;
     if(q){const hay=[displayReqNo(r),(r.req_no||''),(r.fault_type||''),(r.department||''),(r.fault_desc||'')].join(' ').toLowerCase();if(!hay.includes(q))return false;}
     return true;
   });
   const tb=document.getElementById('list');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="empty">?�符?��?�?/td></tr>';renderPager(0,1);return;}
+  if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="empty">無符合案件</td></tr>';renderPager(0,1);return;}
   const totalPages=Math.max(1,Math.ceil(rows.length/PAGE_SIZE));
   if(currentPage>totalPages)currentPage=totalPages;
   if(currentPage<1)currentPage=1;
@@ -587,11 +587,11 @@ function renderList(){
     const s=driver(r);
     return `<tr onclick="openDetail('${r.request_id}')">
       <td class="req-no">${escHtml(displayReqNo(r))}</td>
-      <td>${escHtml(r.fault_type||'??)}</td>
-      <td>${escHtml(r.department||'??)}</td>
+      <td>${escHtml(r.fault_type||'—')}</td>
+      <td>${escHtml(r.department||'—')}</td>
       <td>${badge(s)}</td>
       <td style="color:var(--text-dim);font-size:.72rem">${fmt(r.created_at)}</td>
-      <td style="color:var(--cyan)">檢�? ??/td></tr>`;
+      <td style="color:var(--cyan)">檢視 ›</td></tr>`;
   }).join('');
   renderPager(rows.length,totalPages);
 }
@@ -619,9 +619,9 @@ function restoreWorkorderState(){
   lastFilterKey=workorderFilterKey();
 }
 window.addEventListener('pagehide', saveWorkorderState);
-function fmt(t){if(!t)return'??;const d=new Date(t);return `${(d.getMonth()+1)}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
-// ?�系統統一?��??��?：西??YYYY-MM-DD
-function fmtDate(t){if(!t)return'??;const m=String(t).match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;const d=new Date(t);if(isNaN(d))return String(t).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmt(t){if(!t)return'—';const d=new Date(t);return `${(d.getMonth()+1)}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+// 全系統統一日期格式：西元 YYYY-MM-DD
+function fmtDate(t){if(!t)return'—';const m=String(t).match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;const d=new Date(t);if(isNaN(d))return String(t).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 let desiredViewDate=new Date(), desiredDraft='';
 function two(n){return String(n).padStart(2,'0');}
@@ -683,7 +683,7 @@ function renderDesiredCalendar(){
   const title=document.getElementById('desiredMonthTitle'), grid=document.getElementById('desiredDateGrid');
   if(!title||!grid)return;
   const y=desiredViewDate.getFullYear(), m=desiredViewDate.getMonth();
-  title.textContent=`${y} �?${m+1} ?�`;
+  title.textContent=`${y} 年 ${m+1} 月`;
   const first=new Date(y,m,1), last=new Date(y,m+1,0).getDate(), today=dateValue(new Date());
   let html='';
   for(let i=0;i<first.getDay();i++) html+='<span class="date-cell empty"></span>';
@@ -702,8 +702,8 @@ document.getElementById('desiredPicker')?.addEventListener('click',e=>e.stopProp
 addEventListener('resize',placeDesiredCalendar);
 addEventListener('scroll',placeDesiredCalendar,true);
 
-// ?�?�?� Create ?�?�?�
-function openCreate(){if(!hasPerm('create')){toast('沒�??��??�修權�?',true);return;}['c-reporter','c-phone','c-mobile','c-dept','c-desc','c-ftype','c-location-desc','c-desired','c-desired-view'].forEach(i=>document.getElementById(i).value='');
+// ─── Create ───
+function openCreate(){if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}['c-reporter','c-phone','c-mobile','c-dept','c-desc','c-ftype','c-location-desc','c-desired','c-desired-view'].forEach(i=>document.getElementById(i).value='');
   setReporterSelect(); document.getElementById('c-phone').value=operatorPhone(); document.getElementById('c-mobile').value=''; document.getElementById('c-dept').value=operatorDepartment(); document.getElementById('c-msg').textContent='';
   document.getElementById('c-filed').textContent=todayISO();
   const d=defaultEquipment(); if(d)document.getElementById('c-eqp').value=d.equipment_id;
@@ -745,8 +745,8 @@ function storageObjectPath(path){
 }
 function uploadErrorMessage(error){
   const msg=error?.message||String(error||'');
-  if(/Load failed|Failed to fetch|NetworkError/i.test(msg))return '?��??�覽?�暫?�無法�???��?案�??��??��?請確認網路�??��??��?;
-  return msg?translateError(msg):'上傳失�?';
+  if(/Load failed|Failed to fetch|NetworkError/i.test(msg))return '手機瀏覽器暫時無法連線到檔案上傳服務，請確認網路後再重送。';
+  return msg?translateError(msg):'上傳失敗';
 }
 async function uploadRepairFile(path,file){
   const contentType=file?.type||'application/octet-stream';
@@ -790,31 +790,31 @@ async function insertRepairRequest(rec){
   return await db.from('repair_requests').insert(payload).select('request_id,req_no').single();
 }
 function repairRequestErrorMessage(error){
-  if(!error)return '?�出失�?，�?稍�??�試';
+  if(!error)return '送出失敗，請稍後再試';
   if(isEquipmentRequired(error)){
-    return '資�?庫�??��??�報修表?�更?��??��??�修?��?強制要�?設�?欄�??��??�在 Supabase SQL Editor ?��? system/sql/repair_request_timeout_fix.sql，�??��??�送出??;
+    return '資料庫尚未完成報修表單更新：目前報修單仍強制要求設備欄位。請先在 Supabase SQL Editor 執行 system/sql/repair_request_timeout_fix.sql，完成後再送出。';
   }
   if(isStatementTimeout(error)){
-    return '資�?庫新增報修逾�?：repair_requests ?�新增�?程目?�被資�?庫觸?�器?�設定卡住。表?��??�已保�?，�??�在 Supabase SQL Editor ?��? system/sql/repair_request_timeout_fix.sql 後�??�送�?;
+    return '資料庫新增報修逾時：repair_requests 的新增流程目前被資料庫觸發器或設定卡住。表單資料已保留，請先在 Supabase SQL Editor 執行 system/sql/repair_request_timeout_fix.sql 後再重送。';
   }
   if(isSchemaColumnError(error)){
-    return '資�?庫�?位�??�更?��?請�??��? system/sql/repair_request_timeout_fix.sql 後�??�送�?;
+    return '資料庫欄位尚未更新：請先執行 system/sql/repair_request_timeout_fix.sql 後再重送。';
   }
-  return '?�誤�?+(error.message?translateError(error.message):'?�出失�?');
+  return '錯誤：'+(error.message?translateError(error.message):'送出失敗');
 }
 async function submitCreate(){
-  if(!hasPerm('create')){toast('沒�??��??�修權�?',true);return;}
+  if(!hasPerm('create')){toast('沒有新增報修權限',true);return;}
   const desc=document.getElementById('c-desc').value.trim();
   const msg=document.getElementById('c-msg');
   const mobile=document.getElementById('c-mobile').value.trim();
   const faultLocation=document.getElementById('c-location-desc').value.trim();
   const locationPhoto=document.getElementById('c-location-photo').files[0];
-  if(!mobile){msg.textContent='請填寫�?機�?�?;msg.className='msg err';return;}
-  if(!locationPhoto){msg.textContent='請�??��?張�??��?置照??;msg.className='msg err';return;}
-  if(!desc){msg.textContent='請填寫�??��?�?;msg.className='msg err';return;}
-  msg.textContent='?�出中�?;msg.className='msg';
+  if(!mobile){msg.textContent='請填寫手機號碼';msg.className='msg err';return;}
+  if(!locationPhoto){msg.textContent='請上傳一張故障位置照片';msg.className='msg err';return;}
+  if(!desc){msg.textContent='請填寫故障描述';msg.className='msg err';return;}
+  msg.textContent='送出中…';msg.className='msg';
   setReporterSelect();
-  const faultDesc=[faultLocation?`?��?位置�?{faultLocation}`:'',`?�絡?��?�?{mobile}`,`?��??�述�?{desc}`].filter(Boolean).join('\n');
+  const faultDesc=[faultLocation?`故障位置：${faultLocation}`:'',`聯絡手機：${mobile}`,`故障描述：${desc}`].filter(Boolean).join('\n');
   const rec={request_id:clientUuid(),req_no:clientReqNo(),source:'direct',reporter:operatorLabel(),
     phone:document.getElementById('c-phone').value.trim()||null, department:document.getElementById('c-dept').value.trim()||operatorDepartment()||null,
     equipment_category:null, location_id:null, fault_location:faultLocation||null,
@@ -826,7 +826,7 @@ async function submitCreate(){
   // attachments
   const photoPath=storagePath(data.request_id,locationPhoto,'location');
   const photoUp=await uploadRepairFile(photoPath,locationPhoto);
-  if(photoUp.error){msg.textContent='案件已建立�?但�??��?置照?��??�失?��?'+uploadErrorMessage(photoUp.error);msg.className='msg err';return;}
+  if(photoUp.error){msg.textContent='案件已建立，但故障位置照片上傳失敗：'+uploadErrorMessage(photoUp.error);msg.className='msg err';return;}
   await db.from('repair_attachments').insert({request_id:data.request_id,kind:'location_photo',file_path:photoPath,file_name:locationPhoto.name,uploaded_by:me_.user_id});
   const files=document.getElementById('c-files').files;
   for(const f of files){
@@ -834,27 +834,27 @@ async function submitCreate(){
     const up=await uploadRepairFile(path,f);
     if(!up.error){ await db.from('repair_attachments').insert({request_id:data.request_id,kind:kindOf(f),file_path:path,file_name:f.name,uploaded_by:me_.user_id}); }
   }
-  await logStatus(data.request_id,null,null,'pending','建�??�修');
+  await logStatus(data.request_id,null,null,'pending','建立報修');
   await notifyLineRepair({...rec,...data});
-  closeM('m-create'); toast('已新增報�?'+displayReqNo(data));
+  closeM('m-create'); toast('已新增報修 '+displayReqNo(data));
   await loadCases(); renderTableFilters(); renderChips(); renderList();
 }
 function kindOf(f){const t=f.type;if(t.startsWith('image'))return'photo';if(t.startsWith('video'))return'video';if(t.includes('pdf'))return'pdf';if(t.includes('word')||/\.docx?$/i.test(f.name))return'doc';if(t.includes('sheet')||/\.xlsx?$/i.test(f.name))return'xls';return'other';}
 function displayFaultLocation(r){
   if(r?.fault_location)return r.fault_location;
-  const m=(r?.fault_desc||'').match(/?��?位置�?.+?)(\n|$)/);
-  return m?m[1]:'??;
+  const m=(r?.fault_desc||'').match(/故障位置：(.+?)(\n|$)/);
+  return m?m[1]:'—';
 }
 function displayFaultDesc(r){
-  return (r?.fault_desc||'').replace(/^?��?位置�?*\n?/,'').replace(/^?��??�述�?,'') || '??;
+  return (r?.fault_desc||'').replace(/^故障位置：.*\n?/,'').replace(/^故障描述：/,'') || '—';
 }
 
-// ?�?�?� Status log ?�?�?�
+// ─── Status log ───
 async function logStatus(reqId,ordId,from,to,note){
   await db.from('case_status_log').insert({request_id:reqId,order_id:ordId,from_status:from,to_status:to,note:note||null,operator_id:me_.user_id||null,operator_name:operatorLabel()});
 }
 
-// ?�?�?� Detail ?�?�?�
+// ─── Detail ───
 let curReq=null;
 async function openDetail(id){
   curReq=reqs.find(r=>r.request_id===id); if(!curReq)return;
@@ -862,33 +862,33 @@ async function openDetail(id){
   document.getElementById('d-title').textContent=displayReqNo(curReq);
   document.getElementById('d-badge').outerHTML=`<span class="badge" id="d-badge">${(ST[driver(curReq)]||['',''])[0]}</span>`;
   const body=document.getElementById('d-body');
-  body.innerHTML='<div class="empty">載入中�?/div>'; show('m-detail');
+  body.innerHTML='<div class="empty">載入中…</div>'; show('m-detail');
   const [{data:logs},{data:atts}]=await Promise.all([
     db.from('case_status_log').select('*').eq('request_id',id).order('created_at',{ascending:true}),
     db.from('repair_attachments').select('*').eq('request_id',id)
   ]);
   const loc=locs.find(l=>l.location_id===curReq.location_id);
-  const eqName=curReq.equipment?.name||'??;
+  const eqName=curReq.equipment?.name||'—';
   body.innerHTML=`
     <div class="d-info">
-      <div><span class="k">設�?�?/span><span class="v">${escHtml(eqName)}</span></div>
-      <div><span class="k">?��?�?/span><span class="v">${escHtml(curReq.equipment_category||curReq.equipment?.category||'??)}</span></div>
-      <div><span class="k">?��?位置�?/span><span class="v">${escHtml(displayFaultLocation(curReq))}</span></div>
-      <div><span class="k">QR�?/span><span class="v">${escHtml(curReq.equipment?.qr_code||'??)}</span></div>
-      <div><span class="k">?�修人�?</span><span class="v">${escHtml(curReq.reporter||'??)}</span></div>
-      <div><span class="k">?��?�?/span><span class="v">${escHtml(curReq.department||'??)}</span></div>
-      <div><span class="k">?�話�?/span><span class="v">${escHtml(curReq.phone||'??)}</span></div>
-      <div><span class="k">?��?�?/span><span class="v">${escHtml(curReq.mobile||'??)}</span></div>
-      <div><span class="k">?��?類�?�?/span><span class="v">${escHtml(curReq.fault_type||'??)}</span></div>
-      <div><span class="k">希�?完�?�?/span><span class="v">${curReq.desired_finish?fmtDate(curReq.desired_finish):'??}</span></div>
-      <div class="full"><span class="k">?��??�述�?/span><span class="v">${escHtml(displayFaultDesc(curReq))}</span></div>
-      ${o?`<div class="full"><span class="k">派工�?/span><span class="v">${escHtml(o.wo_no||'')} · ?��?${escHtml(o.users?.name||'??)}${o.vendor?' · 委�? '+escHtml(o.vendor):''}</span></div>`:''}
-      ${o&&o.fault_cause?`<div class="full"><span class="k">維修結�?�?/span><span class="v">${escHtml(o.fault_cause||'')}�?{escHtml(o.handle_method||'')}${o.parts_used?'｜更??'+escHtml(o.parts_used):''}${o.labor_hours?'｜工??'+escHtml(o.labor_hours)+'h':''}</span></div>`:''}
+      <div><span class="k">設備：</span><span class="v">${escHtml(eqName)}</span></div>
+      <div><span class="k">分類：</span><span class="v">${escHtml(curReq.equipment_category||curReq.equipment?.category||'—')}</span></div>
+      <div><span class="k">故障位置：</span><span class="v">${escHtml(displayFaultLocation(curReq))}</span></div>
+      <div><span class="k">QR：</span><span class="v">${escHtml(curReq.equipment?.qr_code||'—')}</span></div>
+      <div><span class="k">報修人：</span><span class="v">${escHtml(curReq.reporter||'—')}</span></div>
+      <div><span class="k">單位：</span><span class="v">${escHtml(curReq.department||'—')}</span></div>
+      <div><span class="k">電話：</span><span class="v">${escHtml(curReq.phone||'—')}</span></div>
+      <div><span class="k">手機：</span><span class="v">${escHtml(curReq.mobile||'—')}</span></div>
+      <div><span class="k">故障類型：</span><span class="v">${escHtml(curReq.fault_type||'—')}</span></div>
+      <div><span class="k">希望完成：</span><span class="v">${curReq.desired_finish?fmtDate(curReq.desired_finish):'—'}</span></div>
+      <div class="full"><span class="k">故障描述：</span><span class="v">${escHtml(displayFaultDesc(curReq))}</span></div>
+      ${o?`<div class="full"><span class="k">派工：</span><span class="v">${escHtml(o.wo_no||'')} · 技師 ${escHtml(o.users?.name||'—')}${o.vendor?' · 委外 '+escHtml(o.vendor):''}</span></div>`:''}
+      ${o&&o.fault_cause?`<div class="full"><span class="k">維修結果：</span><span class="v">${escHtml(o.fault_cause||'')}｜${escHtml(o.handle_method||'')}${o.parts_used?'｜更換:'+escHtml(o.parts_used):''}${o.labor_hours?'｜工時:'+escHtml(o.labor_hours)+'h':''}</span></div>`:''}
     </div>
-    ${atts&&atts.length?`<div class="sect">?�件</div><div class="atts">${atts.map(a=>attHtml(a)).join('')}</div>`:''}
-    <div class="sect">?��?歷�?</div>
-    <ul class="tl">${(logs||[]).map(l=>`<li><div class="st">${escHtml((ST[l.to_status]||[l.to_status])[0])}</div>${l.note?`<div class="nt">${escHtml(l.note)}</div>`:''}<div class="op">${escHtml(l.operator_name||'')} · <span class="ts">${fmt(l.created_at)}</span></div></li>`).join('')||'<li><div class="nt">尚無歷�?</div></li>'}</ul>
-    <div class="sect">?��?</div>
+    ${atts&&atts.length?`<div class="sect">附件</div><div class="atts">${atts.map(a=>attHtml(a)).join('')}</div>`:''}
+    <div class="sect">處理歷程</div>
+    <ul class="tl">${(logs||[]).map(l=>`<li><div class="st">${escHtml((ST[l.to_status]||[l.to_status])[0])}</div>${l.note?`<div class="nt">${escHtml(l.note)}</div>`:''}<div class="op">${escHtml(l.operator_name||'')} · <span class="ts">${fmt(l.created_at)}</span></div></li>`).join('')||'<li><div class="nt">尚無歷程</div></li>'}</ul>
+    <div class="sect">操作</div>
     <div class="actions" id="d-actions"></div>
     <div id="d-sub"></div>`;
   renderActions(curReq,o);
@@ -896,125 +896,125 @@ async function openDetail(id){
 function attHtml(a){
   const url=`${SUPA_URL}/storage/v1/object/public/repair-files/${(a.file_path||'').split('/').map(encodeURIComponent).join('/')}`;
   if(a.kind==='photo'||a.kind==='location_photo') return `<a class="att" href="${escHtml(url)}" target="_blank"><img src="${escHtml(url)}" alt=""></a>`;
-  return `<a class="att" href="${escHtml(url)}" target="_blank">?? ${escHtml(a.file_name||a.kind)}</a>`;
+  return `<a class="att" href="${escHtml(url)}" target="_blank">📎 ${escHtml(a.file_name||a.kind)}</a>`;
 }
 
-// ?�?�?� Actions (status-driven) ?�?�?�
+// ─── Actions (status-driven) ───
 function renderActions(r,o){
   const s=driver(r); const box=document.getElementById('d-actions'); const sub=document.getElementById('d-sub'); sub.innerHTML='';
   const A=[];
-  if(s==='pending'||s==='transferred'){if(hasPerm('dispatch'))A.push(['派工','a-primary',()=>dispatchForm(r)]);if(hasPerm('delete'))A.push(['?��?案件','a-danger',()=>act(()=>cancelCase(r))]);}
-  else if(s==='assigned'){if(hasPerm('update')){A.push(['?�單','a-ok',()=>act(()=>accept(r,o))]);A.push(['?�?�派�?,'a-warn',()=>act(()=>returnOrder(r,o))]);A.push(['?��?','a-danger',()=>act(()=>rejectOrder(r,o))]);}}
-  else if(s==='accepted'){if(hasPerm('update')){A.push(['?��?維修','a-primary',()=>act(()=>startWork(r,o))]);A.push(['?�?�派�?,'a-warn',()=>act(()=>returnOrder(r,o))]);}}
-  else if(s==='in_progress'){if(hasPerm('update')){A.push(['等�??�件','a-warn',()=>act(()=>waitState(r,o,'waiting_parts'))]);A.push(['等�?廠�?','a-warn',()=>act(()=>waitState(r,o,'waiting_vendor'))]);A.push(['完�?維修','a-ok',()=>completeForm(r,o)]);}}
-  else if(s==='waiting_parts'||s==='waiting_vendor'){if(hasPerm('update')){A.push(['繼�?維修','a-primary',()=>act(()=>resume(r,o))]);A.push(['完�?維修','a-ok',()=>completeForm(r,o)]);}}
-  else if(s==='pending_review'||s==='completed'){if(hasPerm('sign'))A.push(['??使用?��?驗收','a-ok',()=>act(()=>confirmUnit(r,o))]);if(hasPerm('close'))A.push(['??主管結�?','a-primary',()=>act(()=>closeCase(r,o))]);if(hasPerm('update'))A.push(['?�?��?�?,'a-warn',()=>act(()=>reopen(r,o))]);}
-  else if(s==='returned'||s==='rejected'){if(hasPerm('dispatch'))A.push(['?�新派工','a-primary',()=>dispatchForm(r)]);if(hasPerm('delete'))A.push(['?��?案件','a-danger',()=>act(()=>cancelCase(r))]);}
-  if(!A.length){box.innerHTML='<span style="color:var(--text-dim);font-size:.76rem">權�?不足?��?件已結�?，�?供檢�?/span>';return;}
+  if(s==='pending'||s==='transferred'){if(hasPerm('dispatch'))A.push(['派工','a-primary',()=>dispatchForm(r)]);if(hasPerm('delete'))A.push(['取消案件','a-danger',()=>act(()=>cancelCase(r))]);}
+  else if(s==='assigned'){if(hasPerm('update')){A.push(['接單','a-ok',()=>act(()=>accept(r,o))]);A.push(['退回派工','a-warn',()=>act(()=>returnOrder(r,o))]);A.push(['拒絕','a-danger',()=>act(()=>rejectOrder(r,o))]);}}
+  else if(s==='accepted'){if(hasPerm('update')){A.push(['開始維修','a-primary',()=>act(()=>startWork(r,o))]);A.push(['退回派工','a-warn',()=>act(()=>returnOrder(r,o))]);}}
+  else if(s==='in_progress'){if(hasPerm('update')){A.push(['等待料件','a-warn',()=>act(()=>waitState(r,o,'waiting_parts'))]);A.push(['等待廠商','a-warn',()=>act(()=>waitState(r,o,'waiting_vendor'))]);A.push(['完成維修','a-ok',()=>completeForm(r,o)]);}}
+  else if(s==='waiting_parts'||s==='waiting_vendor'){if(hasPerm('update')){A.push(['繼續維修','a-primary',()=>act(()=>resume(r,o))]);A.push(['完成維修','a-ok',()=>completeForm(r,o)]);}}
+  else if(s==='pending_review'||s==='completed'){if(hasPerm('sign'))A.push(['✓ 使用單位驗收','a-ok',()=>act(()=>confirmUnit(r,o))]);if(hasPerm('close'))A.push(['⊚ 主管結案','a-primary',()=>act(()=>closeCase(r,o))]);if(hasPerm('update'))A.push(['退回重修','a-warn',()=>act(()=>reopen(r,o))]);}
+  else if(s==='returned'||s==='rejected'){if(hasPerm('dispatch'))A.push(['重新派工','a-primary',()=>dispatchForm(r)]);if(hasPerm('delete'))A.push(['取消案件','a-danger',()=>act(()=>cancelCase(r))]);}
+  if(!A.length){box.innerHTML='<span style="color:var(--text-dim);font-size:.76rem">權限不足或案件已結束，僅供檢視</span>';return;}
   box.innerHTML=''; A.forEach(([t,c,fn])=>{const b=document.createElement('button');b.className='abtn '+c;b.textContent=t;b.onclick=fn;box.appendChild(b);});
 }
 function act(fn){ fn(); }
 
 function dispatchForm(r){
-  if(!hasPerm('dispatch')){toast('沒�?派工權�?',true);return;}
+  if(!hasPerm('dispatch')){toast('沒有派工權限',true);return;}
   const sub=document.getElementById('d-sub');
   sub.innerHTML=`<div class="subform show">
     <div class="row2">
-      <div class="field"><label>維修人員</label><select id="x-tech"><option value="">?��??�師�?/option>${techs.map(t=>`<option value="${t.user_id}">${escHtml(t.name)}</option>`).join('')}</select></div>
-      <div class="field"><label>委�?廠�?（選填�?</label><input id="x-vendor"></div>
+      <div class="field"><label>維修人員</label><select id="x-tech"><option value="">選擇技師…</option>${techs.map(t=>`<option value="${t.user_id}">${escHtml(t.name)}</option>`).join('')}</select></div>
+      <div class="field"><label>委外廠商（選填）</label><input id="x-vendor"></div>
     </div>
     <div class="row2">
-      <div class="field"><label>?��??�場</label><input id="x-arr" type="datetime-local"></div>
-      <div class="field"><label>?��?完�?</label><input id="x-fin" type="datetime-local"></div>
+      <div class="field"><label>預計到場</label><input id="x-arr" type="datetime-local"></div>
+      <div class="field"><label>預計完成</label><input id="x-fin" type="datetime-local"></div>
     </div>
-    <div class="field"><label>工�??�容</label><textarea id="x-content" placeholder="派工說�???></textarea></div>
+    <div class="field"><label>工作內容</label><textarea id="x-content" placeholder="派工說明…"></textarea></div>
     <div class="row2">
-      <div class="field"><label>?�否?��?</label><select id="x-shut"><option value="false">??/option><option value="true">??/option></select></div>
-      <div class="field"><label>?�主管?��?</label><select id="x-appr"><option value="false">??/option><option value="true">??/option></select></div>
+      <div class="field"><label>是否停機</label><select id="x-shut"><option value="false">否</option><option value="true">是</option></select></div>
+      <div class="field"><label>需主管核准</label><select id="x-appr"><option value="false">否</option><option value="true">是</option></select></div>
     </div>
-    <button class="btn-primary" style="width:100%" onclick="doDispatch('${r.request_id}')">確�?派工</button>
+    <button class="btn-primary" style="width:100%" onclick="doDispatch('${r.request_id}')">確認派工</button>
   </div>`;
 }
 async function doDispatch(reqId){
-  if(!hasPerm('dispatch')){toast('沒�?派工權�?',true);return;}
+  if(!hasPerm('dispatch')){toast('沒有派工權限',true);return;}
   const r=reqs.find(x=>x.request_id===reqId);
   const tech=document.getElementById('x-tech').value, vendor=document.getElementById('x-vendor').value.trim();
-  if(!tech&&!vendor){toast('請選?��?師�?填寫委�?廠�?',true);return;}
+  if(!tech&&!vendor){toast('請選擇技師或填寫委外廠商',true);return;}
   const ord={request_id:reqId,equipment_id:r.equipment_id,assignee_id:tech||null,vendor:vendor||null,
     expected_arrival:document.getElementById('x-arr').value||null,expected_finish:document.getElementById('x-fin').value||null,
     work_content:document.getElementById('x-content').value.trim()||null,need_shutdown:document.getElementById('x-shut').value==='true',
     need_approval:document.getElementById('x-appr').value==='true',status:'assigned',accept_status:'pending'};
   const {data,error}=await db.from('maintenance_orders').insert(ord).select('order_id,wo_no').single();
-  if(error){toast('派工失�?�?+translateError(error.message),true);return;}
+  if(error){toast('派工失敗：'+translateError(error.message),true);return;}
   await db.from('repair_requests').update({status:'assigned',assignee_id:tech||null,updated_at:new Date().toISOString()}).eq('request_id',reqId);
-  await logStatus(reqId,data.order_id,driver(r),'assigned','派工 '+(data.wo_no||'')+(tech?(' ??'+(techs.find(t=>t.user_id===tech)?.name||'')):'')+(vendor?(' 委�?:'+vendor):''));
-  // 站內?�知?�師�?§九�?
-  if(tech){ try{ await db.from('notifications').insert({recipient_id:tech,event:'dispatch',title:'?�派工通知',
-    body:`${r.req_no||''}�?{r.equipment?.name||'設�?'}�?{r.fault_desc||''}`,request_id:reqId,order_id:data.order_id}); }catch(e){} }
-  await refreshAndReopen(reqId); toast('已派�?);
+  await logStatus(reqId,data.order_id,driver(r),'assigned','派工 '+(data.wo_no||'')+(tech?(' → '+(techs.find(t=>t.user_id===tech)?.name||'')):'')+(vendor?(' 委外:'+vendor):''));
+  // 站內通知技師（§九）
+  if(tech){ try{ await db.from('notifications').insert({recipient_id:tech,event:'dispatch',title:'新派工通知',
+    body:`${r.req_no||''}｜${r.equipment?.name||'設備'}｜${r.fault_desc||''}`,request_id:reqId,order_id:data.order_id}); }catch(e){} }
+  await refreshAndReopen(reqId); toast('已派工');
 }
-async function accept(r,o){if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}await db.from('maintenance_orders').update({status:'accepted',accept_status:'accepted'}).eq('order_id',o.order_id);
+async function accept(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:'accepted',accept_status:'accepted'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'assigned',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
-  await logStatus(r.request_id,o.order_id,'assigned','accepted','?�師接??);await refreshAndReopen(r.request_id);toast('已接??);}
-async function returnOrder(r,o){if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}await db.from('maintenance_orders').update({status:'returned',accept_status:'returned'}).eq('order_id',o.order_id);
+  await logStatus(r.request_id,o.order_id,'assigned','accepted','技師接單');await refreshAndReopen(r.request_id);toast('已接單');}
+async function returnOrder(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:'returned',accept_status:'returned'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'pending',assignee_id:null,updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
-  await logStatus(r.request_id,o.order_id,driver(r),'returned','?�?�派工�?待�??��?�?);await refreshAndReopen(r.request_id);toast('已退??);}
-async function rejectOrder(r,o){if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}await db.from('maintenance_orders').update({status:'rejected',accept_status:'rejected'}).eq('order_id',o.order_id);
+  await logStatus(r.request_id,o.order_id,driver(r),'returned','退回派工，待重新指派');await refreshAndReopen(r.request_id);toast('已退回');}
+async function rejectOrder(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:'rejected',accept_status:'rejected'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'pending',assignee_id:null,updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
-  await logStatus(r.request_id,o.order_id,driver(r),'rejected','?�師�?絕�?待�??��?�?);await refreshAndReopen(r.request_id);toast('已�?�?);}
-async function startWork(r,o){if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}const now=new Date().toISOString();
+  await logStatus(r.request_id,o.order_id,driver(r),'rejected','技師拒絕，待重新指派');await refreshAndReopen(r.request_id);toast('已拒絕');}
+async function startWork(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}const now=new Date().toISOString();
   await db.from('maintenance_orders').update({status:'in_progress',start_time:now,arrival_time:o.arrival_time||now}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'in_progress',updated_at:now}).eq('request_id',r.request_id);
-  await logStatus(r.request_id,o.order_id,'accepted','in_progress','?��?維修，到?��???'+fmt(now));await refreshAndReopen(r.request_id);toast('?��?維修');}
-async function waitState(r,o,st){if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}await db.from('maintenance_orders').update({status:st}).eq('order_id',o.order_id);
-  await logStatus(r.request_id,o.order_id,'in_progress',st,st==='waiting_parts'?'等�??�件':'等�?廠�?');await refreshAndReopen(r.request_id);toast('?�?�已?�新');}
-async function resume(r,o){if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}await db.from('maintenance_orders').update({status:'in_progress'}).eq('order_id',o.order_id);
-  await logStatus(r.request_id,o.order_id,driver(r),'in_progress','繼�?維修');await refreshAndReopen(r.request_id);toast('繼�?維修');}
+  await logStatus(r.request_id,o.order_id,'accepted','in_progress','開始維修，到場時間 '+fmt(now));await refreshAndReopen(r.request_id);toast('開始維修');}
+async function waitState(r,o,st){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:st}).eq('order_id',o.order_id);
+  await logStatus(r.request_id,o.order_id,'in_progress',st,st==='waiting_parts'?'等待料件':'等待廠商');await refreshAndReopen(r.request_id);toast('狀態已更新');}
+async function resume(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}await db.from('maintenance_orders').update({status:'in_progress'}).eq('order_id',o.order_id);
+  await logStatus(r.request_id,o.order_id,driver(r),'in_progress','繼續維修');await refreshAndReopen(r.request_id);toast('繼續維修');}
 function completeForm(r,o){
-  if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}
+  if(!hasPerm('update')){toast('沒有更新權限',true);return;}
   const sub=document.getElementById('d-sub');
   sub.innerHTML=`<div class="subform show">
-    <div class="field"><label>?��??��?</label><input id="x-cause" placeholder="例�?軸承磨�?"></div>
-    <div class="field"><label>?��??��?</label><textarea id="x-method" placeholder="?��??��???></textarea></div>
+    <div class="field"><label>故障原因</label><input id="x-cause" placeholder="例：軸承磨損"></div>
+    <div class="field"><label>處理方式</label><textarea id="x-method" placeholder="處理過程…"></textarea></div>
     <div class="row3">
-      <div class="field"><label>?��??�件</label><input id="x-parts"></div>
-      <div class="field"><label>使用?��?</label><input id="x-mat"></div>
-      <div class="field"><label>工�?(小�?)</label><input id="x-hours" type="number" step="0.5" min="0"></div>
+      <div class="field"><label>更換零件</label><input id="x-parts"></div>
+      <div class="field"><label>使用材料</label><input id="x-mat"></div>
+      <div class="field"><label>工時(小時)</label><input id="x-hours" type="number" step="0.5" min="0"></div>
     </div>
-    <button class="btn-primary" style="width:100%" onclick="doComplete('${r.request_id}','${o.order_id}')">確�?完�?</button>
+    <button class="btn-primary" style="width:100%" onclick="doComplete('${r.request_id}','${o.order_id}')">確認完成</button>
   </div>`;
 }
 async function doComplete(reqId,ordId){
-  if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}
+  if(!hasPerm('update')){toast('沒有更新權限',true);return;}
   const now=new Date().toISOString();
   const upd={status:'pending_review',finish_time:now,fault_cause:document.getElementById('x-cause').value.trim()||null,
     handle_method:document.getElementById('x-method').value.trim()||null,parts_used:document.getElementById('x-parts').value.trim()||null,
     materials:document.getElementById('x-mat').value.trim()||null,labor_hours:parseFloat(document.getElementById('x-hours').value)||null};
   await db.from('maintenance_orders').update(upd).eq('order_id',ordId);
   await db.from('repair_requests').update({status:'pending_review',updated_at:now}).eq('request_id',reqId);
-  await logStatus(reqId,ordId,'in_progress','pending_review','維修完�?，�?驗收'+(upd.fault_cause?'（�???'+upd.fault_cause+'�?:''));
-  await refreshAndReopen(reqId);toast('維修完�?，�?驗收');
+  await logStatus(reqId,ordId,'in_progress','pending_review','維修完成，待驗收'+(upd.fault_cause?'（原因:'+upd.fault_cause+'）':''));
+  await refreshAndReopen(reqId);toast('維修完成，待驗收');
 }
-async function confirmUnit(r,o){if(!hasPerm('sign')){toast('沒�?簽核權�?',true);return;}await logStatus(r.request_id,o?.order_id,'pending_review','pending_review','使用?��?已�??�確�?);await refreshAndReopen(r.request_id);toast('已�??�使?�單位�???);}
+async function confirmUnit(r,o){if(!hasPerm('sign')){toast('沒有簽核權限',true);return;}await logStatus(r.request_id,o?.order_id,'pending_review','pending_review','使用單位已驗收確認');await refreshAndReopen(r.request_id);toast('已記錄使用單位驗收');}
 async function closeCase(r,o){const now=new Date().toISOString();
-  if(!hasPerm('close')){toast('沒�?結�?權�?',true);return;}
+  if(!hasPerm('close')){toast('沒有結案權限',true);return;}
   if(o) await db.from('maintenance_orders').update({status:'closed'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'closed',updated_at:now}).eq('request_id',r.request_id);
-  await logStatus(r.request_id,o?.order_id,'pending_review','closed','主管結�?，�?件�???);await refreshAndReopen(r.request_id);toast('已�?�?);}
-async function reopen(r,o){if(!hasPerm('update')){toast('沒�??�新權�?',true);return;}if(o)await db.from('maintenance_orders').update({status:'in_progress'}).eq('order_id',o.order_id);
+  await logStatus(r.request_id,o?.order_id,'pending_review','closed','主管結案，案件完成');await refreshAndReopen(r.request_id);toast('已結案');}
+async function reopen(r,o){if(!hasPerm('update')){toast('沒有更新權限',true);return;}if(o)await db.from('maintenance_orders').update({status:'in_progress'}).eq('order_id',o.order_id);
   await db.from('repair_requests').update({status:'in_progress',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
-  await logStatus(r.request_id,o?.order_id,'pending_review','in_progress','驗收?�?��??�新維修');await refreshAndReopen(r.request_id);toast('已退?��?�?);}
-async function cancelCase(r){if(!hasPerm('delete')){toast('沒�??�除/?��?權�?',true);return;}await db.from('repair_requests').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
-  await logStatus(r.request_id,null,driver(r),'cancelled','案件?��?');await refreshAndReopen(r.request_id);toast('已�?�?);}
+  await logStatus(r.request_id,o?.order_id,'pending_review','in_progress','驗收退回，重新維修');await refreshAndReopen(r.request_id);toast('已退回重修');}
+async function cancelCase(r){if(!hasPerm('delete')){toast('沒有刪除/取消權限',true);return;}await db.from('repair_requests').update({status:'cancelled',updated_at:new Date().toISOString()}).eq('request_id',r.request_id);
+  await logStatus(r.request_id,null,driver(r),'cancelled','案件取消');await refreshAndReopen(r.request_id);toast('已取消');}
 
 async function refreshAndReopen(reqId){ await loadCases(); renderTableFilters(); renderChips(); renderList(); openDetail(reqId); }
 
-// ?�?�?� UI helpers ?�?�?�
+// ─── UI helpers ───
 function show(id){document.getElementById(id).classList.add('show');}
 function closeM(id){document.getElementById(id).classList.remove('show');if(id==='m-create')closeDesiredCalendar();}
 let _tt;function toast(m,err){const el=document.getElementById('toast');el.textContent=m;el.style.borderColor=err?'var(--red)':'var(--border-hi)';el.style.color=err?'var(--red)':'var(--text)';el.classList.add('show');clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2400);}
 
-init().catch(e=>{document.getElementById('list').innerHTML=`<tr><td colspan="6" class="empty" style="color:var(--red)">載入失�?�?{escHtml(translateError(e.message))}<br><small>請確認已?��? work_order_schema.sql</small></td></tr>`;});
+init().catch(e=>{document.getElementById('list').innerHTML=`<tr><td colspan="6" class="empty" style="color:var(--red)">載入失敗：${escHtml(translateError(e.message))}<br><small>請確認已執行 work_order_schema.sql</small></td></tr>`;});
 </script>
 </body>
 </html>

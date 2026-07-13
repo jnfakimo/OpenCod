@@ -8,7 +8,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>?��?農產 第�??��?市場 ??3D 模�???/title>
+<title>臺北農產 第一果菜市場 — 3D 模型圖</title>
 <style>
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0}
 :root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b}
@@ -74,7 +74,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 .mini{flex:1;padding:5px;background:rgba(0,212,255,.08);border:1px solid var(--border);color:var(--cyan2);border-radius:3px;cursor:pointer;font-size:10px;transition:all .15s}
 .mini:hover{border-color:var(--cyan);color:var(--cyan)}
 
-/* Floor-plan thumbnail ??bottom-left, reuses the same texture used on the 3D model */
+/* Floor-plan thumbnail — bottom-left, reuses the same texture used on the 3D model */
 #planThumb{position:fixed;left:14px;bottom:14px;width:169px;height:130px;z-index:150;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:#041428;box-shadow:0 0 18px rgba(0,212,255,.08)}
 #planThumb img{width:100%;height:100%;object-fit:contain}
 
@@ -120,85 +120,85 @@ body.controls-hidden #panelToggle{display:inline-flex}
 }
 
 </style>
-<link rel="stylesheet" href="light-mode-fix.css?v=2">
+<link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body class="controls-hidden">
 
 <div id="loading">
-  <div class="ld-t">載入 3D 樓層模�???/div>
+  <div class="ld-t">載入 3D 樓層模型…</div>
   <div class="ld-bar"><div class="ld-fill" id="ldfill"></div></div>
-  <div class="ld-m" id="ldmsg">?��??��?/div>
+  <div class="ld-m" id="ldmsg">初始化…</div>
 </div>
 
 <div id="topbar">
-  <div class="tb-logo">?��?農產 第�??��?市場</div>
+  <div class="tb-logo">臺北農產 第一果菜市場</div>
   <div class="tb-sep"></div>
-  <div class="tb-title">3D 模�???/div>
+  <div class="tb-title">3D 模型圖</div>
   <div class="tb-space"></div>
-  <a href="floor3d.html" class="tb-back">3D模�???/a>
-  <a href="b1plan.html" class="tb-back">平面模�???/a>
+  <a href="floor3d.html" class="tb-back">3D模型圖</a>
+  <a href="b1plan.html" class="tb-back">平面模型圖</a>
   <a href="admin.html#modelhub" class="tb-back">後台</a>
 </div>
 
 <div id="c3d"></div>
-<button id="panelToggle" onclick="togglePanel(true)" aria-controls="panel" aria-expanded="false">�?立�??�制</button>
+<button id="panelToggle" onclick="togglePanel(true)" aria-controls="panel" aria-expanded="false">⬡ 立體控制</button>
 
-<button id="floorsToggle" onclick="toggleFloorsMenu()">??樓層顯示 <span class="cv">??/span></button>
+<button id="floorsToggle" onclick="toggleFloorsMenu()">▤ 樓層顯示 <span class="cv">▾</span></button>
 <div id="floors">
-  <button class="fbtn on" id="t-3F" onclick="toggleFloor('3F')"><span class="dot"></span>3F 三�?</button>
-  <button class="fbtn on" id="t-2F" onclick="toggleFloor('2F')"><span class="dot"></span>2F 二�?</button>
-  <button class="fbtn on" id="t-1F" onclick="toggleFloor('1F')"><span class="dot"></span>1F 一�?/button>
-  <button class="fbtn on" id="t-B1" onclick="toggleFloor('B1')"><span class="dot"></span>B1 ?��?一�?/button>
+  <button class="fbtn on" id="t-3F" onclick="toggleFloor('3F')"><span class="dot"></span>3F 三樓</button>
+  <button class="fbtn on" id="t-2F" onclick="toggleFloor('2F')"><span class="dot"></span>2F 二樓</button>
+  <button class="fbtn on" id="t-1F" onclick="toggleFloor('1F')"><span class="dot"></span>1F 一樓</button>
+  <button class="fbtn on" id="t-B1" onclick="toggleFloor('B1')"><span class="dot"></span>B1 地下一層</button>
 </div>
 
 <div id="panel">
   <div class="panel-head">
-    <div class="p-t">�?立�??�制</div>
-    <button class="panel-close" onclick="togglePanel(false)">?��?</button>
+    <div class="p-t">⬡ 立體控制</div>
+    <button class="panel-close" onclick="togglePanel(false)">隱藏</button>
   </div>
-  <label>樓層?��?（�?覺�?</label>
+  <label>樓層間距（視覺）</label>
   <input type="range" id="explode" min="1" max="20" value="6" step="0.5" oninput="setExplode(this.value)">
-  <label>水平平移（左?��?</label>
+  <label>水平平移（左右）</label>
   <input type="range" id="xPan" min="-220" max="220" value="0" step="2" oninput="setXPan(this.value)">
-  <label>Y 軸平移�?上�?�?/label>
+  <label>Y 軸平移（上下）</label>
   <input type="range" id="yPan" min="-160" max="160" value="0" step="2" oninput="setYPan(this.value)">
-  <div class="h-r" style="color:var(--text2)">實�?樓�?�?span style="color:var(--text)">4000 mm（固定�?</span></div>
-  <div class="h-r" style="color:var(--text2)">?�大?��?�?span style="color:var(--text)" id="exVal">6?</span></div>
-  <div class="h-r" style="color:var(--text2)">水平位置�?span class="ctrl-val" id="xPanVal">0 m</span></div>
-  <div class="h-r" style="color:var(--text2)">Y 軸�?置�?<span class="ctrl-val" id="yPanVal">0 m</span></div>
+  <div class="h-r" style="color:var(--text2)">實際樓高：<span style="color:var(--text)">4000 mm（固定）</span></div>
+  <div class="h-r" style="color:var(--text2)">放大倍率：<span style="color:var(--text)" id="exVal">6×</span></div>
+  <div class="h-r" style="color:var(--text2)">水平位置：<span class="ctrl-val" id="xPanVal">0 m</span></div>
+  <div class="h-r" style="color:var(--text2)">Y 軸位置：<span class="ctrl-val" id="yPanVal">0 m</span></div>
   <div class="btnrow">
-    <button class="mini" onclick="resetView()">???�置</button>
-    <button class="mini" onclick="topView()">??俯�?</button>
-    <button class="mini" onclick="setExplode(1)">?�實比�?</button>
+    <button class="mini" onclick="resetView()">⊡ 重置</button>
+    <button class="mini" onclick="topView()">⊤ 俯視</button>
+    <button class="mini" onclick="setExplode(1)">真實比例</button>
   </div>
 </div>
 
-<!-- 標�?顯示（獨立面?��?左�?，�?設隱?��?-->
-<button id="mkToggle" onclick="toggleMkPanel(true)">??標�?顯示</button>
+<!-- 標記顯示（獨立面板，左下，預設隱藏）-->
+<button id="mkToggle" onclick="toggleMkPanel(true)">◈ 標記顯示</button>
 <div id="mkpanel">
   <div class="panel-head">
-    <div class="p-t">??標�?顯示</div>
+    <div class="p-t">◈ 標記顯示</div>
     <span style="display:flex;gap:6px">
-      <button class="panel-close" id="mkPinBtn" onclick="toggleMkPin()" title="?��?後�?空白?��??�自?�收??>?? ?��?</button>
-      <button class="panel-close" onclick="toggleMkPanel(false)">?��?</button>
+      <button class="panel-close" id="mkPinBtn" onclick="toggleMkPin()" title="釘住後點空白處不會自動收合">📌 釘住</button>
+      <button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button>
     </span>
   </div>
-  <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">??/span> 設�?標�?</label>
-  <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">??/span> 空�?標�?</label>
-  <label><input type="checkbox" id="mk-patrol" checked onchange="toggleMarkKind('patrol',this.checked)"><span style="color:#c77dff">??/span> 巡�?�?/label>
-  <label><input type="checkbox" id="mk-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">??/span> ?�修點�?�?/label>
-  <label><input type="checkbox" id="mk-note" checked onchange="toggleMarkKind('note',this.checked)"><span style="color:#ffb300">??/span> 一?��?�?/label>
-  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"><span style="color:var(--cyan)">?��</span> ?��?標籤</label>
-  <div class="h-r" style="color:var(--text2);margin-top:4px">標�?總數�?span style="color:var(--text)" id="mkCount">0</span></div>
+  <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備標記</label>
+  <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間標記</label>
+  <label><input type="checkbox" id="mk-patrol" checked onchange="toggleMarkKind('patrol',this.checked)"><span style="color:#c77dff">●</span> 巡邏點</label>
+  <label><input type="checkbox" id="mk-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點標記</label>
+  <label><input type="checkbox" id="mk-note" checked onchange="toggleMarkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般標記</label>
+  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 文字標籤</label>
+  <div class="h-r" style="color:var(--text2);margin-top:4px">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
 </div>
 
-<div id="planThumb"><img id="planThumbImg" alt="樓層平面縮�?"></div>
+<div id="planThumb"><img id="planThumbImg" alt="樓層平面縮圖"></div>
 
 <div id="bottomRightRow">
-  <div id="hint">左鍵?�曳：水�?/ ?�直移�? &nbsp;|&nbsp; ?�鍵?�曳：�?轉環�?&nbsp;|&nbsp; 滾輪/?��?：縮??/div>
+  <div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
   <div id="hud">
-    <div class="h-t">??3D 模�???/div>
-    <div class="h-r">顯示樓層�?span id="h-floors">??/span></div>
+    <div class="h-t">▣ 3D 模型圖</div>
+    <div class="h-r">顯示樓層：<span id="h-floors">—</span></div>
   </div>
 </div>
 
@@ -211,7 +211,7 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 
-// ?�?� World dimensions (from shared DXF frame, mm ??metres) ?�?�
+// ── World dimensions (from shared DXF frame, mm → metres) ──
 const FRAME_W = 326466/1000;   // 326.5 m
 const FRAME_H = 320094/1000;   // 320.1 m
 const FLOOR_GAP = 4.0;         // real floor height (m): fixed 4000 mm
@@ -220,16 +220,16 @@ const XPAN_MIN = -220, XPAN_MAX = 220, ZPAN_MIN = -220, ZPAN_MAX = 220;
 const YPAN_MIN = -160, YPAN_MAX = 160;
 let yOffset = 0;                // model target Y-axis offset (m)
 
-// floor definitions (bottom ??up)
+// floor definitions (bottom → up)
 const FLOORS = [
-  { id:'B1', label:'B1 ?��?一�?, tex:'plans/tex/b1_tex.png', level:0, mesh:null, frame:null, visible:true },
-  { id:'1F', label:'1F 一�?,     tex:'plans/tex/f1_tex.png', level:1, mesh:null, frame:null, visible:true },
-  { id:'2F', label:'2F 二�?',     tex:'plans/tex/f2_tex.png', level:2, mesh:null, frame:null, visible:true },
-  { id:'3F', label:'3F 三�?',     tex:'plans/tex/f3_tex.png', level:3, mesh:null, frame:null, visible:true },
+  { id:'B1', label:'B1 地下一層', tex:'plans/tex/b1_tex.png', level:0, mesh:null, frame:null, visible:true },
+  { id:'1F', label:'1F 一樓',     tex:'plans/tex/f1_tex.png', level:1, mesh:null, frame:null, visible:true },
+  { id:'2F', label:'2F 二樓',     tex:'plans/tex/f2_tex.png', level:2, mesh:null, frame:null, visible:true },
+  { id:'3F', label:'3F 三樓',     tex:'plans/tex/f3_tex.png', level:3, mesh:null, frame:null, visible:true },
 ];
 
 let scene,camera,renderer;
-prog(10,'建�??�景??);
+prog(10,'建立場景…');
 function init(){
   scene=new THREE.Scene();
   scene.background=new THREE.Color(0x020b18);
@@ -245,7 +245,7 @@ function init(){
   renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 }
 
-// ?�?� neon edge frame for each floor (so empty plates still read) ?�?�
+// ── neon edge frame for each floor (so empty plates still read) ──
 function floorFrame(y){
   const g=new THREE.Group();
   const hw=FRAME_W/2,hh=FRAME_H/2;
@@ -268,7 +268,7 @@ function buildFloors(){
       const m=new THREE.Mesh(geo,mat);
       m.rotation.x=-Math.PI/2;          // lay flat
       m.userData.fl=fl; fl.mesh=m; scene.add(m);
-      done++; prog(40+done*28,'載入樓層貼�???);
+      done++; prog(40+done*28,'載入樓層貼圖…');
       if(done===FLOORS.length){ layoutFloors(); finishLoad(); }
     }, undefined, ()=>{ done++; if(done===FLOORS.length){layoutFloors();finishLoad();} });
   });
@@ -283,8 +283,8 @@ function layoutFloors(){
   layoutMarkers();
 }
 
-// ?�?� ?��?標�?系統 ??3D ?��? ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
-const MARK_H=6;                                  // 標�??�浮高度 (m)
+// ── 整合標記系統 → 3D 拋轉 ──────────────────────────────────
+const MARK_H=6;                                  // 標記懸浮高度 (m)
 const MARK_COL={equipment:0x00d4ff,space:0x00ff9d,patrol:0xc77dff,repair:0xff5470,note:0xffb300};
 const kindVis={equipment:true,space:true,patrol:true,repair:true,note:true};
 let markerObjs=[];                               // {group,fl,kind,label}
@@ -298,7 +298,7 @@ async function loadMarkers(){
     layoutMarkers();
   }catch(e){}
 }
-// ?��?標籤 sprite（canvas ?�質�?
+// 文字標籤 sprite（canvas 材質）
 function makeLabelSprite(text,colorHex){
   const c=document.createElement('canvas'),ctx=c.getContext('2d'),fs=44;
   ctx.font=`bold ${fs}px 'Noto Sans TC',sans-serif`;
@@ -311,13 +311,13 @@ function makeLabelSprite(text,colorHex){
   ctx.fillText(text||'',c.width/2,c.height/2);
   const tex=new THREE.CanvasTexture(c); tex.minFilter=THREE.LinearFilter;
   const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
-  spr.scale.set((c.width/c.height)*5.5, 5.5, 1);     // 高度�?5.5 m
+  spr.scale.set((c.width/c.height)*5.5, 5.5, 1);     // 高度約 5.5 m
   return spr;
 }
 function addMarker3D(m){
   const fl=FLOORS.find(f=>f.id===m.floor_id); if(!fl)return;
   const col=(m.kind in MARK_COL)?MARK_COL[m.kind]:0xffb300;
-  // 2D viewport 座�? ??3D 平面座�?（�?樓層貼�??�用?��? DXF frame�?
+  // 2D viewport 座標 → 3D 平面座標（與樓層貼圖共用同一 DXF frame）
   const x=(m.x-0.5)*FRAME_W;
   const z=m.y*FRAME_W - FRAME_H/2;
   const g=new THREE.Group();
@@ -353,7 +353,7 @@ function toggleFloorsMenu(){
   f.style.display=open?'block':'none';
   b.classList.toggle('open',open);
 }
-// 左鍵�?3D 空白?????��??�單（�?體控??/ 樓層；�?記面?�已?��??��??��?
+// 左鍵點 3D 空白處 → 收合選單（立體控制 / 樓層；標記面板已釘住則保留）
 function closeMenus3D(){
   togglePanel(false);
   if(!mkPinned3D){ document.getElementById('mkpanel').style.display='none'; document.getElementById('mkToggle').style.display='inline-flex'; }
@@ -362,7 +362,7 @@ function closeMenus3D(){
 }
 let mkPinned3D=false;
 function toggleMkPanel(open){
-  if(open){ // ?��?標�??�板?��??�收?��?體控?�面?��??��??��?
+  if(open){ // 開啟標記面板時，先收合立體控制面板，避免重疊
     document.body.classList.add('controls-hidden');
     document.body.classList.remove('controls-open');
     const b=document.getElementById('panelToggle'); if(b)b.setAttribute('aria-expanded','false');
@@ -372,14 +372,14 @@ function toggleMkPanel(open){
   if(!open){ mkPinned3D=false; syncMkPin3D(); }
 }
 function toggleMkPin(){ mkPinned3D=!mkPinned3D; if(mkPinned3D) toggleMkPanel(true); syncMkPin3D(); }
-function syncMkPin3D(){ const b=document.getElementById('mkPinBtn'); if(b){ b.classList.toggle('on',mkPinned3D); b.textContent=mkPinned3D?'?? 已�?�?:'?? ?��?'; } }
+function syncMkPin3D(){ const b=document.getElementById('mkPinBtn'); if(b){ b.classList.toggle('on',mkPinned3D); b.textContent=mkPinned3D?'📌 已釘住':'📌 釘住'; } }
 
 function updateHud(){
   const el=document.getElementById('h-floors');
   if(el) el.textContent=FLOORS.filter(f=>f.visible).length+'/'+FLOORS.length;
 }
 function finishLoad(){
-  prog(100,'完�?');
+  prog(100,'完成');
   setTimeout(()=>{const l=document.getElementById('loading');l.style.transition='opacity .4s';l.style.opacity='0';setTimeout(()=>l.style.display='none',400);},150);
   resetView(); animate();
   loadMarkers();
@@ -388,7 +388,7 @@ function finishLoad(){
   updateHud();
 }
 
-// ?�?� Orbit controls ?�?�
+// ── Orbit controls ──
 const orb={theta:-0.6,phi:1.05,r:620,tx:0,ty:20,tz:0,down:false,right:false,sx:0,sy:0,minPhi:.05,maxPhi:1.55,minR:40,maxR:2200};
 function updateCam(){
   const x=orb.tx+orb.r*Math.sin(orb.phi)*Math.sin(orb.theta);
@@ -433,11 +433,11 @@ function setupOrbit(){
   let dnX=0,dnY=0;
   el.addEventListener('mousedown',e=>{ if(e.button===0){orb.down=true;dnX=e.clientX;dnY=e.clientY;}else if(e.button===2){orb.right=true;e.preventDefault();} orb.sx=e.clientX;orb.sy=e.clientY; });
   addEventListener('mouseup',()=>{orb.down=false;orb.right=false;});
-  el.addEventListener('click',e=>{ if(Math.hypot(e.clientX-dnX,e.clientY-dnY)<5) closeMenus3D(); }); // 左鍵點空?��??��??�單
+  el.addEventListener('click',e=>{ if(Math.hypot(e.clientX-dnX,e.clientY-dnY)<5) closeMenus3D(); }); // 左鍵點空白處收合選單
   addEventListener('mousemove',e=>{
     const dx=e.clientX-orb.sx, dy=e.clientY-orb.sy;
-    if(orb.down){ panView(dx,dy); }                        // 左鍵：水�?/ ?�直平移
-    else if(orb.right){ orb.theta-=dx*0.005; orb.phi=Math.max(orb.minPhi,Math.min(orb.maxPhi,orb.phi-dy*0.005)); } // ?�鍵：�?轉環�?
+    if(orb.down){ panView(dx,dy); }                        // 左鍵：水平 / 垂直平移
+    else if(orb.right){ orb.theta-=dx*0.005; orb.phi=Math.max(orb.minPhi,Math.min(orb.maxPhi,orb.phi-dy*0.005)); } // 右鍵：旋轉環繞
     orb.sx=e.clientX;orb.sy=e.clientY;
   });
   el.addEventListener('wheel',e=>{ orb.r=Math.max(orb.minR,Math.min(orb.maxR,orb.r+e.deltaY*0.5)); e.preventDefault(); },{passive:false});
@@ -453,7 +453,7 @@ function setupOrbit(){
 
 function animate(){ requestAnimationFrame(animate); updateCam(); renderer.render(scene,camera); }
 
-// ?�?� UI ?�?�
+// ── UI ──
 function toggleFloor(id){
   const fl=FLOORS.find(f=>f.id===id); fl.visible=!fl.visible;
   if(fl.mesh)fl.mesh.visible=fl.visible; if(fl.frame)fl.frame.visible=fl.visible;
@@ -478,12 +478,12 @@ function togglePanel(open){
   }
   const btn=document.getElementById('panelToggle');
   if(btn)btn.setAttribute('aria-expanded',String(expanded));
-  // ?��?立�??�制?�收?��?記面?��??��??�恢復�?記�???
+  // 開啟立體控制時收合標記面板；關閉時恢復標記按鈕
   const mkT=document.getElementById('mkToggle');
   if(expanded){ document.getElementById('mkpanel').style.display='none'; if(mkT)mkT.style.display='none'; mkPinned3D=false; syncMkPin3D(); }
   else if(mkT){ mkT.style.display='inline-flex'; }
 }
-function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'?'; layoutFloors(); orb.ty=viewY(); syncYPanUI(); }
+function setExplode(v){ EXPLODE=parseFloat(v); document.getElementById('explode').value=v; document.getElementById('exVal').textContent=(+v).toFixed(v%1?1:0)+'×'; layoutFloors(); orb.ty=viewY(); syncYPanUI(); }
 function resetView(){ yOffset=0;orb.theta=-0.6;orb.phi=1.02;orb.r=640;orb.tx=0;orb.ty=viewY();orb.tz=0;syncXPanUI();syncYPanUI(); }
 function topView(){ orb.theta=0;orb.phi=0.06;orb.r=560;orb.tx=0;orb.ty=viewY();orb.tz=0;syncXPanUI();syncYPanUI(); }
 
