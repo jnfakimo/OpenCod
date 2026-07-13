@@ -169,13 +169,6 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <div class="h-r" style="color:var(--text2)">放大倍率：<span style="color:var(--text)" id="exVal">6×</span></div>
   <div class="h-r" style="color:var(--text2)">水平位置：<span class="ctrl-val" id="xPanVal">0 m</span></div>
   <div class="h-r" style="color:var(--text2)">Y 軸位置：<span class="ctrl-val" id="yPanVal">0 m</span></div>
-  <div style="border-top:1px solid var(--border);margin-top:6px;padding-top:7px;color:var(--cyan);font-weight:700">◆ 標記類型</div>
-  <label><input type="checkbox" id="ctrl-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備</label>
-  <label><input type="checkbox" id="ctrl-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間</label>
-  <label><input type="checkbox" id="ctrl-patrol" checked onchange="toggleMarkKind('patrol',this.checked)"><span style="color:#c77dff">●</span> 巡邏點</label>
-  <label><input type="checkbox" id="ctrl-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點</label>
-  <label><input type="checkbox" id="ctrl-labels" onchange="toggleMarkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 顯示標記名稱</label>
-  <div class="h-r" style="color:var(--text2)">標記總數：<span style="color:var(--text)" id="ctrlMkCount">0</span></div>
   <div class="btnrow">
     <button class="mini" onclick="resetView()">⊡ 重置</button>
     <button class="mini" onclick="topView()">⊤ 俯視</button>
@@ -193,11 +186,11 @@ body.controls-hidden #panelToggle{display:inline-flex}
       <button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button>
     </span>
   </div>
-  <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備標記</label>
-  <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間標記</label>
+  <label><input type="checkbox" id="mk-equipment" checked onchange="toggleMarkKind('equipment',this.checked)"><span style="color:#00d4ff">●</span> 設備</label>
+  <label><input type="checkbox" id="mk-space" checked onchange="toggleMarkKind('space',this.checked)"><span style="color:#00ff9d">●</span> 空間</label>
   <label><input type="checkbox" id="mk-patrol" checked onchange="toggleMarkKind('patrol',this.checked)"><span style="color:#c77dff">●</span> 巡邏點</label>
-  <label><input type="checkbox" id="mk-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點標記</label>
-  <label><input type="checkbox" id="mk-note" checked onchange="toggleMarkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般標記</label>
+  <label><input type="checkbox" id="mk-repair" checked onchange="toggleMarkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點</label>
+  <label><input type="checkbox" id="mk-note" checked onchange="toggleMarkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般</label>
   <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 文字標籤</label>
   <div class="h-r" style="color:var(--text2);margin-top:4px">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
 </div>
@@ -310,7 +303,6 @@ async function loadMarkers(){
     if(error) return;
     (data||[]).forEach(addMarker3D);
     document.getElementById('mkCount').textContent=markerObjs.length;
-    document.getElementById('ctrlMkCount').textContent=markerObjs.length;
     layoutMarkers();
   }catch(e){}
 }
@@ -370,13 +362,13 @@ function layoutMarkers(){
 function toggleMarkKind(k,on){
   kindVis[k]=on;
   markerObjs.forEach(mk=>{ if(mk.kind===k) mk.group.visible=mk.fl.visible && on; });
-  const ids=['mk-'+k,'ctrl-'+k];
+  const ids=['mk-'+k];
   ids.forEach(id=>{const el=document.getElementById(id);if(el&&el.checked!==on)el.checked=on;});
 }
 function toggleMarkLabels(on){
   showLabels3D=on;
   markerObjs.forEach(mk=>{ if(mk.label) mk.label.visible=on; });
-  ['mk-labels','ctrl-labels'].forEach(id=>{const el=document.getElementById(id);if(el&&el.checked!==on)el.checked=on;});
+  ['mk-labels'].forEach(id=>{const el=document.getElementById(id);if(el&&el.checked!==on)el.checked=on;});
 }
 function toggleFloorsMenu(){
   const f=document.getElementById('floors'), b=document.getElementById('floorsToggle');
