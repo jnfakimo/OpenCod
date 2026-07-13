@@ -167,10 +167,49 @@
   .sys-card:hover::before{opacity:1}
 
   .card-icon {
-    font-size:2rem;
-    margin-bottom:14px;
+    width:72px;
+    height:72px;
+    margin-bottom:16px;
+    display:grid;
+    place-items:center;
+    color:var(--card-color);
+    filter:drop-shadow(0 0 10px rgba(var(--card-rgb),.55));
+    position:relative;
+  }
+  .card-icon::before{
+    content:'';
+    position:absolute;
+    inset:8px;
+    border:1px solid rgba(var(--card-rgb),.28);
+    background:radial-gradient(circle at 50% 50%,rgba(var(--card-rgb),.12),transparent 68%);
+    clip-path:polygon(50% 0,92% 25%,92% 75%,50% 100%,8% 75%,8% 25%);
+  }
+  .card-icon svg{
+    width:62px;
+    height:62px;
     display:block;
-    filter:drop-shadow(0 0 8px var(--card-color));
+    position:relative;
+    z-index:1;
+  }
+  .icon-line{
+    fill:none;
+    stroke:currentColor;
+    stroke-width:2.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+  .icon-fill{fill:rgba(var(--card-rgb),.22);stroke:currentColor;stroke-width:2.4;stroke-linejoin:round}
+  .icon-dot{fill:currentColor}
+  .icon-dim{opacity:.46}
+  .sys-card:hover .card-icon{
+    filter:drop-shadow(0 0 16px rgba(var(--card-rgb),.72));
+  }
+  .sys-card:hover .icon-pulse{
+    animation:iconPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes iconPulse{
+    0%,100%{opacity:.45;transform:scale(1)}
+    50%{opacity:1;transform:scale(1.06)}
   }
   .card-sys-id {
     font-size:.6rem;letter-spacing:.2em;
@@ -296,7 +335,15 @@
   <div class="cards-area">
 
     <a class="sys-card card-admin" href="admin.html">
-      <span class="card-icon">◈</span>
+      <span class="card-icon" aria-hidden="true">
+        <svg viewBox="0 0 80 80" role="img" focusable="false">
+          <path class="icon-line icon-dim" d="M16 24h48M16 40h48M16 56h48"/>
+          <rect class="icon-fill" x="18" y="18" width="44" height="44" rx="4"/>
+          <path class="icon-line" d="M28 29h13M28 40h24M28 51h16"/>
+          <circle class="icon-dot icon-pulse" cx="54" cy="29" r="3"/>
+          <circle class="icon-dot" cx="54" cy="51" r="3"/>
+        </svg>
+      </span>
       <div class="card-sys-id">SYS-01 ｜ 後台</div>
       <div class="card-title">後台管理系統</div>
       <div class="card-desc">設備管理、巡檢週期設定、報修單總覽、QR 碼產生與系統紀錄。</div>
@@ -304,7 +351,16 @@
     </a>
 
     <a class="sys-card card-maint" href="workorder.html">
-      <span class="card-icon">◪</span>
+      <span class="card-icon" aria-hidden="true">
+        <svg viewBox="0 0 80 80" role="img" focusable="false">
+          <path class="icon-line icon-dim" d="M22 20h28l8 8v32H22z"/>
+          <path class="icon-line" d="M50 20v10h10"/>
+          <path class="icon-line" d="M30 38h18M30 49h12"/>
+          <path class="icon-line" d="M51 54l8 8"/>
+          <path class="icon-fill icon-pulse" d="M45 48l7-7 7 7-7 7z"/>
+          <path class="icon-line" d="M20 61l19-19"/>
+        </svg>
+      </span>
       <div class="card-sys-id">SYS-02 ｜ MAINTENANCE</div>
       <div class="card-title">維修管理系統</div>
       <div class="card-desc">報修單處理流程、維修人員指派、進度追蹤與結案驗收管理。</div>
@@ -312,7 +368,14 @@
     </a>
 
     <a class="sys-card card-inspect" href="app.html">
-      <span class="card-icon">◉</span>
+      <span class="card-icon" aria-hidden="true">
+        <svg viewBox="0 0 80 80" role="img" focusable="false">
+          <path class="icon-line" d="M20 30V20h10M50 20h10v10M60 50v10H50M30 60H20V50"/>
+          <path class="icon-line icon-dim" d="M31 32h5v5h-5zM44 32h5v5h-5zM31 45h5v5h-5z"/>
+          <path class="icon-line" d="M43 49l5 5 12-15"/>
+          <circle class="icon-dot icon-pulse" cx="40" cy="40" r="3"/>
+        </svg>
+      </span>
       <div class="card-sys-id">SYS-03 ｜ INSPECTION</div>
       <div class="card-title">巡檢系統</div>
       <div class="card-desc">行動端 QR 掃描巡檢、異常回報、離線暫存與即時同步上傳。</div>
@@ -320,7 +383,14 @@
     </a>
 
     <a class="sys-card" href="handover.html" style="--card-color:#b48aff;--card-rgb:180,138,255">
-      <span class="card-icon">◈</span>
+      <span class="card-icon" aria-hidden="true">
+        <svg viewBox="0 0 80 80" role="img" focusable="false">
+          <path class="icon-fill" d="M20 22h18c4 0 7 3 7 7v29c0-4-3-7-7-7H20z"/>
+          <path class="icon-fill" d="M60 22H45v36c0-4 3-7 7-7h8z"/>
+          <path class="icon-line" d="M28 32h10M28 42h9M52 32h6M52 42h6"/>
+          <path class="icon-line icon-pulse" d="M32 61h16M48 61l-5-5M48 61l-5 5"/>
+        </svg>
+      </span>
       <div class="card-sys-id">SYS-04 ｜ HANDOVER</div>
       <div class="card-title">電子交接簿</div>
       <div class="card-desc">班別交接紀錄、設備運轉概況自動帶入、異常事項與待辦清單管理。</div>
