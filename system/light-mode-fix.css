@@ -297,8 +297,10 @@
 /* ===== SPECIAL PAGES: 3D, B1 plan, Map ===== */
 /* These pages use #topbar, #panel, #hud, .tbtn etc. with IDs */
 
-:root[data-theme="light"] #osd {
-  background: #f1f5f9 !important;
+:root[data-theme="light"] #osd,
+:root[data-theme="light"] #osdNav,
+:root[data-theme="light"] #osdNav canvas {
+  background: #ffffff !important;
   color: var(--text) !important;
 }
 :root[data-theme="light"] #panel,
@@ -342,8 +344,9 @@
   border-color: var(--border) !important;
   color: #1e293b !important;
 }
-:root[data-theme="light"] #planThumb {
-  background: #f1f5f9 !important;
+:root[data-theme="light"] #planThumb,
+:root[data-theme="light"] #planThumb img {
+  background: #ffffff !important;
   border-color: var(--border) !important;
 }
 
