@@ -25,6 +25,7 @@
 :root[data-theme="light"] .tab-bar{background:rgba(255,255,255,.95)}
 :root[data-theme="light"] .field input,.field select,.field textarea{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
 :root[data-theme="light"] .eq-card{background:#ffffff;border-color:#e2e8f0}
+:root[data-theme="light"] .repair-handover-item{background:#ffffff;border-color:#e2e8f0}
 :root[data-theme="light"] .add-input{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
 :root[data-theme="light"] .filter-bar select,.filter-bar input[type=date]{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
 :root[data-theme="light"] .stat-chip{background:#f1f5f9;border-color:#e2e8f0}
@@ -80,6 +81,21 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .eq-val{font-family:var(--font-head);font-size:1.8rem;font-weight:700;line-height:1}
 .eq-label{font-size:.72rem;color:var(--text-dim);letter-spacing:.08em;margin-top:4px}
 
+.repair-handover-list{margin-top:14px;border-top:1px solid var(--border)}
+.repair-handover-head{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:12px 0 8px;color:var(--text-dim);font-size:.74rem;letter-spacing:.05em}
+.repair-handover-item{display:flex;align-items:center;gap:12px;padding:10px 12px;margin-top:8px;
+  border:1px solid var(--border);border-left:3px solid var(--amber);border-radius:2px;background:rgba(2,8,20,.45)}
+.repair-handover-main{flex:1;min-width:0}
+.repair-handover-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--text-hi);font-size:.82rem;font-weight:700}
+.repair-handover-meta{margin-top:4px;color:var(--text-dim);font-size:.7rem;line-height:1.5}
+.repair-handover-desc{margin-top:4px;color:var(--text);font-size:.76rem;line-height:1.5;word-break:break-word}
+.repair-handover-add{flex:0 0 auto;padding:7px 10px;border:1px solid var(--amber);border-radius:2px;
+  background:rgba(255,179,0,.06);color:var(--amber);font-family:var(--font-mono);font-size:.72rem;cursor:pointer;white-space:nowrap}
+.repair-handover-add:hover{background:rgba(255,179,0,.14)}
+.repair-empty{padding:14px 0 4px;color:var(--text-dim);font-size:.76rem;text-align:center}
+.repair-status-badge{display:inline-block;padding:2px 7px;border:1px solid currentColor;border-radius:2px;font-size:.66rem;font-weight:400;white-space:nowrap}
+
 .dyn-list{margin-top:10px}
 .dyn-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;animation:fadeIn .2s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
@@ -103,6 +119,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .btn-sm{padding:4px 12px;font-size:.78rem}
 .btn-row{display:flex;gap:10px;margin-top:12px}
 .btn-row .btn-primary{flex:1}
+.handover-flow-note{margin-top:14px;padding:10px 12px;border:1px solid rgba(26,127,255,.35);
+  background:rgba(26,127,255,.06);color:var(--text);font-size:.76rem;line-height:1.6;text-align:center}
+.handover-flow-note b{color:var(--blue)}
 
 .filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
 .filter-bar select,.filter-bar input[type=date]{padding:8px 12px;background:rgba(2,8,20,.85);border:1px solid var(--border);border-radius:2px;color:var(--text-hi);font-family:var(--font-mono);font-size:.82rem;outline:none;transition:border .2s}
@@ -116,6 +135,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 .badge{display:inline-block;padding:2px 8px;font-size:.72rem;font-family:var(--font-mono);border-radius:2px;letter-spacing:.06em;white-space:nowrap}
 .badge-draft{background:rgba(255,179,0,.1);color:var(--amber);border:1px solid rgba(255,179,0,.3)}
+.badge-pending_accept{background:rgba(26,127,255,.1);color:var(--blue);border:1px solid rgba(26,127,255,.3)}
 .badge-confirmed{background:rgba(0,255,157,.08);color:var(--green);border:1px solid rgba(0,255,157,.25)}
 .badge-open{background:rgba(255,59,59,.1);color:var(--red);border:1px solid rgba(255,59,59,.3)}
 .badge-in_progress{background:rgba(255,179,0,.1);color:var(--amber);border:1px solid rgba(255,179,0,.3)}
@@ -181,6 +201,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   .topbar-org{display:none}
   .topbar-right a{display:none}
   .case-stats{gap:6px}
+  .repair-handover-item{align-items:stretch;flex-direction:column}
+  .repair-handover-add{width:100%;min-height:40px}
 }
 
 </style>
@@ -306,6 +328,29 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
 
     <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title" style="color:var(--amber)">◪ 每日報修 &amp; 維修狀況</span>
+        <button class="btn-secondary btn-sm" onclick="fetchRepairStatus()">↻ 重新抓取</button>
+      </div>
+      <div class="panel-body">
+        <div class="eq-cards">
+          <div class="eq-card"><div class="eq-val" id="repairToday" style="color:var(--cyan)">—</div><div class="eq-label">＋ 今日報修</div></div>
+          <div class="eq-card"><div class="eq-val" id="repairWaiting" style="color:var(--red)">—</div><div class="eq-label">◎ 待處理</div></div>
+          <div class="eq-card"><div class="eq-val" id="repairProgress" style="color:var(--amber)">—</div><div class="eq-label">◪ 維修中</div></div>
+          <div class="eq-card"><div class="eq-val" id="repairCompleted" style="color:var(--green)">—</div><div class="eq-label">✓ 今日完成</div></div>
+        </div>
+        <div class="repair-handover-list">
+          <div class="repair-handover-head">
+            <span>進行中交接項目</span>
+            <a href="workorder.html" style="color:var(--cyan);text-decoration:none">查看報修系統 →</a>
+          </div>
+          <div id="repairHandoverItems"><div class="repair-empty">選擇日期後自動載入報修與維修資料</div></div>
+          <div id="repairStatusNote" style="margin-top:10px;font-size:.72rem;color:var(--text-dim)">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
       <div class="panel-head"><span class="panel-title" style="color:var(--red)">⚠ 異常事項</span></div>
       <div class="panel-body">
         <div class="dyn-list" id="issueList"></div>
@@ -334,9 +379,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </div>
     </div>
 
+    <div class="handover-flow-note"><b>雙層交接稽核：</b>交接人送出填單 → 指定接班人登入並點選接收 → 系統才登記交接完成</div>
     <div class="btn-row">
       <button class="btn-primary" onclick="saveDraft()">儲存草稿</button>
-      <button class="btn-primary btn-confirm" onclick="confirmHandover()">✓ 確認交接完成</button>
+      <button class="btn-primary btn-confirm" onclick="submitHandover()">送出交接（待接班人接收）</button>
     </div>
     <div style="height:24px"></div>
   </div>
@@ -407,7 +453,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       <select id="fStatus" onchange="loadHistory()">
         <option value="">全部狀態</option>
         <option value="draft">草稿</option>
-        <option value="confirmed">已確認</option>
+        <option value="pending_accept">待接班人接收</option>
+        <option value="confirmed">交接完成</option>
       </select>
       <div id="fDateFrom-dtp" style="min-width:150px" title="起始日期"></div>
       <div id="fDateTo-dtp" style="min-width:150px" title="結束日期"></div>
@@ -696,6 +743,7 @@ let currentUser = null;
 let _handoverHasSession = false;
 let allDepts = [], allUsers = [];
 let issues = ['無異常事項。如果有需要再填列'], pendings = ['無代辦事項。如果有需要再填列'];
+let repairHandoverItems = [];
 let editingId = null;
 let pendingAttachments = [];
 let currentCaseId = null;
@@ -777,9 +825,10 @@ function applyPerms() {
   applyPerms();
 
   buildDeptSelects();
+  presetCurrentHandover();
   DTP.init('caseIncidentPicker', 'datetime');
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayISO();
   DTP.init('hDate-dtp', 'date', onShiftChange);
   DTP.setValue('hDate-dtp', today);
   DTP.init('cfDateFrom-dtp', 'date', loadCases);
@@ -797,6 +846,7 @@ function applyPerms() {
   restoreHandoverState();
 
   await fetchEqStatus();
+  await fetchRepairStatus();
   await loadHistory();
 })();
 
@@ -867,6 +917,21 @@ function fillPersonSelect(selId, deptId) {
     filtered.map(u => `<option value="${u.user_id}">${escHtml(u.name)}</option>`).join('');
 }
 
+function presetCurrentHandover() {
+  if (!currentUser?.user_id) return;
+  const dept = allDepts.find(d => d.dept_id === currentUser.dept_id);
+  if (dept?.parent_id) {
+    document.getElementById('hHandoverL1').value = dept.parent_id;
+    fillL2(dept.parent_id, 'hHandoverL2');
+    document.getElementById('hHandoverL2').value = dept.dept_id;
+  } else if (dept) {
+    document.getElementById('hHandoverL1').value = dept.dept_id;
+    fillL2(dept.dept_id, 'hHandoverL2');
+  }
+  onHandoverDeptChange();
+  document.getElementById('hHandoverBy').value = currentUser.user_id;
+}
+
 
 function onCaseUnitL1Change() {
   const l1 = document.getElementById('caseUnitL1').value;
@@ -918,7 +983,7 @@ function onTakeoverDeptChange() {
 }
 
 // ── SHIFT CHANGE ───────────────────────────────────
-function onShiftChange() { fetchEqStatus(); }
+function onShiftChange() { fetchEqStatus(); fetchRepairStatus(); }
 
 function shiftRange(dateStr, type) {
   const [h1, h2] = SHIFT_HOURS[type];
@@ -953,6 +1018,94 @@ async function fetchEqStatus() {
   }
 }
 
+// ── DAILY REPAIR & MAINTENANCE STATUS ─────────────
+const REPAIR_ACTIVE_STATUSES = ['pending','transferred','assigned','in_progress','waiting_parts','waiting_vendor','pending_review','overdue','returned','rejected'];
+const REPAIR_WAITING_STATUSES = ['pending','transferred','overdue','returned','rejected'];
+const REPAIR_STATUS_META = {
+  pending:['待處理','var(--red)'], transferred:['待轉派','var(--red)'], assigned:['已派工','var(--blue)'],
+  in_progress:['維修中','var(--amber)'], waiting_parts:['等待料件','var(--amber)'], waiting_vendor:['等待廠商','var(--amber)'],
+  pending_review:['待驗收','var(--blue)'], overdue:['已逾期','var(--red)'], returned:['退回待派','var(--red)'],
+  rejected:['拒絕待派','var(--red)'], completed:['已完成','var(--green)'], closed:['已結案','var(--green)']
+};
+
+function dayRange(dateStr) {
+  const from = new Date(dateStr + 'T00:00:00');
+  const to = new Date(from.getTime() + 86400000);
+  return { from:from.toISOString(), to:to.toISOString() };
+}
+
+function repairStatusMeta(status) {
+  return REPAIR_STATUS_META[status] || [status || '未指定','var(--text-dim)'];
+}
+
+async function fetchRepairStatus() {
+  const date = DTP.getValue('hDate-dtp');
+  if (!date) return;
+  const { from, to } = dayRange(date);
+  const fields = 'request_id,req_no,status,created_at,updated_at,fault_desc,fault_location,department,equipment(name)';
+  const [todayRes, activeRes, completedRes] = await Promise.all([
+    db.from('repair_requests').select(fields).eq('hidden',false).gte('created_at',from).lt('created_at',to).order('created_at',{ascending:false}),
+    db.from('repair_requests').select(fields).eq('hidden',false).in('status',REPAIR_ACTIVE_STATUSES).order('created_at',{ascending:false}).limit(50),
+    db.from('repair_requests').select(fields).eq('hidden',false).in('status',['completed','closed']).gte('updated_at',from).lt('updated_at',to)
+  ]);
+
+  const error = todayRes.error || activeRes.error || completedRes.error;
+  if (error) {
+    ['repairToday','repairWaiting','repairProgress','repairCompleted'].forEach(id => document.getElementById(id).textContent = '—');
+    document.getElementById('repairHandoverItems').innerHTML = '<div class="repair-empty" style="color:var(--red)">報修資料載入失敗，請稍後重新抓取</div>';
+    document.getElementById('repairStatusNote').textContent = translateError(error.message);
+    return;
+  }
+
+  const todayRows = todayRes.data || [];
+  repairHandoverItems = activeRes.data || [];
+  const waiting = repairHandoverItems.filter(r => REPAIR_WAITING_STATUSES.includes(r.status)).length;
+  document.getElementById('repairToday').textContent = todayRows.length;
+  document.getElementById('repairWaiting').textContent = waiting;
+  document.getElementById('repairProgress').textContent = repairHandoverItems.length - waiting;
+  document.getElementById('repairCompleted').textContent = (completedRes.data || []).length;
+  renderRepairHandoverItems();
+  document.getElementById('repairStatusNote').textContent =
+    `${date}：今日報修 ${todayRows.length} 件、今日完成 ${(completedRes.data || []).length} 件；跨日未結案 ${repairHandoverItems.length} 件`;
+}
+
+function renderRepairHandoverItems() {
+  const box = document.getElementById('repairHandoverItems');
+  if (!repairHandoverItems.length) {
+    box.innerHTML = '<div class="repair-empty">目前沒有進行中的報修或維修案件</div>';
+    return;
+  }
+  box.innerHTML = repairHandoverItems.map((r,i) => {
+    const [statusLabel,statusColor] = repairStatusMeta(r.status);
+    const equipment = r.equipment?.name || r.fault_location || '未指定設備';
+    return `<div class="repair-handover-item">
+      <div class="repair-handover-main">
+        <div class="repair-handover-title">
+          <span>${escHtml(r.req_no || '報修案件')}</span>
+          <span class="repair-status-badge" style="color:${statusColor}">${escHtml(statusLabel)}</span>
+          <span>${escHtml(equipment)}</span>
+        </div>
+        <div class="repair-handover-meta">報修日期 ${escHtml(fmtDate(r.created_at))}${r.department?'　單位 '+escHtml(r.department):''}</div>
+        <div class="repair-handover-desc">${escHtml(r.fault_desc || '未填寫故障說明')}</div>
+      </div>
+      <button type="button" class="repair-handover-add" onclick="addRepairToPending(${i})">＋ 加入待辦交接</button>
+    </div>`;
+  }).join('');
+}
+
+function addRepairToPending(index) {
+  const r = repairHandoverItems[index];
+  if (!r) return;
+  const [statusLabel] = repairStatusMeta(r.status);
+  const equipment = r.equipment?.name || r.fault_location || '未指定設備';
+  const text = `【${r.req_no || '報修案件'}｜${statusLabel}】${equipment}：${r.fault_desc || '未填寫故障說明'}`;
+  pendings = pendings.filter(v => !/^無代辦事項/.test(v));
+  if (pendings.includes(text)) { showToast('此報修案件已加入待辦交接'); return; }
+  pendings.push(text);
+  renderPendings();
+  showToast('已加入待辦交接項目');
+}
+
 // ── DYNAMIC LISTS ──────────────────────────────────
 function renderIssues() {
   document.getElementById('issueList').innerHTML = issues.map((txt,i) => `
@@ -983,12 +1136,19 @@ function removePending(i) { pendings.splice(i,1); renderPendings(); }
 
 // ── SAVE HANDOVER ──────────────────────────────────
 async function saveDraft() { await doSave('draft'); }
-async function confirmHandover() {
-  if (!document.getElementById('hTakeoverBy').value) { showToast('請選擇接班人再確認交接', true); return; }
-  await doSave('confirmed');
+async function submitHandover() {
+  const handoverBy = document.getElementById('hHandoverBy').value;
+  const takeoverBy = document.getElementById('hTakeoverBy').value;
+  if (!handoverBy) { showToast('請選擇交接人', true); return; }
+  if (!takeoverBy) { showToast('請選擇接班人', true); return; }
+  if (!currentUser?.user_id || handoverBy !== currentUser.user_id) {
+    showToast('交接人必須是目前登入的帳號，禁止代替他人送出', true); return;
+  }
+  if (handoverBy === takeoverBy) { showToast('交接人與接班人不可為同一人', true); return; }
+  await doSave('submitted');
 }
 
-async function doSave(status) {
+async function doSave(mode) {
   const shift     = document.getElementById('hShift').value;
   const date      = DTP.getValue('hDate-dtp');
   const deptId    = document.getElementById('hHandoverL2').value || document.getElementById('hHandoverL1').value || null;
@@ -999,14 +1159,15 @@ async function doSave(status) {
   const eqAbnormal= parseInt(document.getElementById('eqAbnormal').textContent) || 0;
   if (!date) { showToast('請選擇交接日期', true); return; }
   if (!handoverBy && !takeoverBy) { showToast('請至少填寫交接人或接班人', true); return; }
+  const status = mode === 'submitted' ? 'confirmed' : 'draft';
   const record = {
     shift_date: date, shift_type: shift, dept_id: deptId,
     handover_by: handoverBy, takeover_by: takeoverBy,
     eq_normal: eqNormal, eq_abnormal: eqAbnormal,
     issues: issues.join('\n'), pending: pendings.join('\n'),
     notes, status, created_by: currentUser.user_id,
-    confirmed_at: status==='confirmed' ? new Date().toISOString() : null,
-    confirmed_by: status==='confirmed' ? currentUser.user_id : null,
+    confirmed_at: null,
+    confirmed_by: null,
   };
   let err;
   if (editingId) {
@@ -1015,7 +1176,7 @@ async function doSave(status) {
     ({ error: err } = await db.from('handover_records').insert(record));
   }
   if (err) { showToast('儲存失敗：' + translateError(err.message || err.code), true); return; }
-  showToast(status==='confirmed' ? '✓ 交接已確認完成' : '草稿已儲存');
+  showToast(mode==='submitted' ? '交接單已送出，等待指定接班人接收' : '草稿已儲存');
   resetHandoverForm();
   editingId = null;
   await loadHistory();
@@ -1030,9 +1191,27 @@ function resetHandoverForm() {
   document.getElementById('eqNormal').textContent = '—';
   document.getElementById('eqAbnormal').textContent = '—';
   document.getElementById('eqTotal').textContent = '—';
+  presetCurrentHandover();
 }
 
 // ── HISTORY ────────────────────────────────────────
+function isHandoverReceived(record) {
+  return record?.status === 'confirmed' && !!record.confirmed_at && !!record.confirmed_by &&
+    String(record.confirmed_by) === String(record.takeover_by);
+}
+
+function handoverStage(record) {
+  if (record?.status === 'draft') return { key:'draft', label:'草稿', cls:'badge-draft' };
+  if (isHandoverReceived(record)) return { key:'confirmed', label:'交接完成', cls:'badge-confirmed' };
+  return { key:'pending_accept', label:'待接班人接收', cls:'badge-pending_accept' };
+}
+
+function canReceiveHandover(record) {
+  return handoverStage(record).key === 'pending_accept' && !!currentUser?.user_id &&
+    String(record.takeover_by) === String(currentUser.user_id) &&
+    String(record.handover_by) !== String(currentUser.user_id);
+}
+
 async function loadHistory() {
   const l1Filter     = document.getElementById('fDeptL1').value;
   const l2Filter     = document.getElementById('fDeptL2').value;
@@ -1050,16 +1229,21 @@ async function loadHistory() {
     q = q.in('dept_id', [l1Filter, ...childIds]);
   }
   if (shiftFilter)  q = q.eq('shift_type', shiftFilter);
-  if (statusFilter) q = q.eq('status', statusFilter);
   if (dateFrom)     q = q.gte('shift_date', dateFrom);
   if (dateTo)       q = q.lte('shift_date', dateTo);
   const { data, error } = await q;
   if (error) { showToast('載入失敗', true); return; }
-  const rows = data || [];
+  const rows = (data || []).filter(r => !statusFilter || handoverStage(r).key === statusFilter);
   document.getElementById('historyTbody').innerHTML = rows.length ? rows.map(r => {
     const issueLines = r.issues ? r.issues.split('\n').filter(Boolean) : [];
     const pendLines  = r.pending ? r.pending.split('\n').filter(Boolean) : [];
     const summary = issueLines.length ? `⚠ ${issueLines.length}項異常` : (pendLines.length ? `◎ ${pendLines.length}項待辦` : '—');
+    const stage = handoverStage(r);
+    const receiveAction = stage.key === 'pending_accept'
+      ? (canReceiveHandover(r)
+        ? `<button class="btn-secondary btn-sm" style="margin-left:4px;color:var(--green);border-color:var(--green)" onclick="receiveHandover('${r.record_id}')">接收交接</button>`
+        : `<span style="margin-left:6px;font-size:.7rem;color:var(--text-dim)">待 ${escHtml(r.takeover_user?.name||'指定接班人')} 接收</span>`)
+      : '';
     return `<tr>
       <td style="font-family:var(--font-mono);font-size:.78rem">${r.shift_date}</td>
       <td><span class="${SHIFT_CLASS[r.shift_type]}">${SHIFT_LABEL[r.shift_type]}</span></td>
@@ -1069,10 +1253,10 @@ async function loadHistory() {
       <td style="text-align:right;font-family:var(--font-mono);color:var(--green)">${r.eq_normal||'—'}</td>
       <td style="text-align:right;font-family:var(--font-mono);color:${r.eq_abnormal?'var(--red)':'var(--text-dim)'}">${r.eq_abnormal||'—'}</td>
       <td style="font-size:.8rem;color:${r.issues?'var(--red)':'var(--text-dim)'}">${escHtml(summary)}</td>
-      <td><span class="badge badge-${r.status}">${r.status==='confirmed'?'已確認':'草稿'}</span></td>
+      <td><span class="badge ${stage.cls}">${stage.label}</span></td>
       <td>
         <button class="btn-secondary btn-sm" onclick="openHandoverDetail('${r.record_id}')">查看</button>
-        ${r.status==='draft'?`<button class="btn-secondary btn-sm" style="margin-left:4px;color:var(--green);border-color:var(--green)" onclick="quickConfirm('${r.record_id}')">確認</button>`:''}
+        ${receiveAction}
       </td>
     </tr>`;
   }).join('') : '<tr><td colspan="10" style="color:var(--text-dim);text-align:center;padding:24px">目前無紀錄</td></tr>';
@@ -1080,11 +1264,18 @@ async function loadHistory() {
 
 async function openHandoverDetail(id) {
   const { data: r } = await db.from('handover_records')
-    .select('*,departments(name),handover_user:users!handover_by(name),takeover_user:users!takeover_by(name),confirmed_user:users!confirmed_by(name)')
+    .select('*,departments(name),handover_user:users!handover_by(name),takeover_user:users!takeover_by(name),created_user:users!created_by(name),confirmed_user:users!confirmed_by(name)')
     .eq('record_id', id).single();
   if (!r) { showToast('載入失敗', true); return; }
   const issueLines   = r.issues  ? r.issues.split('\n').filter(Boolean)  : [];
   const pendingLines = r.pending ? r.pending.split('\n').filter(Boolean) : [];
+  const stage = handoverStage(r);
+  const receiveButton = stage.key === 'pending_accept' && canReceiveHandover(r)
+    ? `<button class="btn-primary btn-confirm" style="flex:1;min-width:150px" onclick="receiveHandover('${r.record_id}',true)">✓ 接收交接</button>`
+    : '';
+  const waitingNote = stage.key === 'pending_accept' && !canReceiveHandover(r)
+    ? `<div style="flex:1;min-width:180px;padding:9px 12px;border:1px solid var(--border);color:var(--text-dim);font-size:.76rem;text-align:center">僅指定接班人 ${escHtml(r.takeover_user?.name||'—')} 可接收</div>`
+    : '';
   document.getElementById('modalTitle').textContent = `${r.shift_date} ${SHIFT_LABEL[r.shift_type]} 交接記錄`;
   document.getElementById('modalBody').innerHTML = `
     <div class="detail-row"><span class="detail-label">日期</span><span class="detail-value">${r.shift_date}</span></div>
@@ -1093,7 +1284,9 @@ async function openHandoverDetail(id) {
     <div class="detail-row"><span class="detail-label">交接人</span><span class="detail-value">${r.handover_user?.name||'—'}</span></div>
     <div class="detail-row"><span class="detail-label">接班人</span><span class="detail-value">${r.takeover_user?.name||'—'}</span></div>
     <div class="detail-row"><span class="detail-label">設備狀況</span><span class="detail-value"><span style="color:var(--green)">✓ 正常 ${r.eq_normal} 台</span>&nbsp;&nbsp;<span style="color:${r.eq_abnormal?'var(--red)':'var(--text-dim)'}">✗ 異常 ${r.eq_abnormal} 台</span></span></div>
-    <div class="detail-row"><span class="detail-label">狀態</span><span class="detail-value"><span class="badge badge-${r.status}">${r.status==='confirmed'?'已確認':'草稿'}</span>${r.confirmed_at?`<span style="font-size:.72rem;color:var(--text-dim);margin-left:8px">${new Date(r.confirmed_at).toLocaleString('zh-TW')} by ${r.confirmed_user?.name||'—'}</span>`:''}</span></div>
+    <div class="detail-row"><span class="detail-label">狀態</span><span class="detail-value"><span class="badge ${stage.cls}">${stage.label}</span></span></div>
+    <div class="detail-row"><span class="detail-label">填單稽核</span><span class="detail-value">${escHtml(r.created_user?.name||r.handover_user?.name||'—')}　${r.created_at?new Date(r.created_at).toLocaleString('zh-TW'):'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">接收稽核</span><span class="detail-value">${isHandoverReceived(r)?`${escHtml(r.confirmed_user?.name||r.takeover_user?.name||'—')}　${new Date(r.confirmed_at).toLocaleString('zh-TW')}`:'尚未接收'}</span></div>
     <div class="detail-section">
       <div class="detail-section-title" style="color:var(--red)">⚠ 異常事項（${issueLines.length}項）</div>
       ${issueLines.length ? issueLines.map(l=>`<div class="detail-item issue">${escHtml(l)}</div>`).join('') : '<span class="detail-empty">無異常事項</span>'}
@@ -1104,7 +1297,7 @@ async function openHandoverDetail(id) {
     </div>
     ${r.notes?`<div class="detail-section"><div class="detail-section-title">備註</div><div style="font-size:.85rem;color:var(--text-hi);white-space:pre-wrap">${escHtml(r.notes)}</div></div>`:''}
     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-      ${r.status==='draft'?`<button class="btn-primary btn-confirm" style="flex:1;min-width:120px" onclick="quickConfirm('${r.record_id}',true)">✓ 確認交接</button>`:''}
+      ${receiveButton}${waitingNote}
       <button class="btn-secondary" onclick="window.print()">🖨 列印</button>
       <button class="btn-secondary" onclick="closeHandoverModal()" style="margin-left:auto">關閉</button>
     </div>
@@ -1112,11 +1305,24 @@ async function openHandoverDetail(id) {
   document.getElementById('detailModal').classList.add('show');
 }
 
-async function quickConfirm(id, closeAfter) {
-  const updates = { status:'confirmed', confirmed_at:new Date().toISOString(), confirmed_by:currentUser.user_id };
-  const { error } = await db.from('handover_records').update(updates).eq('record_id', id);
-  if (error) { showToast('確認失敗', true); return; }
-  showToast('✓ 交接已確認');
+async function receiveHandover(id, closeAfter) {
+  if (!currentUser?.user_id) { showToast('請先登入接班人帳號', true); return; }
+  const { data:r, error:loadError } = await db.from('handover_records')
+    .select('record_id,status,handover_by,takeover_by,confirmed_at,confirmed_by').eq('record_id',id).single();
+  if (loadError || !r) { showToast('交接單載入失敗', true); return; }
+  if (isHandoverReceived(r)) { showToast('此交接單已由接班人接收', true); return; }
+  if (String(r.takeover_by) !== String(currentUser.user_id)) { showToast('只有指定接班人可以接收此交接單', true); return; }
+  if (String(r.handover_by) === String(currentUser.user_id)) { showToast('交接人不得自行接收交接單', true); return; }
+  if (r.status !== 'confirmed') { showToast('此交接單尚未由交接人送出', true); return; }
+
+  let updateQuery = db.from('handover_records').update({
+    confirmed_at:new Date().toISOString(), confirmed_by:currentUser.user_id
+  }).eq('record_id',id).eq('status','confirmed').eq('takeover_by',currentUser.user_id);
+  updateQuery = r.confirmed_by ? updateQuery.eq('confirmed_by',r.confirmed_by) : updateQuery.is('confirmed_by',null);
+  const { data:updated, error } = await updateQuery.select('record_id').maybeSingle();
+  if (error) { showToast('接收失敗：' + translateError(error.message), true); return; }
+  if (!updated) { showToast('交接單狀態已變更，請重新整理', true); return; }
+  showToast('✓ 接班人已接收，交接正式完成');
   if (closeAfter) closeHandoverModal();
   await loadHistory();
 }
@@ -1561,6 +1767,7 @@ function switchTab(name, opts = {}) {
   document.getElementById('tab-' + name).classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
   if (opts.persist !== false) saveHandoverState();
+  if (name === 'new' && opts.persist !== false) { fetchEqStatus(); fetchRepairStatus(); }
   if (name === 'history') loadHistory();
   if (name === 'cases')   loadCases();
 }

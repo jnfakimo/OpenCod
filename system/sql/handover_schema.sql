@@ -25,6 +25,12 @@ create table if not exists handover_records (
   confirmed_by uuid        references users(user_id)
 );
 
+-- 雙層交接稽核：
+-- draft = 草稿；confirmed 且 confirmed_by/confirmed_at 尚空白 = 已送出、待指定接班人接收；
+-- confirmed_by 必須等於 takeover_by 且 confirmed_at 有值，前端才判定為交接完成。
+comment on column handover_records.confirmed_by is '實際點選接收的接班人；必須與 takeover_by 相同才算交接完成';
+comment on column handover_records.confirmed_at is '指定接班人點選接收的時間；空白表示尚未完成交接';
+
 create index if not exists idx_ho_date on handover_records(shift_date desc);
 create index if not exists idx_ho_dept on handover_records(dept_id);
 
