@@ -387,12 +387,12 @@ function makeLabelSprite(lines,colorHex){
   const tw=Math.max(...lines.map(l=>ctx.measureText(l).width));
   c.width=Math.ceil(tw+28); c.height=lh*lines.length;
   ctx.font=`bold ${fs}px 'Noto Sans TC',sans-serif`;
-  ctx.fillStyle='rgba(2,11,24,0.85)'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle='#000000'; ctx.fillRect(0,0,c.width,c.height);
   ctx.strokeStyle=colorHex; ctx.lineWidth=3; ctx.strokeRect(1.5,1.5,c.width-3,c.height-3);
-  ctx.fillStyle='#d4eeff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='#ffffff'; ctx.textAlign='center'; ctx.textBaseline='middle';
   lines.forEach((l,i)=>ctx.fillText(l,c.width/2,lh*i+lh/2));
   const tex=new THREE.CanvasTexture(c); tex.minFilter=THREE.LinearFilter;
-  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+  const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,sizeAttenuation:true}));
   const totalM=5.5*lines.length;                     // 每行約 5.5 m，維持原本單行時的字級比例
   spr.scale.set((c.width/c.height)*totalM, totalM, 1);
   return spr;
