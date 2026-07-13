@@ -11,9 +11,9 @@
 <title>3D駐警巡檢雲台 — 臺北農產巡檢系統</title>
 <style>
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0;
-  --green:#00ff9d;--patrol:#c77dff;--red:#ff5470}
+  --green:#00ff9d;--patrol:#c77dff;--red:#ff5470;--amber:#ffb300}
 :root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b;
-  --green:#059669;--patrol:#9333ea;--red:#dc2626}
+  --green:#059669;--patrol:#9333ea;--red:#dc2626;--amber:#b45309}
 /* light mode overrides */
 :root[data-theme="light"] #topbar{background:rgba(255,255,255,.97)}
 :root[data-theme="light"] #osd{background:#f8fafc;color:#1e293b}
@@ -36,6 +36,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 .tb-space{flex:1 0 auto}
 .tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s;white-space:nowrap;flex:0 0 auto}
 .tb-back:hover{border-color:var(--patrol);color:var(--patrol)}
+#modelUpdateBtn{color:var(--amber);border-color:var(--amber);background:rgba(255,179,0,.08);cursor:pointer;font-family:inherit;box-shadow:0 0 10px rgba(255,179,0,.2)}
+#modelUpdateBtn:hover{background:rgba(255,179,0,.16)}
 #c3d{position:fixed;inset:50px 0 0 0}
 #c3d canvas{display:block;touch-action:none}
 
@@ -125,6 +127,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <div class="tb-sep"></div>
   <div class="tb-title">3D駐警巡檢雲台</div>
   <div class="tb-space"></div>
+  <button id="modelUpdateBtn" class="tb-back" style="display:none" onclick="applyModelUpdates()">🔄 模型有新版本，點此更新</button>
   <a href="guardpatrol.html" class="tb-back">巡檢稽核總覽</a>
   <a href="patrolshifts.html" class="tb-back">班別排程管理</a>
   <a href="admin.html" class="tb-back">後台</a>
@@ -154,6 +157,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <input type="range" id="yPan" min="-160" max="160" value="0" step="2" oninput="setYPan(this.value)">
   <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"> 顯示巡檢點名稱</label>
   <div class="h-r" style="color:var(--text2)">巡檢點總數：<span style="color:var(--text)" id="mkCount">0</span></div>
+  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-shifttime" onchange="toggleShiftInfo(this.checked)"> 顯示巡邏點時間</label>
   <div class="btnrow">
     <button class="mini" onclick="resetView()">⊡ 重置</button>
     <button class="mini" onclick="topView()">⊤ 俯視</button>
@@ -258,8 +262,9 @@ function layoutFloors(){
 // ── 巡邏點 → 3D 拋轉（僅巡邏點，配合班別即時上色）──────────────
 const MARK_H=6;                                  // 標記懸浮高度 (m)
 const PATROL_BASE=0xc77dff;
-let markerObjs=[];                               // {group,fl,label,markerId,head,stem}
-let showLabels3D=false;
+let markerObjs=[];                               // {group,fl,label,markerId,name,head,stem}
+let showLabels3D=false;                          // 顯示巡檢點名稱
+let showShiftTime3D=false;                       // 顯示巡邏點時間（班別時段＋打卡人員）
 async function loadMarkers(){
   try{
     const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,label').eq('status','active').eq('kind','patrol');
@@ -271,31 +276,74 @@ async function loadMarkers(){
   }catch(e){}
 }
 let patrolStatusMap=new Map();
+let currentShift=null;                           // {name, start:Date, end:Date}
+let checkinInfoMap=new Map();                    // markerId -> {user_name, checkin_at:Date}
+function fmtHM(d){ const p=n=>String(n).padStart(2,'0'); return p(d.getHours())+':'+p(d.getMinutes()); }
 async function refreshPatrolStatus(){
-  try{ const r=await PatrolStatus.compute(db); patrolStatusMap=r.map; }
-  catch(e){ /* patrol_shifts 尚未建表時，靜默略過，標記維持原色 */ }
+  try{
+    const r=await PatrolStatus.compute(db);
+    patrolStatusMap=r.map;
+    if(r.shift){
+      currentShift={name:r.shift.name,start:r.range.start,end:r.range.end};
+      const {data:checkins}=await db.from('checkin_logs').select('target_id,user_name,checkin_at')
+        .eq('target_type','marker')
+        .gte('checkin_at', r.range.start.toISOString())
+        .lte('checkin_at', r.range.end.toISOString())
+        .order('checkin_at',{ascending:true});               // 升冪，後面覆寫留下每點「最近一次」打卡
+      checkinInfoMap=new Map();
+      (checkins||[]).forEach(c=>checkinInfoMap.set(c.target_id,{user_name:c.user_name,checkin_at:new Date(c.checkin_at)}));
+    }else{
+      currentShift=null; checkinInfoMap=new Map();
+    }
+  }catch(e){ /* patrol_shifts 尚未建表時，靜默略過，標記維持原色 */ }
   markerObjs.forEach(mk=>{
     const state=patrolStatusMap.get(mk.markerId);
     const hex=state?parseInt(PatrolStatus.COLORS[state].slice(1),16):PATROL_BASE;
     mk.head.material.color.setHex(hex);
     mk.stem.material.color.setHex(hex);
+    if(showLabels3D||showShiftTime3D) rebuildMarkerLabel(mk);
   });
 }
-// 文字標籤 sprite（canvas 材質）
-function makeLabelSprite(text,colorHex){
-  const c=document.createElement('canvas'),ctx=c.getContext('2d'),fs=44;
+// 依目前開關組出某巡邏點的標籤文字（可多行）
+function labelLinesFor(mk){
+  const lines=[];
+  if(showLabels3D) lines.push(mk.name||'');
+  if(showShiftTime3D){
+    lines.push(currentShift?`${currentShift.name} ${fmtHM(currentShift.start)}–${fmtHM(currentShift.end)}`:'目前無生效班別');
+    const ci=checkinInfoMap.get(mk.markerId);
+    lines.push(ci?`${ci.user_name||'—'} ${fmtHM(ci.checkin_at)}`:'待打卡');
+  }
+  return lines;
+}
+// 文字標籤 sprite（canvas 材質，支援多行）
+function makeLabelSprite(lines,colorHex){
+  lines=(Array.isArray(lines)?lines:[lines]).filter(l=>l!=null&&l!=='');
+  if(!lines.length) lines=[''];
+  const fs=44,lh=fs+22;
+  const c=document.createElement('canvas'),ctx=c.getContext('2d');
   ctx.font=`bold ${fs}px 'Noto Sans TC',sans-serif`;
-  const tw=ctx.measureText(text||'').width;
-  c.width=Math.ceil(tw+28); c.height=fs+22;
+  const tw=Math.max(...lines.map(l=>ctx.measureText(l).width));
+  c.width=Math.ceil(tw+28); c.height=lh*lines.length;
   ctx.font=`bold ${fs}px 'Noto Sans TC',sans-serif`;
   ctx.fillStyle='rgba(2,11,24,0.85)'; ctx.fillRect(0,0,c.width,c.height);
   ctx.strokeStyle=colorHex; ctx.lineWidth=3; ctx.strokeRect(1.5,1.5,c.width-3,c.height-3);
   ctx.fillStyle='#d4eeff'; ctx.textAlign='center'; ctx.textBaseline='middle';
-  ctx.fillText(text||'',c.width/2,c.height/2);
+  lines.forEach((l,i)=>ctx.fillText(l,c.width/2,lh*i+lh/2));
   const tex=new THREE.CanvasTexture(c); tex.minFilter=THREE.LinearFilter;
   const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
-  spr.scale.set((c.width/c.height)*5.5, 5.5, 1);     // 高度約 5.5 m
+  const totalM=5.5*lines.length;                     // 每行約 5.5 m，維持原本單行時的字級比例
+  spr.scale.set((c.width/c.height)*totalM, totalM, 1);
   return spr;
+}
+// 重建（或首次建立）某巡邏點的浮動標籤，套用目前開關與最新資料
+function rebuildMarkerLabel(mk){
+  const colorHex='#'+mk.head.material.color.getHex().toString(16).padStart(6,'0');
+  if(mk.label){ mk.group.remove(mk.label); mk.label.material.map.dispose(); mk.label.material.dispose(); }
+  const lab=makeLabelSprite(labelLinesFor(mk),colorHex);
+  lab.position.y=MARK_H+5;
+  lab.visible=showLabels3D||showShiftTime3D;
+  mk.group.add(lab);
+  mk.label=lab;
 }
 function addMarker3D(m){
   const fl=FLOORS.find(f=>f.id===m.floor_id); if(!fl)return;
@@ -309,12 +357,12 @@ function addMarker3D(m){
     new THREE.LineBasicMaterial({color:col,transparent:true,opacity:.55}));
   const head=new THREE.Mesh(new THREE.SphereGeometry(1.05,12,8),new THREE.MeshBasicMaterial({color:col}));
   head.position.y=MARK_H;
-  const lab=makeLabelSprite(m.label,'#'+col.toString(16).padStart(6,'0'));
-  lab.position.y=MARK_H+5; lab.visible=showLabels3D;
-  g.add(stem); g.add(head); g.add(lab);
+  g.add(stem); g.add(head);
   g.position.set(x,0,z);
   scene.add(g);
-  markerObjs.push({group:g,fl,label:lab,markerId:m.marker_id,head,stem});
+  const mk={group:g,fl,label:null,markerId:m.marker_id,name:m.label,head,stem};
+  markerObjs.push(mk);
+  rebuildMarkerLabel(mk);
 }
 function layoutMarkers(){
   markerObjs.forEach(mk=>{
@@ -324,7 +372,13 @@ function layoutMarkers(){
 }
 function toggleMarkLabels(on){
   showLabels3D=on;
-  markerObjs.forEach(mk=>{ if(mk.label) mk.label.visible=on; });
+  markerObjs.forEach(rebuildMarkerLabel);
+}
+// ── 巡邏點時間：當班時段＋最近打卡人員，直接顯示在 3D 巡邏點標籤上 ──
+function toggleShiftInfo(on){
+  showShiftTime3D=on;
+  if(on) refreshPatrolStatus();      // 開啟時先抓最新班別/打卡資料，內部會一併重建標籤
+  else markerObjs.forEach(rebuildMarkerLabel);
 }
 function toggleFloorsMenu(){
   const f=document.getElementById('floors'), b=document.getElementById('floorsToggle');
@@ -346,6 +400,7 @@ function finishLoad(){
   resetView(); animate();
   loadMarkers();
   setInterval(refreshPatrolStatus,60000);
+  setInterval(checkModelUpdates,60000);
   const img=document.getElementById('planThumbImg');
   if(img) img.src=FLOORS[0].tex;
 }
@@ -452,10 +507,62 @@ async function applyCustomModels(){
         if(fl&&m.image_path){
           const t=encodeURIComponent(m.updated_at||'');
           fl.tex=`${SUPA_URL}/storage/v1/object/public/floorplans/${m.image_path}?t=${t}`;
+          fl.modelUpdatedAt=m.updated_at||null;    // baseline version we just loaded, for later update checks
         }
       });
     }
   }catch(e){ /* fall back to static textures */ }
+}
+
+// ── 3D 模型更新偵測：定期比對 floor_models，有新版本時亮起頂欄按鈕，點擊才套用 ──
+let pendingModelUpdates=new Map();                 // floor_id -> floor_models row（尚未套用的新版本）
+async function checkModelUpdates(){
+  try{
+    const {data}=await db.from('floor_models').select('*');
+    if(!data) return;
+    data.forEach(m=>{
+      const fl=FLOORS.find(f=>f.id===m.floor_id);
+      if(!fl||!m.image_path) return;
+      if(m.updated_at && m.updated_at!==fl.modelUpdatedAt) pendingModelUpdates.set(m.floor_id,m);
+    });
+    updateModelUpdateBtn();
+  }catch(e){ /* floor_models 查詢失敗時靜默略過，維持目前顯示的模型 */ }
+}
+function updateModelUpdateBtn(){
+  const btn=document.getElementById('modelUpdateBtn'); if(!btn) return;
+  if(pendingModelUpdates.size){
+    btn.style.display='inline-flex';
+    btn.textContent=`🔄 模型有新版本（${pendingModelUpdates.size}）點此更新`;
+  }else{
+    btn.style.display='none';
+  }
+}
+// 使用者點擊頂欄按鈕後才真正換貼圖，避免巡檢中畫面無預警跳動
+async function applyModelUpdates(){
+  if(!pendingModelUpdates.size) return;
+  const updates=[...pendingModelUpdates.values()];
+  pendingModelUpdates=new Map();
+  updateModelUpdateBtn();
+  const loader=new THREE.TextureLoader();
+  for(const m of updates){
+    const fl=FLOORS.find(f=>f.id===m.floor_id); if(!fl) continue;
+    const t=encodeURIComponent(m.updated_at||'');
+    const url=`${SUPA_URL}/storage/v1/object/public/floorplans/${m.image_path}?t=${t}`;
+    await new Promise(resolve=>{
+      loader.load(url, tex=>{
+        tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter;
+        tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+        if(fl.mesh){
+          const old=fl.mesh.material.map;
+          fl.mesh.material.map=tex; fl.mesh.material.needsUpdate=true;
+          if(old) old.dispose();
+        }
+        fl.tex=url; fl.modelUpdatedAt=m.updated_at||null;
+        if(fl===FLOORS[0]){ const img=document.getElementById('planThumbImg'); if(img) img.src=url; }
+        resolve();
+      }, undefined, ()=>resolve());
+    });
+  }
 }
 
 (async()=>{ init(); setupOrbit(); await applyCustomModels(); buildFloors(); })();
