@@ -182,17 +182,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <input type="range" id="xPan" min="-220" max="220" value="0" step="2" oninput="setXPan(this.value)">
   <label>Y 軸平移（上下）</label>
   <input type="range" id="yPan" min="-160" max="160" value="0" step="2" oninput="setYPan(this.value)">
-  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"> 顯示標記名稱</label>
-  <div class="h-r" style="color:var(--text2)">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
-  <details class="filter-menu">
-    <summary>◆ 標記類型</summary>
-    <div class="filter-options">
-      <label><input type="checkbox" checked onchange="toggleMarkKind('equipment',this.checked)"><i class="status-dot" style="color:#00d4ff;background:#00d4ff"></i> 設備</label>
-      <label><input type="checkbox" checked onchange="toggleMarkKind('space',this.checked)"><i class="status-dot" style="color:#00ff9d;background:#00ff9d"></i> 空間</label>
-      <label><input type="checkbox" checked onchange="toggleMarkKind('patrol',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 巡邏點</label>
-      <label><input type="checkbox" checked onchange="toggleMarkKind('repair',this.checked)"><i class="status-dot" style="color:#ff5470;background:#ff5470"></i> 報修點</label>
-    </div>
-  </details>
+  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"> 顯示巡邏點名稱</label>
+  <div class="h-r" style="color:var(--text2)">巡邏點總數：<span style="color:var(--text)" id="mkCount">0</span></div>
   <details class="filter-menu">
     <summary>◆ 打卡狀態</summary>
     <div class="filter-options">
@@ -328,7 +319,7 @@ let showLabels3D=false;                          // 顯示標記名稱
 let showShiftTime3D=false;                       // 顯示巡邏點時間（班別時段＋打卡人員）
 async function loadMarkers(){
   try{
-    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,kind,label').eq('status','active');
+    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,kind,label').eq('status','active').eq('kind','patrol');
     if(error) return;
     (data||[]).forEach(addMarker3D);
     document.getElementById('mkCount').textContent=markerObjs.length;
@@ -482,7 +473,7 @@ function finishLoad(){
   setTimeout(()=>{const l=document.getElementById('loading');l.style.transition='opacity .4s';l.style.opacity='0';setTimeout(()=>l.style.display='none',400);},150);
   resetView(); animate();
   loadMarkers();
-  setInterval(refreshPatrolStatus,60000);
+  setInterval(refreshPatrolStatus,30000);
   setInterval(checkModelUpdates,60000);
   const img=document.getElementById('planThumbImg');
   if(img) img.src=FLOORS[0].tex;
