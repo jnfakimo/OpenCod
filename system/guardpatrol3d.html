@@ -184,6 +184,12 @@ body.controls-hidden #panelToggle{display:inline-flex}
     <label><input type="checkbox" checked onchange="toggleMarkKind('patrol',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 巡邏點</label>
     <label><input type="checkbox" checked onchange="toggleMarkKind('repair',this.checked)"><i class="status-dot" style="color:#ff5470;background:#ff5470"></i> 報修點</label>
   </div>
+  <div class="status-filter">
+    <div class="status-filter-title">◆ 打卡狀態</div>
+    <label><input type="checkbox" checked onchange="togglePatrolStatus('ok',this.checked)"><i class="status-dot" style="color:var(--green);background:var(--green)"></i> 已打</label>
+    <label><input type="checkbox" checked onchange="togglePatrolStatus('pending',this.checked)"><i class="status-dot" style="color:var(--patrol);background:var(--patrol)"></i> 待打卡</label>
+    <label><input type="checkbox" checked onchange="togglePatrolStatus('overdue',this.checked)"><i class="status-dot" style="color:var(--red);background:var(--red)"></i> 逾期未打卡</label>
+  </div>
   <div class="btnrow">
     <button class="mini" onclick="resetView()">⊡ 重置</button>
     <button class="mini" onclick="topView()">⊤ 俯視</button>
@@ -196,11 +202,10 @@ body.controls-hidden #panelToggle{display:inline-flex}
 <div id="bottomRightRow">
   <div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
   <div id="legend">
-    <div class="h-t">◆ 標記類型</div>
-    <div class="lg-row"><i style="background:#00d4ff"></i>設備</div>
-    <div class="lg-row"><i style="background:#00ff9d"></i>空間</div>
-    <div class="lg-row"><i style="background:#c77dff"></i>巡邏點</div>
-    <div class="lg-row"><i style="background:#ff5470"></i>報修點</div>
+    <div class="h-t">◆ 打卡狀態</div>
+    <div class="lg-row"><i style="background:var(--green)"></i>已打 <span id="statusOkCount">0</span></div>
+    <div class="lg-row"><i style="background:var(--patrol)"></i>待打卡 <span id="statusPendingCount">0</span></div>
+    <div class="lg-row"><i style="background:var(--red)"></i>逾期未打卡 <span id="statusOverdueCount">0</span></div>
   </div>
 </div>
 
@@ -306,6 +311,7 @@ const MARK_H=6;                                  // 標記懸浮高度 (m)
 const PATROL_BASE=0xc77dff;
 const MARK_COL={equipment:0x00d4ff,space:0x00ff9d,patrol:PATROL_BASE,repair:0xff5470,note:0xffb300};
 const kindVis={equipment:true,space:true,patrol:true,repair:true,note:true};
+const patrolStatusVisible={ok:true,pending:true,overdue:true};
 let markerObjs=[];                               // {group,fl,kind,label,markerId,name,head,stem}
 let showLabels3D=false;                          // 顯示標記名稱
 let showShiftTime3D=false;                       // 顯示巡邏點時間（班別時段＋打卡人員）
@@ -316,6 +322,7 @@ async function loadMarkers(){
     (data||[]).forEach(addMarker3D);
     document.getElementById('mkCount').textContent=markerObjs.length;
     layoutMarkers();
+    refreshPatrolStatus();
   }catch(e){}
 }
 let patrolStatusMap=new Map();
@@ -348,6 +355,14 @@ async function refreshPatrolStatus(){
     if(showLabels3D||showShiftTime3D) rebuildMarkerLabel(mk);
     syncMarkerVisibility(mk);
   });
+  updatePatrolStatusSummary();
+}
+function patrolStateFor(mk){return patrolStatusMap.get(mk.markerId)||'pending';}
+function updatePatrolStatusSummary(){
+  const counts={ok:0,pending:0,overdue:0};
+  markerObjs.forEach(mk=>{if(mk.kind==='patrol')counts[patrolStateFor(mk)]++;});
+  const ids={ok:'statusOkCount',pending:'statusPendingCount',overdue:'statusOverdueCount'};
+  Object.keys(ids).forEach(k=>{const el=document.getElementById(ids[k]);if(el)el.textContent=counts[k];});
 }
 // 依目前開關組出某巡邏點的標籤文字（可多行）
 function labelLinesFor(mk){
@@ -415,10 +430,17 @@ function layoutMarkers(){
     syncMarkerVisibility(mk);
   });
 }
-function syncMarkerVisibility(mk){mk.group.visible=mk.fl.visible&&kindVis[mk.kind]!==false;}
+function syncMarkerVisibility(mk){
+  const statusOn=mk.kind!=='patrol'||patrolStatusVisible[patrolStateFor(mk)]!==false;
+  mk.group.visible=mk.fl.visible&&kindVis[mk.kind]!==false&&statusOn;
+}
 function toggleMarkKind(kind,on){
   kindVis[kind]=on;
   markerObjs.forEach(mk=>{if(mk.kind===kind)syncMarkerVisibility(mk);});
+}
+function togglePatrolStatus(state,on){
+  patrolStatusVisible[state]=on;
+  markerObjs.forEach(mk=>{if(mk.kind==='patrol')syncMarkerVisibility(mk);});
 }
 function toggleMarkLabels(on){
   showLabels3D=on;
@@ -449,6 +471,7 @@ function finishLoad(){
   setTimeout(()=>{const l=document.getElementById('loading');l.style.transition='opacity .4s';l.style.opacity='0';setTimeout(()=>l.style.display='none',400);},150);
   resetView(); animate();
   loadMarkers();
+  setInterval(refreshPatrolStatus,60000);
   setInterval(checkModelUpdates,60000);
   const img=document.getElementById('planThumbImg');
   if(img) img.src=FLOORS[0].tex;

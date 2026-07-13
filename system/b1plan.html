@@ -151,6 +151,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
   <label><input type="checkbox" checked onchange="toggleMkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般</label>
   <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" onchange="toggleMkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 文字標籤</label>
   <div style="color:var(--text2);margin-top:3px">標記數：<span style="color:var(--text)" id="mkNum">—</span></div>
+  <div class="status-filter">
+    <div class="status-filter-title">◆ 打卡狀態</div>
+    <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('ok',this.checked)"><i class="status-dot" style="color:#00ff9d;background:#00ff9d"></i> 已打</label>
+    <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('pending',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 待打卡</label>
+    <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('overdue',this.checked)"><i class="status-dot" style="color:#ff5470;background:#ff5470"></i> 逾期未打卡</label>
+  </div>
 </div>
 
 <div id="bottomRightRow">
@@ -227,6 +233,7 @@ function onLoad(){
   prog(100,'完成');
   setTimeout(()=>{ const l=document.getElementById('loading'); l.style.transition='opacity .4s'; l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); },150);
   showFloor('B1'); updHud(); loadPlanMarkers();
+  setInterval(refreshPatrolStatus,60000);
 }
 
 function item(i){ return i==null?null:viewer.world.getItemAt(i); }
@@ -243,6 +250,7 @@ function showFloor(f){
 // ── 整合標記（唯讀，與整合標記系統 / 3D 同步）──────────────
 const MK_COL={equipment:'#00d4ff',space:'#00ff9d',patrol:'#c77dff',repair:'#ff5470',note:'#ffb300'};
 const KV={equipment:true,space:true,patrol:true,repair:true,note:true};
+const PLAN_PATROL_STATUS_VISIBLE={ok:true,pending:true,overdue:true};
 let planMarkers=[], showLab=false;
 function escB(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 let patrolStatusMap=new Map();
@@ -252,6 +260,7 @@ async function loadPlanMarkers(){
     if(!error) planMarkers=data||[];
   }catch(e){}
   drawPlanMarkers();
+  refreshPatrolStatus();
 }
 async function refreshPatrolStatus(){
   try{ const r=await PatrolStatus.compute(db); patrolStatusMap=r.map; }
@@ -259,12 +268,13 @@ async function refreshPatrolStatus(){
   drawPlanMarkers();
 }
 function markerColor(m){
+  if(m.kind==='patrol') return PatrolStatus.COLORS[patrolStatusMap.get(m.marker_id)||'pending'];
   return MK_COL[m.kind]||'#ffb300';
 }
 function drawPlanMarkers(){
   if(!viewer.viewport) return;
   viewer.clearOverlays();
-  const list=planMarkers.filter(m=>m.floor_id===curFloor && KV[m.kind]!==false);
+  const list=planMarkers.filter(m=>m.floor_id===curFloor && KV[m.kind]!==false && (m.kind!=='patrol'||PLAN_PATROL_STATUS_VISIBLE[patrolStatusMap.get(m.marker_id)||'pending']!==false));
   list.forEach(m=>{
     const el=document.createElement('div'); el.className='pin'+(showLab?' show-lab':'');
     const col=markerColor(m);
@@ -274,6 +284,7 @@ function drawPlanMarkers(){
   const n=document.getElementById('mkNum'); if(n) n.textContent=list.length+' 個';
 }
 function toggleMkKind(k,on){ KV[k]=on; drawPlanMarkers(); }
+function togglePlanPatrolStatus(state,on){PLAN_PATROL_STATUS_VISIBLE[state]=on;drawPlanMarkers();}
 function toggleMkLabels(on){ showLab=on; drawPlanMarkers(); }
 let mkPinned=false;
 function toggleMkPanel(open){
