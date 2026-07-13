@@ -1,0 +1,164 @@
+/* ===== MOBILE RESPONSIVE FIXES ===== */
+/* Applied to all system pages via <link rel="stylesheet"> */
+
+@media (max-width: 640px) {
+  /* ── Layout ── */
+  .wrap, .content, .page { padding: 10px !important; }
+  .row { grid-template-columns: 1fr !important; }
+  .row2, .row3 { grid-template-columns: 1fr !important; }
+  .dash-main { grid-template-columns: 1fr !important; }
+  .rank-grid { grid-template-columns: 1fr !important; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .kpi-strip { flex-wrap: wrap !important; }
+  .kpi-strip .ks { min-width: calc(50% - 8px) !important; flex: none !important; }
+  .alert-bar { flex-direction: column !important; gap: 6px !important; }
+  .alert-bar .al { width: 100% !important; }
+
+  /* ── Navbar ── */
+  .navbar { flex-wrap: wrap !important; gap: 4px !important; padding: 6px 10px !important; }
+  .navbar .nav-title { font-size: 0.85rem !important; }
+  .navbar .nav-sub { font-size: 0.6rem !important; }
+  .navbar .nav-back { font-size: 0.6rem !important; padding: 4px 7px !important; }
+
+  /* ── Toolbar ── */
+  .toolbar { gap: 5px !important; }
+  .toolbar input, .toolbar select { font-size: 0.7rem !important; padding: 5px 7px !important; }
+  .toolbar input[type="date"] { max-width: 120px !important; }
+  .qbtn { font-size: 0.65rem !important; padding: 4px 8px !important; }
+  .btn, .btn-add, .btn-primary { font-size: 0.68rem !important; padding: 5px 10px !important; }
+  .t-space { display: none !important; }
+
+  /* ── Tables ── */
+  .table-scroll { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; }
+  table { font-size: 0.68rem !important; min-width: auto !important; }
+  thead th, tbody td { padding: 5px 6px !important; }
+
+  /* ── Cards ── */
+  .card, .pcard, .ccard, .rcard, .tcard { padding: 10px !important; }
+  .card h3, .pcard h3, .ccard h3, .rcard h3, .tcard h3 { font-size: 0.78rem !important; }
+
+  /* ── Patrollist / guardpatrol ── */
+  .ps { flex-wrap: wrap !important; }
+  .pc { min-width: calc(50% - 8px) !important; flex: none !important; padding: 5px 10px !important; }
+  .pc .n { font-size: 1rem !important; }
+  .pt { font-size: 0.62rem !important; }
+  .pt th, .pt td { padding: 2px 4px !important; }
+  .pd { width: 16px !important; height: 16px !important; font-size: 0.5rem !important; }
+  #pg { max-height: 240px !important; }
+
+  /* ── Floor blocks ── */
+  .floor-head { padding: 8px 10px !important; }
+  .floor-head .fname { font-size: 0.85rem !important; }
+  .space-row { flex-wrap: wrap !important; gap: 4px !important; }
+  .space-row .sname { font-size: 0.75rem !important; }
+  .space-row .acts { opacity: 1 !important; gap: 4px !important; }
+  .space-head { display: none !important; }
+  .use-col { width: auto !important; }
+  .stats-row .stat-card { min-width: 80px !important; padding: 6px 10px !important; }
+  .stat-card .n { font-size: 1.1rem !important; }
+
+  /* ── Charts ── */
+  .chart-box { height: 160px !important; }
+  .trend-box { height: 150px !important; }
+
+  /* ── Modals ── */
+  .modal-bg { padding: 10px !important; align-items: flex-end !important; }
+  .modal { max-width: 100% !important; border-radius: 4px 4px 0 0 !important; }
+  .modal-h { padding: 12px 14px !important; }
+  .modal-b { padding: 14px !important; }
+  .field input, .field select, .field textarea { font-size: 0.78rem !important; padding: 7px 9px !important; }
+
+  /* ── Detail panels ── */
+  .d-info { grid-template-columns: 1fr !important; }
+  .d-info .full { grid-column: 1 !important; }
+
+  /* ── Tabs ── */
+  .tab { font-size: 0.68rem !important; padding: 8px 10px !important; }
+  .tabs { overflow-x: auto !important; -webkit-overflow-scrolling: touch !important; flex-wrap: nowrap !important; }
+  .tabs::-webkit-scrollbar { display: none !important; }
+
+  /* ── Pagination ── */
+  .pager { flex-wrap: wrap !important; gap: 4px !important; }
+  .pager .page-info { font-size: 0.6rem !important; }
+  .page-btn { font-size: 0.62rem !important; padding: 3px 7px !important; min-width: 28px !important; }
+
+  /* ── Stats / chips ── */
+  .stat-row { gap: 5px !important; }
+  .chip { font-size: 0.62rem !important; padding: 4px 8px !important; }
+  .badge { font-size: 0.58rem !important; padding: 1px 6px !important; }
+
+  /* ── Handover ── */
+  .vh-list { font-size: 0.7rem !important; }
+  .vh-item { padding: 8px !important; }
+
+  /* ── Login ── */
+  .login-box { width: 100% !important; max-width: 100% !important; padding: 20px !important; }
+  .login-title { font-size: 1.1rem !important; }
+
+  /* ── Setup ── */
+  .setup-step { padding: 10px !important; }
+
+  /* ── Notices ── */
+  .notice-item { flex-wrap: wrap !important; }
+  .notice-item .notice-actions { margin-top: 4px !important; }
+
+  /* ── Equipment / Locations ── */
+  .eqp-row, .loc-row { flex-wrap: wrap !important; font-size: 0.7rem !important; padding: 6px !important; }
+
+  /* ── B1 Plan / Marker system ── */
+  #canvasWrap { height: 300px !important; }
+
+  /* ── 3D viewer ── */
+  #three-container { height: 280px !important; }
+
+  /* ── Analytics ── */
+  .analytics-grid { grid-template-columns: 1fr !important; }
+
+  /* ── API page ── */
+  .api-endpoint { font-size: 0.72rem !important; }
+  .api-endpoint code { word-break: break-all !important; }
+
+  /* ── Guardpatrol specific ── */
+  .patrol-summary { flex-direction: column !important; gap: 6px !important; }
+  .patrol-stat { padding: 8px !important; }
+  .marker-grid { gap: 6px !important; }
+  .marker-card { padding: 8px !important; }
+
+  /* ── Toast ── */
+  .toast { font-size: 0.72rem !important; padding: 8px 14px !important; max-width: 90% !important; }
+
+  /* ── Misc ── */
+  .mini { font-size: 0.6rem !important; padding: 3px 7px !important; }
+  .empty { padding: 20px !important; font-size: 0.75rem !important; }
+  .hint { font-size: 0.65rem !important; padding: 7px 10px !important; }
+  .sect { font-size: 0.75rem !important; }
+
+  /* ── Patrol checkin ── */
+  .checkin-form { padding: 10px !important; }
+  .checkin-form .field { margin-bottom: 10px !important; }
+  .checkin-btn { font-size: 0.85rem !important; padding: 12px !important; }
+
+  /* ── Dispatch/workorder table ── */
+  .req-no, .wo-no { font-size: 0.62rem !important; min-width: auto !important; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr !important; }
+  .kpi .n { font-size: 1.3rem !important; }
+  .kpi-strip .ks { min-width: calc(50% - 6px) !important; }
+  .pc { min-width: 100% !important; }
+  .navbar .nav-back { font-size: 0.55rem !important; padding: 3px 5px !important; }
+  table { font-size: 0.62rem !important; }
+  thead th, tbody td { padding: 3px 4px !important; }
+  .ps { gap: 4px !important; }
+  .pt th, .pt td { padding: 1px 3px !important; font-size: 0.55rem !important; }
+  .pd { width: 14px !important; height: 14px !important; font-size: 0.45rem !important; }
+  #pg { max-height: 180px !important; }
+}
+
+@media (max-width: 380px) {
+  .kpi-grid { grid-template-columns: 1fr !important; }
+  .kpi-strip .ks { min-width: 100% !important; }
+  .chart-box { height: 130px !important; }
+  .trend-box { height: 120px !important; }
+}

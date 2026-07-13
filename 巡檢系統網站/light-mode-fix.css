@@ -363,3 +363,71 @@
   border-color: var(--border) !important;
   color: #1e293b !important;
 }
+
+/* ===== DTP inline style overrides (by ID attribute) ===== */
+/* DTP trigger buttons: inline background:rgba(2,8,20,.8) */
+:root[data-theme="light"] [id$="_dtp_b"],
+:root[data-theme="light"] [id$="-dtp_b"],
+:root[data-theme="light"] #caseIncidentPicker_b {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+/* DTP popup panels: inline background:rgb(7,18,32) */
+:root[data-theme="light"] [id$="_dtp_p"],
+:root[data-theme="light"] [id$="-dtp_p"],
+:root[data-theme="light"] #caseIncidentPicker_p {
+  background: #ffffff !important;
+  border-color: var(--border) !important;
+  color: #1e293b !important;
+}
+/* DTP popup inner elements */
+:root[data-theme="light"] [id$="_dtp_p"] select,
+:root[data-theme="light"] [id$="-dtp_p"] select,
+:root[data-theme="light"] [id$="_dtp_p"] button:not([style*="var(--cyan)"]),
+:root[data-theme="light"] [id$="-dtp_p"] button:not([style*="var(--cyan)"]),
+:root[data-theme="light"] #caseIncidentPicker_p select,
+:root[data-theme="light"] #caseIncidentPicker_p button {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+:root[data-theme="light"] [id$="_dtp_p"] td,
+:root[data-theme="light"] [id$="-dtp_p"] td,
+:root[data-theme="light"] #caseIncidentPicker_p td {
+  color: #1e293b !important;
+}
+:root[data-theme="light"] [id$="_dtp_p"] th,
+:root[data-theme="light"] [id$="-dtp_p"] th,
+:root[data-theme="light"] #caseIncidentPicker_p th {
+  color: var(--cyan) !important;
+}
+
+/* ===== CSV import log (admin) ===== */
+:root[data-theme="light"] #csvImportLog {
+  background: #f1f5f9 !important;
+  border-color: var(--border) !important;
+  color: #1e293b !important;
+}
+
+/* ===== Photo preview zones (app) ===== */
+:root[data-theme="light"] #photoPreview,
+:root[data-theme="light"] #modalPhotoPreview {
+  background: #f1f5f9 !important;
+  border-color: var(--border) !important;
+}
+
+/* ===== Handover specific inline-style selects ===== */
+:root[data-theme="light"] #actionAssignTo,
+:root[data-theme="light"] #actionStatus {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}
+
+/* ===== Progress note textarea (workorder) ===== */
+:root[data-theme="light"] #progressNote {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #1e293b !important;
+}

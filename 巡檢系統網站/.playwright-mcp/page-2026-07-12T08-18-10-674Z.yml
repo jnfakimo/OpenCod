@@ -1,0 +1,18 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - generic [ref=f4e3]: "?��"
+    - heading "?��?農產?�銷?�份?��??�司" [level=1] [ref=f4e4]
+    - generic [ref=f4e5]: 第�??��?市場 設�?巡檢維修系統
+    - generic [ref=f4e6]:
+      - text: 請使?�帳?�登??/div>
+      - generic [ref=f4e8]:
+        - text: 帳�?（英?��?�?/label>
+        - textbox "帳�?（英?��?�?/label>" [ref=f4e9]:
+          - /placeholder: 例�?tcfm_admin
+          - text: "022443"
+      - generic [ref=f4e10]:
+        - generic [ref=f4e11]: 密碼
+        - textbox "?�••••••�? autocomplete=" [ref=f4e12]: "00000000"
+      - button "?�入" [ref=f4e13] [cursor=pointer]
+      - generic [ref=f4e14] [cursor=pointer]: 忘�?密碼�?/a>
+  - button "切換介面風格" [ref=f4e16] [cursor=pointer]: 🌙

@@ -1,0 +1,121 @@
+- generic [active] [ref=f17e1]:
+  - generic [ref=f17e2]:
+    - generic [ref=f17e3]:
+      - generic [ref=f17e4]: ■ TAIPEC-MKT-1 後台
+      - generic [ref=f17e5]: 臺北農產運銷股份有限公司
+      - text: ／
+      - generic [ref=f17e6]: 第一果菜市場
+    - generic [ref=f17e7]:
+      - link "◫ 戰情儀表板" [ref=f17e8] [cursor=pointer]:
+        - /url: dashboard.html
+      - link "◪ 報修系統" [ref=f17e9] [cursor=pointer]:
+        - /url: workorder.html
+      - link "◉ 巡檢" [ref=f17e10] [cursor=pointer]:
+        - /url: app.html
+      - generic [ref=f17e11]: ⬡ 後台
+      - generic [ref=f17e12]: 系統連線中
+      - generic [ref=f17e14]: 2026-07-12 16:02:59
+  - generic [ref=f17e15]:
+    - complementary [ref=f17e16]:
+      - generic [ref=f17e17]:
+        - generic [ref=f17e18]: 臺北農產運銷股份有限公司第一果菜市場
+        - heading "⬡ 後台管理系統" [level=1] [ref=f17e19]
+      - navigation [ref=f17e20]:
+        - link "◫ 戰情儀表板" [ref=f17e21] [cursor=pointer]:
+          - /url: dashboard.html
+          - generic [ref=f17e22]: ◫
+          - text: 戰情儀表板
+        - generic [ref=f17e23] [cursor=pointer]:
+          - generic [ref=f17e24]: ⚙
+          - text: 系統設定
+        - generic [ref=f17e25] [cursor=pointer]:
+          - generic [ref=f17e26]: ◉
+          - text: 帳號管理
+        - link "◧ 設備材料管理" [ref=f17e27] [cursor=pointer]:
+          - /url: materials.html
+          - generic [ref=f17e28]: ◧
+          - text: 設備材料管理
+        - generic [ref=f17e29] [cursor=pointer]:
+          - generic [ref=f17e30]: ◪
+          - text: 報修 & 維修
+        - link "◪ 派工系統" [ref=f17e31] [cursor=pointer]:
+          - /url: dispatch.html
+          - generic [ref=f17e32]: ◪
+          - text: 派工系統
+        - link "◈ 電子交接簿" [ref=f17e33] [cursor=pointer]:
+          - /url: handover.html
+          - generic [ref=f17e34]: ◈
+          - text: 電子交接簿
+        - generic [ref=f17e35] [cursor=pointer]:
+          - generic [ref=f17e36]: ⬢
+          - text: 3D雲台建模
+        - generic [ref=f17e37] [cursor=pointer]:
+          - generic [ref=f17e38]: ◬
+          - text: 費用統計
+        - generic [ref=f17e39] [cursor=pointer]:
+          - generic [ref=f17e40]: ◭
+          - text: 系統紀錄
+      - generic [ref=f17e41]:
+        - generic [ref=f17e42]: 黃建發 [系統管理員]
+        - button "🔑 更改密碼" [ref=f17e43] [cursor=pointer]
+        - button "⏻ 登出" [ref=f17e44] [cursor=pointer]
+    - main [ref=f17e45]:
+      - generic [ref=f17e46]:
+        - generic [ref=f17e47]:
+          - generic [ref=f17e48]:
+            - heading "◫ 戰情儀表板" [level=2] [ref=f17e49]
+            - paragraph [ref=f17e50]: 系統狀態 — 上次更新：16:02:54
+          - button "↻ 重新整理" [ref=f17e51] [cursor=pointer]
+        - generic [ref=f17e52]:
+          - generic [ref=f17e53]:
+            - generic [ref=f17e54]: "31"
+            - generic [ref=f17e55]: 設備總數
+          - generic [ref=f17e56]:
+            - generic [ref=f17e57]: "3"
+            - generic [ref=f17e58]: 待處理維修
+          - generic [ref=f17e59]:
+            - generic [ref=f17e60]: "0"
+            - generic [ref=f17e61]: 今日巡檢
+          - generic [ref=f17e62]:
+            - generic [ref=f17e63]: "0"
+            - generic [ref=f17e64]: 今日異常
+          - generic [ref=f17e65]:
+            - generic [ref=f17e66]: "28"
+            - generic [ref=f17e67]: 啟用帳號
+        - generic [ref=f17e68]:
+          - generic [ref=f17e69]: ◈ 最新維修單
+          - table [ref=f17e72]:
+            - rowgroup [ref=f17e73]:
+              - row [ref=f17e74]:
+                - columnheader "設備" [ref=f17e75]
+                - columnheader "報修人" [ref=f17e76]
+                - columnheader "故障說明" [ref=f17e77]
+                - columnheader "狀態" [ref=f17e78]
+                - columnheader "建立時間" [ref=f17e79]
+            - rowgroup [ref=f17e80]:
+              - row [ref=f17e81]:
+                - cell "配電盤 4F" [ref=f17e82]
+                - cell "系統管理者" [ref=f17e83]
+                - cell ",mm,." [ref=f17e84]
+                - cell "待處理" [ref=f17e85]
+                - cell "2026/6/21" [ref=f17e87]
+              - row [ref=f17e88]:
+                - cell "配電盤 4F" [ref=f17e89]
+                - cell "系統管理者" [ref=f17e90]
+                - cell "12" [ref=f17e91]
+                - cell "待處理" [ref=f17e92]
+                - cell "2026/6/21" [ref=f17e94]
+              - row [ref=f17e95]:
+                - cell "配電盤 4F" [ref=f17e96]
+                - cell "系統管理者" [ref=f17e97]
+                - cell "21212" [ref=f17e98]
+                - cell "處理中" [ref=f17e99]
+                - cell "2026/6/21" [ref=f17e101]
+              - row [ref=f17e102]:
+                - cell "配電盤 4F" [ref=f17e103]
+                - cell "系統管理者" [ref=f17e104]
+                - cell "122" [ref=f17e105]
+                - cell "待處理" [ref=f17e106]
+                - cell "2026/6/21" [ref=f17e108]
+      - text: ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈
+  - button "切換介面風格" [ref=f17e109] [cursor=pointer]: 🌙

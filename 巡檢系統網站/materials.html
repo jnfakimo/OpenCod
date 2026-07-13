@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<title>設備材料管理 Material Master — 臺北農產</title>
+<title>設�??��?管�? Material Master ???��?農產</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
@@ -112,74 +112,74 @@ tr:hover td{background:rgba(0,212,255,.04)}
 @media(max-width:480px){.grp-b{grid-template-columns:1fr}}
 
 </style>
-<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="light-mode-fix.css?v=2">
 </head>
 <body>
 <nav class="navbar">
-  <div><div class="nav-title">◧ 設備材料管理</div><div class="nav-sub">Material Master · 臺北農產 第一果菜市場</div></div>
+  <div><div class="nav-title">??設�??��?管�?</div><div class="nav-sub">Material Master · ?��?農產 第�??��?市場</div></div>
   <div class="nav-space"></div>
-  <a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
-  <a href="workorder.html"><button class="nav-back">◪ 報修系統</button></a>
-  <a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
-  <a href="admin.html"><button class="nav-back">← 後台</button></a>
+  <a href="dashboard.html"><button class="nav-back">???��??�表板</button></a>
+  <a href="workorder.html"><button class="nav-back">???�修系統</button></a>
+  <a href="app.html"><button class="nav-back">??巡檢</button></a>
+  <a href="admin.html"><button class="nav-back">??後台</button></a>
 </nav>
 
 <div class="content">
   <div class="stats-row">
-    <div class="stat-card"><div class="n" id="s-total">0</div><div class="l">材料總筆數</div></div>
-    <div class="stat-card"><div class="n" id="s-cat">0</div><div class="l">分類數</div></div>
-    <div class="stat-card"><div class="n warn" id="s-insp">0</div><div class="l">需巡檢</div></div>
-    <div class="stat-card"><div class="n bad" id="s-low">0</div><div class="l">低於安全庫存</div></div>
+    <div class="stat-card"><div class="n" id="s-total">0</div><div class="l">?��?總�???/div></div>
+    <div class="stat-card"><div class="n" id="s-cat">0</div><div class="l">?��???/div></div>
+    <div class="stat-card"><div class="n warn" id="s-insp">0</div><div class="l">?�巡檢</div></div>
+    <div class="stat-card"><div class="n bad" id="s-low">0</div><div class="l">低於安全庫�?</div></div>
   </div>
 
   <div class="toolbar">
-    <select id="f-floor" onchange="page=1;render()"><option value="">全部樓層</option></select>
-    <select id="f-cat" onchange="page=1;render()"><option value="">全部分類</option></select>
-    <select id="f-status" onchange="page=1;render()"><option value="">全部狀態</option><option value="active">啟用</option><option value="inactive">停用</option></select>
-    <input id="f-q" placeholder="搜尋 編號/名稱/品牌/型號…" oninput="page=1;render()" style="width:210px">
+    <select id="f-floor" onchange="page=1;render()"><option value="">?�部樓層</option></select>
+    <select id="f-cat" onchange="page=1;render()"><option value="">?�部?��?</option></select>
+    <select id="f-status" onchange="page=1;render()"><option value="">?�部?�??/option><option value="active">?�用</option><option value="inactive">?�用</option></select>
+    <input id="f-q" placeholder="?��? 編�?/?�稱/?��?/?��??? oninput="page=1;render()" style="width:210px">
     <div class="t-space"></div>
-    <button class="btn btn-add" onclick="openAdd()">＋ 新增材料</button>
-    <button class="btn btn-blue" onclick="document.getElementById('impFile').click()">⭳ 匯入XLSX</button>
-    <button class="btn btn-green" onclick="exportXLSX('xlsx')">⭱ 匯出XLSX</button>
-    <button class="btn" onclick="downloadTemplate()">▤ 範本</button>
+    <button class="btn btn-add" onclick="openAdd()">�??��??��?</button>
+    <button class="btn btn-blue" onclick="document.getElementById('impFile').click()">�??�入XLSX</button>
+    <button class="btn btn-green" onclick="exportXLSX('xlsx')">�??�出XLSX</button>
+    <button class="btn" onclick="downloadTemplate()">??範本</button>
     <input type="file" id="impFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="onImportFile(event)">
   </div>
 
   <div class="tbl-wrap">
     <table>
       <thead><tr>
-        <th>樓層</th><th>材料編號</th><th>名稱</th><th>分類</th><th>型號 / 規格</th><th>品牌</th>
-        <th>狀態</th><th>庫存(現/安)</th><th>巡檢</th><th>連結檔</th><th>QR</th><th>操作</th>
+        <th>樓層</th><th>?��?編�?</th><th>?�稱</th><th>?��?</th><th>?��? / 規格</th><th>?��?</th>
+        <th>?�??/th><th>庫�?(??�?</th><th>巡檢</th><th>???�?/th><th>QR</th><th>?��?</th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
   <div class="pager">
-    <span class="info" id="pInfo">—</span>
-    <button class="pbtn" id="pPrev" onclick="goPage(page-1)">‹ 上一頁</button>
+    <span class="info" id="pInfo">??/span>
+    <button class="pbtn" id="pPrev" onclick="goPage(page-1)">??上�???/button>
     <span id="pNum">1 / 1</span>
-    <button class="pbtn" id="pNext" onclick="goPage(page+1)">下一頁 ›</button>
+    <button class="pbtn" id="pNext" onclick="goPage(page+1)">下�?????/button>
   </div>
 </div>
 
 <!-- Add / Edit modal -->
 <div class="modal-bg" id="m-edit">
   <div class="modal">
-    <div class="mh"><span class="mt" id="mTitle">新增材料</span><span class="x" onclick="closeM('m-edit')">✕</span></div>
+    <div class="mh"><span class="mt" id="mTitle">?��??��?</span><span class="x" onclick="closeM('m-edit')">??/span></div>
     <div class="mb" id="mForm"></div>
-    <div class="mfoot"><span class="mmsg" id="mMsg"></span><button class="btn-primary" onclick="saveMaterial()">儲存</button></div>
+    <div class="mfoot"><span class="mmsg" id="mMsg"></span><button class="btn-primary" onclick="saveMaterial()">?��?</button></div>
   </div>
 </div>
 
 <!-- QR modal -->
 <div class="modal-bg" id="m-qr">
   <div class="modal sm">
-    <div class="mh"><span class="mt">QR 掃描 → 設備連結檔</span><span class="x" onclick="closeM('m-qr')">✕</span></div>
+    <div class="mh"><span class="mt">QR ?��? ??設�????�?/span><span class="x" onclick="closeM('m-qr')">??/span></div>
     <div class="mb"><div id="qrbox">
       <div class="qt" id="qrCode"></div>
       <div id="qrimg"></div>
       <div class="ql" id="qrLink"></div>
-      <button class="btn btn-green" id="qrOpen" onclick="openQrTarget()">開啟連結檔</button>
+      <button class="btn btn-green" id="qrOpen" onclick="openQrTarget()">?��????�?/button>
     </div></div>
   </div>
 </div>
@@ -191,64 +191,64 @@ const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
-const PER=10;              // 每 10 筆一頁
+const PER=10;              // �?10 筆�???
 let mats=[], cats=[], spaces=[], page=1, editId=null, qrTargetUrl='';
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function translateError(msg) {
-  if (!msg) return '未知錯誤';
-  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
-  if (msg.includes('null value in column')) return '必填欄位不可空白';
-  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
-  if (msg.includes('violates row-level security')) return '無操作權限';
-  if (msg.includes('permission denied')) return '無操作權限';
-  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
-  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
-  if (msg.includes('value too long')) return '輸入值過長';
-  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
-  return '操作失敗，請稍後再試或聯絡系統管理員';
+  if (!msg) return '?�知?�誤';
+  if (msg.includes('duplicate key value')) return '資�??��?，�?確�??�否已�???;
+  if (msg.includes('null value in column')) return '必填欄�?不可空白';
+  if (msg.includes('violates foreign key constraint')) return '?�聯資�??�誤，無法刪??;
+  if (msg.includes('violates row-level security')) return '?��?作�???;
+  if (msg.includes('permission denied')) return '?��?作�???;
+  if (msg.includes('JWT expired')) return '?�入已�??��?請�??�整?��???;
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資�?表�?存在，�?確�?資�?庫設�?;
+  if (msg.includes('value too long')) return '輸入?��???;
+  if (msg.includes('invalid input syntax')) return '輸入?��?不正�?;
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路???失�?，�?稍�??�試';
+  return '?��?失�?，�?稍�??�試?�聯絡系統管?�員';
 }
-// 全系統統一日期格式：西元 YYYY-MM-DD
+// ?�系統統一?��??��?：西??YYYY-MM-DD
 function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function fmtDate(v){if(!v)return '—';const d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtDate(v){if(!v)return '??;const d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function toast(m,e){const t=document.getElementById('toast');t.textContent=m;t.className='toast show'+(e?' err':'');setTimeout(()=>t.className='toast',2200);}
 function floorOrder(f){const s=String(f||'').trim().toUpperCase();const b=s.match(/^B(\d+)F?$/);if(b)return 100-+b[1];if(s==='RF')return 900;const n=s.match(/^(\d+)F?$/);if(n)return 100+ +n[1];return 500;}
 function catName(id){const c=cats.find(x=>x.category_id===id);return c?c.name:'';}
 function catCode(id){const c=cats.find(x=>x.category_id===id);return c?c.code:'OTH';}
 
-// ── 表單欄位設定（八大類）────────────────────────────────
+// ?�?� 表單欄�?設�?（八大�?）�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 const GROUPS=[
- {t:'一、基本識別',f:[
-   ['material_code','材料編號（自動）','ro'],['material_name','材料名稱*','text'],['material_alias','材料別名','text'],
-   ['category_id','材料分類','cat'],['sub_category','材料子分類','text'],['material_type','材料類型','text'],
-   ['floor','樓層','floor'],['space_id','平面空間（區域位置表）','space'],['status','使用狀態','status']]},
- {t:'二、規格屬性',f:[
-   ['brand','品牌','text'],['manufacturer','製造商','text'],['model','型號','text'],
+ {t:'一?�基?��???,f:[
+   ['material_code','?��?編�?（自?��?','ro'],['material_name','?��??�稱*','text'],['material_alias','?��??��?','text'],
+   ['category_id','?��??��?','cat'],['sub_category','?��?子�?�?,'text'],['material_type','?��?類�?','text'],
+   ['floor','樓層','floor'],['space_id','平面空�?（�??��?置表�?,'space'],['status','使用?�??,'status']]},
+ {t:'二、�??�屬??,f:[
+   ['brand','?��?','text'],['manufacturer','製造�?','text'],['model','?��?','text'],
    ['specification','規格','text'],['size','尺寸','text'],['color','顏色','text'],
-   ['material_txt','材質','text'],['unit','計量單位','text'],['weight','重量','text'],
-   ['capacity','容量','text'],['voltage','電壓','text'],['current_a','電流','text'],
-   ['power','功率','text'],['frequency','頻率','text'],['pressure','壓力','text'],
-   ['temperature_range','適用溫度','text'],['waterproof_level','防水等級','text'],['ip_rating','IP 防護等級','text']]},
- {t:'三、採購資訊',f:[
-   ['supplier','供應商','text'],['supplier_code','供應商代碼','text'],['original_manufacturer','原廠名稱','text'],
-   ['country','產地','text'],['purchase_price','採購單價','num'],['currency','幣別','text'],
-   ['warranty','保固期限','text'],['lead_time','交貨天數','num']]},
- {t:'四、庫存資訊',f:[
-   ['safety_stock','安全庫存','num'],['current_stock','目前庫存','num'],['maximum_stock','最大庫存','num'],
-   ['minimum_stock','最低庫存','num'],['storage_location','儲位','text'],['shelf','貨架','text'],
-   ['batch_number','批號','text'],['expiry_date','有效期限','date']]},
- {t:'五、管理資訊',f:[
-   ['barcode','條碼','text'],['rfid','RFID 編號','text'],['asset_tag','資產標籤','text']]},
- {t:'六、附件資訊（檔案連結，供 QR 掃描開啟）',f:[
-   ['product_image','產品照片 URL','url'],['datasheet_url','規格書 URL','url'],['manual_url','操作手冊 URL','url'],
-   ['sds_url','安全資料表 SDS URL','url'],['certificate_url','認證文件 URL','url'],
-   ['cad_file_url','CAD 圖檔 URL','url'],['bim_file_url','BIM 模型 URL','url']]},
- {t:'七、巡檢相關屬性',f:[
-   ['inspection_required','是否需要巡檢','bool'],['inspection_cycle','巡檢週期','text'],['maintenance_cycle','保養週期','text'],
-   ['replacement_cycle','建議更換週期','text'],['critical_level','重要程度','level'],['risk_level','風險等級','level']]},
- {t:'八、備註',f:[
-   ['description','材料說明','area'],['remark','備註','area']]},
+   ['material_txt','?�質','text'],['unit','計�??��?','text'],['weight','?��?','text'],
+   ['capacity','容�?','text'],['voltage','?��?','text'],['current_a','?��?','text'],
+   ['power','?��?','text'],['frequency','?��?','text'],['pressure','壓�?','text'],
+   ['temperature_range','?�用溫度','text'],['waterproof_level','?�水等�?','text'],['ip_rating','IP ?�護等�?','text']]},
+ {t:'三、採購�?�?,f:[
+   ['supplier','供�???,'text'],['supplier_code','供�??�代�?,'text'],['original_manufacturer','?��??�稱','text'],
+   ['country','?�地','text'],['purchase_price','?�購?�價','num'],['currency','�?��','text'],
+   ['warranty','保固?��?','text'],['lead_time','交貨天數','num']]},
+ {t:'?�、庫存�?�?,f:[
+   ['safety_stock','安全庫�?','num'],['current_stock','?��?庫�?','num'],['maximum_stock','?�大庫�?,'num'],
+   ['minimum_stock','?�低庫�?,'num'],['storage_location','?��?','text'],['shelf','貨架','text'],
+   ['batch_number','?��?','text'],['expiry_date','?��??��?','date']]},
+ {t:'五、管?��?�?,f:[
+   ['barcode','條碼','text'],['rfid','RFID 編�?','text'],['asset_tag','資產標籤','text']]},
+ {t:'?�、�?件�?訊�?檔�????，�? QR ?��??��?�?,f:[
+   ['product_image','?��??��? URL','url'],['datasheet_url','規格??URL','url'],['manual_url','?��??��? URL','url'],
+   ['sds_url','安全資�?�?SDS URL','url'],['certificate_url','認�??�件 URL','url'],
+   ['cad_file_url','CAD ?��? URL','url'],['bim_file_url','BIM 模�? URL','url']]},
+ {t:'七、巡檢相?�屬??,f:[
+   ['inspection_required','?�否?�要巡�?,'bool'],['inspection_cycle','巡檢?��?','text'],['maintenance_cycle','保�??��?','text'],
+   ['replacement_cycle','建議?��??��?','text'],['critical_level','?��?程度','level'],['risk_level','風險等�?','level']]},
+ {t:'?�、�?�?,f:[
+   ['description','?��?說�?','area'],['remark','?�註','area']]},
 ];
 
 async function load(){
@@ -257,10 +257,10 @@ async function load(){
     db.from('material_categories').select('*').eq('status','active').order('sort_order'),
     db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').limit(5000)
   ]);
-  if(m.error){document.getElementById('tbody').innerHTML='<tr><td colspan="12" class="empty">無法讀取。請先於 Supabase 執行 sql/material_master.sql 建表。</td></tr>';return;}
+  if(m.error){document.getElementById('tbody').innerHTML='<tr><td colspan="12" class="empty">?��?讀?�。�??�於 Supabase ?��? sql/material_master.sql 建表??/td></tr>';return;}
   mats=m.data||[]; cats=c.data||[]; spaces=s.data||[];
   buildFilters();
-  // 深連結 ?m=code → 直接開該材料 QR
+  // 深�?? ?m=code ???�接?�該?��? QR
   const q=new URLSearchParams(location.search).get('m');
   render();
   if(q){const t=mats.find(x=>x.material_code===q||x.material_id===q);if(t)showQR(t.material_id);}
@@ -268,8 +268,8 @@ async function load(){
 
 function buildFilters(){
   const floors=[...new Set([...mats.map(x=>x.floor),...spaces.map(x=>x.floor)].filter(Boolean))].sort((a,b)=>floorOrder(a)-floorOrder(b));
-  document.getElementById('f-floor').innerHTML='<option value="">全部樓層</option>'+floors.map(f=>`<option>${esc(f)}</option>`).join('');
-  document.getElementById('f-cat').innerHTML='<option value="">全部分類</option>'+cats.map(c=>`<option value="${c.category_id}">${esc(c.name)}</option>`).join('');
+  document.getElementById('f-floor').innerHTML='<option value="">?�部樓層</option>'+floors.map(f=>`<option>${esc(f)}</option>`).join('');
+  document.getElementById('f-cat').innerHTML='<option value="">?�部?��?</option>'+cats.map(c=>`<option value="${c.category_id}">${esc(c.name)}</option>`).join('');
 }
 
 function filtered(){
@@ -280,7 +280,7 @@ function filtered(){
   if(fc) list=list.filter(x=>x.category_id===fc);
   if(fs) list=list.filter(x=>x.status===fs);
   if(q) list=list.filter(x=>[x.material_code,x.material_name,x.brand,x.model,x.specification,x.material_alias].some(v=>(v||'').toLowerCase().includes(q)));
-  // 第一欄樓層排序
+  // 第�?欄�?層�?�?
   list.sort((a,b)=>floorOrder(a.floor)-floorOrder(b.floor) || (a.material_code||'').localeCompare(b.material_code||''));
   return list;
 }
@@ -298,73 +298,73 @@ function render(){
   if(page>pages)page=pages;
   const slice=list.slice((page-1)*PER,page*PER);
   const tb=document.getElementById('tbody');
-  if(!slice.length){tb.innerHTML='<tr><td colspan="12" class="empty">尚無資料，請「新增材料」。</td></tr>';}
+  if(!slice.length){tb.innerHTML='<tr><td colspan="12" class="empty">尚無資�?，�??�新增�??�」�?/td></tr>';}
   else tb.innerHTML=slice.map(m=>{
     const low=m.safety_stock!=null&&m.current_stock!=null&&+m.current_stock<+m.safety_stock;
-    const files=fileLink(m.cad_file_url,'CAD')+fileLink(m.datasheet_url,'規格')+fileLink(m.manual_url,'手冊');
+    const files=fileLink(m.cad_file_url,'CAD')+fileLink(m.datasheet_url,'規格')+fileLink(m.manual_url,'?��?');
     return `<tr>
-      <td class="floor-cell">${esc(m.floor||'—')}</td>
-      <td class="code-cell">${esc(m.material_code||'—')}</td>
+      <td class="floor-cell">${esc(m.floor||'??)}</td>
+      <td class="code-cell">${esc(m.material_code||'??)}</td>
       <td>${esc(m.material_name||'')}</td>
-      <td>${esc(catName(m.category_id)||'—')}</td>
-      <td>${esc(m.model||m.specification||'—')}</td>
-      <td>${esc(m.brand||'—')}</td>
-      <td><span class="pill ${m.status==='active'?'on':'off'}">${m.status==='active'?'啟用':'停用'}</span></td>
-      <td>${m.current_stock==null?'—':`<span class="${low?'stk-low':''}">${m.current_stock}</span>`} / ${m.safety_stock==null?'—':m.safety_stock}</td>
-      <td>${m.inspection_required?'<span class="pill on">需</span>':'<span class="pill">否</span>'}</td>
+      <td>${esc(catName(m.category_id)||'??)}</td>
+      <td>${esc(m.model||m.specification||'??)}</td>
+      <td>${esc(m.brand||'??)}</td>
+      <td><span class="pill ${m.status==='active'?'on':'off'}">${m.status==='active'?'?�用':'?�用'}</span></td>
+      <td>${m.current_stock==null?'??:`<span class="${low?'stk-low':''}">${m.current_stock}</span>`} / ${m.safety_stock==null?'??:m.safety_stock}</td>
+      <td>${m.inspection_required?'<span class="pill on">?�</span>':'<span class="pill">??/span>'}</td>
       <td>${files}</td>
-      <td><span class="act" onclick="showQR('${m.material_id}')">◱ QR</span></td>
-      <td><span class="act" onclick="openEdit('${m.material_id}')">編輯</span><span class="act del" onclick="delMaterial('${m.material_id}')">刪除</span></td>
+      <td><span class="act" onclick="showQR('${m.material_id}')">??QR</span></td>
+      <td><span class="act" onclick="openEdit('${m.material_id}')">編輯</span><span class="act del" onclick="delMaterial('${m.material_id}')">?�除</span></td>
     </tr>`;
   }).join('');
-  document.getElementById('pInfo').textContent=`共 ${list.length} 筆 · 每頁 ${PER} 筆`;
+  document.getElementById('pInfo').textContent=`??${list.length} �?· 每�? ${PER} 筆`;
   document.getElementById('pNum').textContent=`${page} / ${pages}`;
   document.getElementById('pPrev').disabled=page<=1;
   document.getElementById('pNext').disabled=page>=pages;
 }
 function goPage(p){const pages=Math.max(1,Math.ceil(filtered().length/PER));page=Math.min(Math.max(1,p),pages);render();}
 
-// ── 表單建立 ──────────────────────────────────────────────
+// ?�?� 表單建�? ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function buildForm(m){
   const box=document.getElementById('mForm');
-  const filed=editId?fmtDate(m.created_at):todayISO();   // 填表日期（統一 YYYY-MM-DD）
-  const header=`<div style="display:flex;justify-content:flex-end;gap:6px;font-size:.72rem;color:var(--text-dim);margin-bottom:8px">填表日期：<b style="color:var(--cyan);font-family:'Share Tech Mono',monospace">${filed}</b></div>`;
+  const filed=editId?fmtDate(m.created_at):todayISO();   // 填表?��?（統一 YYYY-MM-DD�?
+  const header=`<div style="display:flex;justify-content:flex-end;gap:6px;font-size:.72rem;color:var(--text-dim);margin-bottom:8px">填表?��?�?b style="color:var(--cyan);font-family:'Share Tech Mono',monospace">${filed}</b></div>`;
   box.innerHTML=header+GROUPS.map((g,gi)=>{
     const fields=g.f.map(([k,lab,type])=>{
       const v=m[k];
       let ctrl;
-      if(type==='cat') ctrl=`<select id="fx-${k}" onchange="autoCode()"><option value="">—</option>`+cats.map(c=>`<option value="${c.category_id}" ${v===c.category_id?'selected':''}>${esc(c.name)}</option>`).join('')+`</select>`;
-      else if(type==='space') ctrl=`<select id="fx-${k}"><option value="">—</option>`+spaces.slice().sort((a,b)=>floorOrder(a.floor)-floorOrder(b.floor)).map(s=>`<option value="${s.space_id}" ${v===s.space_id?'selected':''}>${esc(s.floor)} · ${esc(s.space_name)}</option>`).join('')+`</select>`;
+      if(type==='cat') ctrl=`<select id="fx-${k}" onchange="autoCode()"><option value="">??/option>`+cats.map(c=>`<option value="${c.category_id}" ${v===c.category_id?'selected':''}>${esc(c.name)}</option>`).join('')+`</select>`;
+      else if(type==='space') ctrl=`<select id="fx-${k}"><option value="">??/option>`+spaces.slice().sort((a,b)=>floorOrder(a.floor)-floorOrder(b.floor)).map(s=>`<option value="${s.space_id}" ${v===s.space_id?'selected':''}>${esc(s.floor)} · ${esc(s.space_name)}</option>`).join('')+`</select>`;
       else if(type==='floor') ctrl=`<input id="fx-${k}" list="floorDL" value="${esc(v||'')}" onchange="autoCode()">`;
-      else if(type==='status') ctrl=`<select id="fx-${k}"><option value="active" ${v!=='inactive'?'selected':''}>啟用</option><option value="inactive" ${v==='inactive'?'selected':''}>停用</option></select>`;
-      else if(type==='bool') ctrl=`<select id="fx-${k}"><option value="false" ${!v?'selected':''}>否</option><option value="true" ${v?'selected':''}>是</option></select>`;
-      else if(type==='level') ctrl=`<select id="fx-${k}"><option value="">—</option>`+['低','中','高','極高'].map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')+`</select>`;
+      else if(type==='status') ctrl=`<select id="fx-${k}"><option value="active" ${v!=='inactive'?'selected':''}>?�用</option><option value="inactive" ${v==='inactive'?'selected':''}>?�用</option></select>`;
+      else if(type==='bool') ctrl=`<select id="fx-${k}"><option value="false" ${!v?'selected':''}>??/option><option value="true" ${v?'selected':''}>??/option></select>`;
+      else if(type==='level') ctrl=`<select id="fx-${k}"><option value="">??/option>`+['�?,'�?,'�?,'極�?'].map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')+`</select>`;
       else if(type==='area') ctrl=`<textarea id="fx-${k}">${esc(v||'')}</textarea>`;
-      else if(type==='ro') ctrl=`<input id="fx-${k}" value="${esc(v||'')}" readonly placeholder="選分類與樓層後自動產生">`;
+      else if(type==='ro') ctrl=`<input id="fx-${k}" value="${esc(v||'')}" readonly placeholder="?��?類�?樓層後自?�產??>`;
       else ctrl=`<input id="fx-${k}" type="${type==='num'?'number':type==='date'?'date':'text'}" value="${esc(v==null?'':v)}">`;
       const wide=(type==='area')?' wide':'';
       return `<div class="fld${wide}"><label>${esc(lab)}</label>${ctrl}</div>`;
     }).join('');
-    return `<div class="grp${gi>0?' collapsed':''}"><div class="grp-h" onclick="this.parentNode.classList.toggle('collapsed')"><span class="cv">▾</span>${esc(g.t)}</div><div class="grp-b">${fields}</div></div>`;
+    return `<div class="grp${gi>0?' collapsed':''}"><div class="grp-h" onclick="this.parentNode.classList.toggle('collapsed')"><span class="cv">??/span>${esc(g.t)}</div><div class="grp-b">${fields}</div></div>`;
   }).join('')+`<datalist id="floorDL">${[...new Set([...spaces.map(s=>s.floor),'B1','1F','2F','3F','4F','RF'])].map(f=>`<option>${esc(f)}</option>`).join('')}</datalist>`;
 }
 function fval(k){const el=document.getElementById('fx-'+k);return el?el.value:'';}
-// 材料編號邏輯：分類代碼-樓層-流水號（ELE-B1-0001）
+// ?��?編�??�輯：�?類代�?樓層-流水?��?ELE-B1-0001�?
 function autoCode(){
-  if(editId) return;                    // 編輯時不改號
+  if(editId) return;                    // 編輯?��??��?
   const cat=catCode(fval('category_id')), fl=(fval('floor')||'NA').toUpperCase().replace(/\s/g,'');
   if(!fval('category_id')||!fval('floor')){document.getElementById('fx-material_code').value='';return;}
   const pre=`${cat}-${fl}-`;
   let max=0; mats.forEach(m=>{if((m.material_code||'').startsWith(pre)){const n=parseInt((m.material_code.split('-')[2]||'0'),10);if(n>max)max=n;}});
   document.getElementById('fx-material_code').value=pre+String(max+1).padStart(4,'0');
 }
-function openAdd(){editId=null;document.getElementById('mTitle').textContent='新增材料';document.getElementById('mMsg').textContent='';buildForm({status:'active'});show('m-edit');}
-function openEdit(id){const m=mats.find(x=>x.material_id===id);if(!m)return;editId=id;document.getElementById('mTitle').textContent='編輯材料 '+(m.material_code||'');document.getElementById('mMsg').textContent='';buildForm(m);show('m-edit');}
+function openAdd(){editId=null;document.getElementById('mTitle').textContent='?��??��?';document.getElementById('mMsg').textContent='';buildForm({status:'active'});show('m-edit');}
+function openEdit(id){const m=mats.find(x=>x.material_id===id);if(!m)return;editId=id;document.getElementById('mTitle').textContent='編輯?��? '+(m.material_code||'');document.getElementById('mMsg').textContent='';buildForm(m);show('m-edit');}
 
 async function saveMaterial(){
   const msg=document.getElementById('mMsg');
   const name=fval('material_name').trim();
-  if(!name){msg.textContent='請輸入材料名稱';return;}
+  if(!name){msg.textContent='請輸?��??��?�?;return;}
   const rec={};
   GROUPS.forEach(g=>g.f.forEach(([k,,type])=>{
     let v=fval(k); if(type==='ro'&&k==='material_code') v=fval('material_code');
@@ -373,7 +373,7 @@ async function saveMaterial(){
     else if(type==='bool') rec[k]=(v==='true');
     else rec[k]=v;
   }));
-  if(!rec.material_code){ // 保底自動產生
+  if(!rec.material_code){ // 保�??��??��?
     const cat=catCode(rec.category_id), fl=(rec.floor||'NA');
     const pre=`${cat}-${fl}-`; let max=0; mats.forEach(m=>{if((m.material_code||'').startsWith(pre)){const n=parseInt((m.material_code.split('-')[2]||'0'),10);if(n>max)max=n;}});
     rec.material_code=pre+String(max+1).padStart(4,'0');
@@ -381,17 +381,17 @@ async function saveMaterial(){
   let error;
   if(editId){({error}=await db.from('materials').update(rec).eq('material_id',editId));}
   else{({error}=await db.from('materials').insert(rec));}
-  if(error){msg.textContent=(error.code==='23505'?'材料編號重複':'儲存失敗：'+translateError(error.message));return;}
-  closeM('m-edit');toast(editId?'已更新':'已新增');await load();
+  if(error){msg.textContent=(error.code==='23505'?'?��?編�??��?':'?��?失�?�?+translateError(error.message));return;}
+  closeM('m-edit');toast(editId?'已更??:'已新�?);await load();
 }
 async function delMaterial(id){const m=mats.find(x=>x.material_id===id);if(!m)return;
-  if(!confirm(`確定刪除「${m.material_code||''} ${m.material_name}」？`))return;
+  if(!confirm(`確�??�除??{m.material_code||''} ${m.material_name}?��?`))return;
   const {error}=await db.from('materials').delete().eq('material_id',id);
-  if(error){toast('刪除失敗：'+translateError(error.message),true);return;}
-  toast('已刪除');await load();
+  if(error){toast('?�除失�?�?+translateError(error.message),true);return;}
+  toast('已刪??);await load();
 }
 
-// ── QR：掃描導向設備連結檔（CAD/規格書/手冊…），無檔則導向明細 ──
+// ?�?� QR：�??��??�設?��??檔�?CAD/規格???��??��?，無檔�?導�??�細 ?�?�
 function qrTargetOf(m){
   return m.cad_file_url||m.datasheet_url||m.manual_url||m.bim_file_url||m.product_image||
     (location.origin+location.pathname+'?m='+encodeURIComponent(m.material_code||m.material_id));
@@ -407,31 +407,31 @@ function showQR(id){
 }
 function openQrTarget(){if(qrTargetUrl)window.open(qrTargetUrl,'_blank','noopener');}
 
-// 匯出/匯入共用欄位（順序一致，方便匯出後修改再匯入）
+// ?�出/?�入?�用欄�?（�?序�??��??�便?�出後修?��??�入�?
 const IE_COLS=['floor','material_code','material_name','material_alias','category','sub_category','material_type','status',
   'brand','manufacturer','model','specification','unit','purchase_price','currency','safety_stock','current_stock',
   'storage_location','shelf','inspection_required','inspection_cycle','maintenance_cycle','critical_level','risk_level',
   'cad_file_url','datasheet_url','manual_url','qr_code','remark'];
-const IE_HEAD=['樓層','材料編號','名稱','別名','分類','子分類','類型','狀態','品牌','製造商','型號','規格','單位','採購單價','幣別',
-  '安全庫存','目前庫存','儲位','貨架','需巡檢','巡檢週期','保養週期','重要程度','風險等級','CAD','規格書','手冊','QR','備註'];
+const IE_HEAD=['樓層','?��?編�?','?�稱','?��?','?��?','子�?�?,'類�?','?�??,'?��?','製造�?','?��?','規格','?��?','?�購?�價','�?��',
+  '安全庫�?','?��?庫�?','?��?','貨架','?�巡檢','巡檢?��?','保�??��?','?��?程度','風險等�?','CAD','規格??,'?��?','QR','?�註'];
 const NUM_FIELDS=new Set(['purchase_price','safety_stock','current_stock','maximum_stock','minimum_stock','lead_time']);
 
 function exportXLSX(fmt){
   fmt=fmt||'xlsx';
-  const rows=filtered().map(m=>IE_COLS.map(c=>c==='category'?catName(m.category_id):(c==='inspection_required'?(m[c]?'是':'否'):(c==='status'?(m[c]==='inactive'?'停用':'啟用'):(m[c]==null?'':m[c])))));
+  const rows=filtered().map(m=>IE_COLS.map(c=>c==='category'?catName(m.category_id):(c==='inspection_required'?(m[c]?'??:'??):(c==='status'?(m[c]==='inactive'?'?�用':'?�用'):(m[c]==null?'':m[c])))));
   const ws=XLSX.utils.aoa_to_sheet([IE_HEAD,...rows]);const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'MaterialMaster');
-  XLSX.writeFile(wb,`設備材料主檔_${todayISO()}.${fmt}`,{bookType:fmt});
-  toast('已匯出 '+fmt.toUpperCase());
+  XLSX.writeFile(wb,`設�??��?主�?_${todayISO()}.${fmt}`,{bookType:fmt});
+  toast('已匯??'+fmt.toUpperCase());
 }
 function downloadTemplate(){
-  const sample=['B1','ELE-B1-0001','範例：低壓配電盤','','電氣材料','','設備','啟用','品牌A','製造商A','型號X','規格說明','台','120000','TWD','1','2','B1配電室','A-01','是','每月','每季','高','中','','','','','範例備註'];
+  const sample=['B1','ELE-B1-0001','範�?：�?壓�??�盤','','?�氣?��?','','設�?','?�用','?��?A','製造�?A','?��?X','規格說�?','??,'120000','TWD','1','2','B1?�電�?,'A-01','??,'每�?','每季','�?,'�?,'','','','','範�??�註'];
   const ws=XLSX.utils.aoa_to_sheet([IE_HEAD,sample]);const wb=XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb,ws,'MaterialMaster');
-  XLSX.writeFile(wb,'設備材料主檔_匯入範本.xlsx');
+  XLSX.writeFile(wb,'設�??��?主�?_?�入範本.xlsx');
 }
 
-// ── 整筆匯入（XLSX / CSV）──────────────────────────────────
+// ?�?� ?��??�入（XLSX / CSV）�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function catIdByName(n){const c=cats.find(x=>x.name===String(n).trim()||x.code===String(n).trim().toUpperCase());return c?c.category_id:null;}
 function onImportFile(ev){
   const file=ev.target.files[0];ev.target.value='';if(!file)return;
@@ -440,16 +440,16 @@ function onImportFile(ev){
     const wb=XLSX.read(e.target.result,{type:'array'});
     const ws=wb.Sheets[wb.SheetNames[0]];
     await importAoa(XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false}));
-  }catch(err){toast('匯入失敗：'+translateError(err.message),true);}};
+  }catch(err){toast('?�入失�?�?+translateError(err.message),true);}};
   r.readAsArrayBuffer(file);
 }
 async function importAoa(aoa){
-  if(!aoa||aoa.length<2){toast('檔案無資料列',true);return;}
+  if(!aoa||aoa.length<2){toast('檔�??��??��?',true);return;}
   const head=aoa[0].map(c=>String(c||'').trim());
-  // 標題 → 欄位索引（依中文標題對應；找不到就用欄位順序）
+  // 標�? ??欄�?索�?（�?中�?標�?對�?；找不到就用欄�??��?�?
   const idx={};
   IE_HEAD.forEach((h,i)=>{const p=head.indexOf(h);idx[IE_COLS[i]]=(p>=0?p:i);});
-  const seqCounter={};                       // 產生新編號用
+  const seqCounter={};                       // ?��??�編?�用
   const nextCode=(cat,fl)=>{const pre=`${cat||'OTH'}-${(fl||'NA').toUpperCase().replace(/\s/g,'')}-`;
     if(seqCounter[pre]==null){let mx=0;mats.forEach(m=>{if((m.material_code||'').startsWith(pre)){const n=parseInt(m.material_code.split('-')[2]||'0',10);if(n>mx)mx=n;}});seqCounter[pre]=mx;}
     return pre+String(++seqCounter[pre]).padStart(4,'0');};
@@ -459,8 +459,8 @@ async function importAoa(aoa){
     const name=g('material_name'); if(!name)continue;
     const rec={material_name:name};
     IE_COLS.forEach(c=>{if(c==='material_name'||c==='category')return;let v=g(c);if(v==='')return;
-      if(c==='status')rec[c]=(v==='停用'||v.toLowerCase()==='inactive')?'inactive':'active';
-      else if(c==='inspection_required')rec[c]=/^(是|Y|yes|true|需|1)$/i.test(v);
+      if(c==='status')rec[c]=(v==='?�用'||v.toLowerCase()==='inactive')?'inactive':'active';
+      else if(c==='inspection_required')rec[c]=/^(?�|Y|yes|true|?�|1)$/i.test(v);
       else if(NUM_FIELDS.has(c))rec[c]=Number(v);
       else rec[c]=v;});
     const catId=catIdByName(g('category')); if(catId)rec.category_id=catId;
@@ -468,12 +468,12 @@ async function importAoa(aoa){
     if(!rec.material_code){rec.material_code=nextCode(catCode(rec.category_id),rec.floor);noCode.push(rec);}
     else withCode.push(rec);
   }
-  if(!withCode.length&&!noCode.length){toast('未讀取到有效資料',true);return;}
+  if(!withCode.length&&!noCode.length){toast('?��??�到?��?資�?',true);return;}
   let ok=0,err=null;
   if(withCode.length){const {error}=await db.from('materials').upsert(withCode,{onConflict:'material_code'});if(error)err=error;else ok+=withCode.length;}
   if(noCode.length){const {error}=await db.from('materials').insert(noCode);if(error)err=error;else ok+=noCode.length;}
-  if(err){toast('匯入部分失敗：'+translateError(err.message),true);}
-  else toast(`已匯入 ${ok} 筆`);
+  if(err){toast('?�入?��?失�?�?+translateError(err.message),true);}
+  else toast(`已匯??${ok} 筆`);
   await load();
 }
 

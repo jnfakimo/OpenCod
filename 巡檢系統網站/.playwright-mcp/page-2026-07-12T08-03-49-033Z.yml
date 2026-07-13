@@ -1,0 +1,93 @@
+- generic [active] [ref=f20e1]:
+  - navigation [ref=f20e2]:
+    - generic [ref=f20e3]:
+      - generic [ref=f20e4]: ◧ 設備材料管理
+      - generic [ref=f20e5]: Material Master · 臺北農產 第一果菜市場
+    - link [ref=f20e6] [cursor=pointer]:
+      - /url: dashboard.html
+      - button "◫ 戰情儀表板" [ref=f20e7]
+    - link [ref=f20e8] [cursor=pointer]:
+      - /url: workorder.html
+      - button "◪ 報修系統" [ref=f20e9]
+    - link [ref=f20e10] [cursor=pointer]:
+      - /url: app.html
+      - button "◉ 巡檢" [ref=f20e11]
+    - link [ref=f20e12] [cursor=pointer]:
+      - /url: admin.html
+      - button "← 後台" [ref=f20e13]
+  - generic [ref=f20e14]:
+    - generic [ref=f20e15]:
+      - generic [ref=f20e16]:
+        - generic [ref=f20e17]: "0"
+        - generic [ref=f20e18]: 材料總筆數
+      - generic [ref=f20e19]:
+        - generic [ref=f20e20]: "0"
+        - generic [ref=f20e21]: 分類數
+      - generic [ref=f20e22]:
+        - generic [ref=f20e23]: "0"
+        - generic [ref=f20e24]: 需巡檢
+      - generic [ref=f20e25]:
+        - generic [ref=f20e26]: "0"
+        - generic [ref=f20e27]: 低於安全庫存
+    - generic [ref=f20e28]:
+      - combobox [ref=f20e29]:
+        - option "全部樓層" [selected]
+        - option "B1F"
+        - option "1F"
+        - option "2F"
+        - option "3F"
+      - combobox [ref=f20e30]:
+        - option "全部分類" [selected]
+        - option "電氣材料"
+        - option "機械材料"
+        - option "消防設備"
+        - option "空調設備"
+        - option "給排水材料"
+        - option "管材"
+        - option "閥件"
+        - option "軸承"
+        - option "馬達"
+        - option "感測器"
+        - option "PLC控制元件"
+        - option "電纜線材"
+        - option "照明設備"
+        - option "五金零件"
+        - option "潤滑油品"
+        - option "清潔耗材"
+        - option "安全防護用品"
+        - option "工具"
+        - option "備品零件"
+        - option "其他"
+      - combobox [ref=f20e31]:
+        - option "全部狀態" [selected]
+        - option "啟用"
+        - option "停用"
+      - textbox "搜尋 編號/名稱/品牌/型號…" [ref=f20e32]
+      - button "＋ 新增材料" [ref=f20e33] [cursor=pointer]
+      - button "⭳ 匯入XLSX" [ref=f20e34] [cursor=pointer]
+      - button "⭱ 匯出XLSX" [ref=f20e35] [cursor=pointer]
+      - button "▤ 範本" [ref=f20e36] [cursor=pointer]
+    - table [ref=f20e38]:
+      - rowgroup [ref=f20e39]:
+        - row [ref=f20e40]:
+          - columnheader "樓層" [ref=f20e41]
+          - columnheader "材料編號" [ref=f20e42]
+          - columnheader "名稱" [ref=f20e43]
+          - columnheader "分類" [ref=f20e44]
+          - columnheader "型號 / 規格" [ref=f20e45]
+          - columnheader "品牌" [ref=f20e46]
+          - columnheader "狀態" [ref=f20e47]
+          - columnheader "庫存(現/安)" [ref=f20e48]
+          - columnheader "巡檢" [ref=f20e49]
+          - columnheader "連結檔" [ref=f20e50]
+          - columnheader "QR" [ref=f20e51]
+          - columnheader "操作" [ref=f20e52]
+      - rowgroup [ref=f20e60]:
+        - row [ref=f20e61]:
+          - cell "尚無資料，請「新增材料」。" [ref=f20e62]
+    - generic [ref=f20e53]:
+      - generic [ref=f20e54]: 共 0 筆 · 每頁 10 筆
+      - button "‹ 上一頁" [disabled] [ref=f20e55]
+      - generic [ref=f20e56]: 1 / 1
+      - button "下一頁 ›" [disabled] [ref=f20e57]
+  - button "切換介面風格" [ref=f20e59] [cursor=pointer]: 🌙

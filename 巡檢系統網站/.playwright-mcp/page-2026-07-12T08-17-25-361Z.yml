@@ -1,0 +1,120 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]:
+    - generic [ref=f2e3]:
+      - generic [ref=f2e4]: "?��?農產?�銷?�份?��??�司 第�??��?市場"
+      - generic [ref=f2e5]: "???��?交接�?/span>"
+    - generic [ref=f2e6]:
+      - link "???��??�表板" [ref=f2e7] [cursor=pointer]:
+        - /url: dashboard.html
+      - link "???�修系統" [ref=f2e8] [cursor=pointer]:
+        - /url: workorder.html
+      - link "??巡檢" [ref=f2e9] [cursor=pointer]:
+        - /url: app.html
+      - link "�?後台" [ref=f2e10] [cursor=pointer]:
+        - /url: admin.html
+      - generic [ref=f2e11]:
+        - text: 載入中�?/span> --:--:--
+        - button "??返�?" [ref=f2e12] [cursor=pointer]
+  - generic [ref=f2e13]:
+    - button "???��?交接" [ref=f2e14] [cursor=pointer]
+    - button "??案件管�?" [ref=f2e15] [cursor=pointer]
+    - button "?? 交接記�?" [ref=f2e16] [cursor=pointer]
+  - generic [ref=f2e18]:
+    - generic [ref=f2e19]:
+      - generic [ref=f2e20]:
+        - generic [ref=f2e21]: "???�本資�?"
+        - generic [ref=f2e22]: 填表?��?�?b id="hFiled" style="color:var(--cyan);font-family:var(--font-mono)">
+      - generic [ref=f2e24]:
+        - generic [ref=f2e25]:
+          - generic [ref=f2e26]: "?�別"
+          - combobox [ref=f2e27]:
+            - option "?�班 06:00??4:00" [selected]
+            - option "中班 14:00??2:00"
+            - option "夜班 22:00??6:00"
+        - generic [ref=f2e28]: 交接?��?
+    - generic [ref=f2e30]:
+      - generic [ref=f2e31]: "???�班人員"
+      - generic [ref=f2e33]:
+        - generic [ref=f2e34]:
+          - generic [ref=f2e35]:
+            - text: 交接人�??�班�?/div>
+            - generic [ref=f2e36]:
+              - generic [ref=f2e37]:
+                - generic [ref=f2e38]: 第�?層部?�
+                - combobox [ref=f2e39]:
+                  - option "???��?第�?�???/option>" [selected]
+              - generic [ref=f2e40]:
+                - generic [ref=f2e41]: 第�?層�?課�?
+                - combobox [disabled] [ref=f2e42]:
+                  - option "???��?級單�???/option>" [selected]
+              - generic [ref=f2e43]:
+                - generic [ref=f2e44]: 交接人員
+                - combobox [ref=f2e45]:
+                  - option "???��?人員 ??/option>" [selected]
+          - generic [ref=f2e47]:
+            - text: "?�班人�??�班�?/div>"
+            - generic [ref=f2e48]:
+              - generic [ref=f2e49]:
+                - generic [ref=f2e50]: 第�?層部?�
+                - combobox [ref=f2e51]:
+                  - option "???��?第�?�???/option>" [selected]
+              - generic [ref=f2e52]:
+                - generic [ref=f2e53]: 第�?層�?課�?
+                - combobox [disabled] [ref=f2e54]:
+                  - option "???��?級單�???/option>" [selected]
+              - generic [ref=f2e55]:
+                - generic [ref=f2e56]: "?�班人員"
+                - combobox [ref=f2e57]:
+                  - option "???��?人員 ??/option>" [selected]
+        - generic [ref=f2e58]:
+          - generic [ref=f2e59]:
+            - generic [ref=f2e60]: "??設�??��?概�?"
+            - button "???�新?��?" [ref=f2e61] [cursor=pointer]
+          - generic [ref=f2e64]:
+            - generic [ref=f2e65]:
+              - text: "??/div>"
+              - generic [ref=f2e66]: "??�?��?�數"
+            - generic [ref=f2e67]:
+              - generic [ref=f2e68]:
+                - text: "??/div>"
+                - generic [ref=f2e69]: "???�常?�數"
+              - generic [ref=f2e71]:
+                - text: "??/div>"
+                - generic [ref=f2e72]: "??巡檢總數"
+              - generic [ref=f2e73]: "???��??�別?�日?��??��?載入?�班巡檢結�? ??/div>"
+            - generic [ref=f2e74]:
+              - generic [ref=f2e75]: "???�常事�?"
+              - generic [ref=f2e78]:
+                - textbox "輸入?�常事�?（�? Enter ?��?）�? onkeydown=" [ref=f2e79]
+                - button "�??��?" [ref=f2e80] [cursor=pointer]
+            - generic [ref=f2e81]:
+              - generic [ref=f2e82]: "??待辦事�?"
+              - generic [ref=f2e85]:
+                - textbox "輸入待辦事�?（�? Enter ?��?）�? onkeydown=" [ref=f2e86]: "022443"
+                - button "�??��?" [ref=f2e87] [cursor=pointer]
+            - generic [ref=f2e88]:
+              - generic [ref=f2e89]: "?�註"
+              - textbox "?��??�要說?��?事�???></textarea> </div> </div> <div class=" [ref=f2e92]:
+                - /placeholder: "?��??�要說?��?事�???></textarea>\n      </div>\n    </div>\n\n    <div class="
+                - text: "<button class=\"btn-primary\" onclick=\"saveDraft()\">?��??�稿</button> <button class=\"btn-primary btn-confirm\" onclick=\"confirmHandover()\">??確�?交接完�?</button> </div> <div style=\"height:24px\"></div> </div> <!-- ?��? TAB: CASE MANAGEMENT ?��? --> <div class=\"tab-panel\" id=\"panel-cases\"> <div class=\"case-stats\" id=\"caseStats\"> <div class=\"stat-chip\"><div class=\"stat-chip-val\" id=\"statOpen\" style=\"color:var(--red)\">??/div><div class=\"stat-chip-label\">待�???/div></div> <div class=\"stat-chip\"><div class=\"stat-chip-val\" id=\"statInProgress\" style=\"color:var(--amber)\">??/div><div class=\"stat-chip-label\">?��?�?/div></div> <div class=\"stat-chip\"><div class=\"stat-chip-val\" id=\"statPending\" style=\"color:var(--blue)\">??/div><div class=\"stat-chip-label\">待確�?/div></div> <div class=\"stat-chip\"><div class=\"stat-chip-val\" id=\"statOverdue\" style=\"color:var(--red)\">??/div><div class=\"stat-chip-label\">???��?</div></div> <div class=\"stat-chip\"><div class=\"stat-chip-val\" id=\"statClosed\" style=\"color:var(--green)\">??/div><div class=\"stat-chip-label\">已�?�?/div></div> </div> <div class=\"filter-bar\"> <select id=\"cfStatus\" onchange=\"loadCases()\"> <option value=\"\">?�部?�??/option> <option value=\"open\">待�???/option> <option value=\"in_progress\">?��?�?/option> <option value=\"pending\">待確�?/option> <option value=\"closed\">已�?�?/option> </select> <select id=\"cfCat\" onchange=\"loadCases()\"> <option value=\"\">?�部類別</option> <option value=\"機電設�?�?>機電設�?�?/option> <option value=\"工�?事�?�?>工�?事�?�?/option> <option value=\"駐警?��?\">駐警?��?</option> <option value=\"市場?��?�?>市場?��?�?/option> <option value=\"?��?\">?��?</option> </select> <div id=\"cfDateFrom-dtp\" style=\"min-width:150px\" title=\"起�??��?\"></div> <div id=\"cfDateTo-dtp\" style=\"min-width:150px\" title=\"結�??��?\"></div> <button class=\"btn-secondary btn-sm\" onclick=\"loadCases()\">???�整</button> <button class=\"btn-primary\" style=\"width:auto;padding:7px 18px;font-size:.84rem;margin-top:0\" onclick=\"openCaseForm()\">�??��?案件</button> </div> <div class=\"panel\"> <div style=\"overflow-x:auto\"> <table class=\"data-table\"> <thead> <tr> <th>案件編�?</th><th>?�常類別</th><th>案件標�?</th> <th>?�??/th><th>?�辦�?/th><th>?��???/th> <th>建�??��?</th><th>?��?</th> </tr> </thead> <tbody id=\"casesTbody\"> <tr><td colspan=\"8\" style=\"color:var(--text-dim);text-align:center;padding:24px\">載入中�?/td></tr> </tbody> </table> </div> </div> <div style=\"height:24px\"></div> </div> <!-- ?��? TAB: HISTORY ?��? --> <div class=\"tab-panel\" id=\"panel-history\"> <div class=\"filter-bar\"> <select id=\"fDeptL1\" onchange=\"onFDeptL1Change()\" style=\"min-width:120px\"><option value=\"\">?�部?��?</option></select> <select id=\"fDeptL2\" onchange=\"loadHistory()\" style=\"min-width:120px;opacity:0.45;pointer-events:none\"><option value=\"\">?�部課別</option></select> <select id=\"fShift\" onchange=\"loadHistory()\"> <option value=\"\">?�部?�別</option> <option value=\"morning\">?�班</option> <option value=\"afternoon\">中班</option> <option value=\"night\">夜班</option> </select> <select id=\"fStatus\" onchange=\"loadHistory()\"> <option value=\"\">?�部?�??/option> <option value=\"draft\">?�稿</option> <option value=\"confirmed\">已確�?/option> </select> <div id=\"fDateFrom-dtp\" style=\"min-width:150px\" title=\"起�??��?\"></div> <div id=\"fDateTo-dtp\" style=\"min-width:150px\" title=\"結�??��?\"></div> <button class=\"btn-secondary btn-sm\" onclick=\"loadHistory()\">???�整</button> </div> <div class=\"panel\"> <div style=\"overflow-x:auto\"> <table class=\"data-table\"> <thead> <tr> <th>?��?</th><th>?�別</th><th>?��?</th> <th>交接�?/th><th>?�班�?/th> <th style=\"text-align:right\">�?��</th><th style=\"text-align:right\">?�常</th> <th>事�??��?</th><th>?�??/th><th>?��?</th> </tr> </thead> <tbody id=\"historyTbody\"> <tr><td colspan=\"10\" style=\"color:var(--text-dim);text-align:center;padding:24px\">載入中�?/td></tr> </tbody> </table> </div> </div> </div> </div> <!-- ?��? HANDOVER DETAIL MODAL ?��? --> <div class=\"modal-bg\" id=\"detailModal\"> <div class=\"modal\"> <div class=\"modal-head\"> <span class=\"modal-title\" id=\"modalTitle\">交接記�?詳�?</span> <button class=\"modal-close\" onclick=\"closeHandoverModal()\">??/button> </div> <div class=\"modal-body\" id=\"modalBody\"></div> </div> </div> <!-- ?��? CASE FORM MODAL ?��? --> <div class=\"modal-bg\" id=\"caseFormModal\"> <div class=\"modal modal-wide\"> <div class=\"modal-head\"> <span class=\"modal-title\">???��?案件</span> <button class=\"modal-close\" onclick=\"closeCaseForm()\">??/button> </div> <div class=\"modal-body\"> <div class=\"form-grid\" style=\"grid-template-columns:1fr 1fr 1fr;margin-bottom:12px\"> <div class=\"field\"><label>案件編�?</label><input id=\"caseNo\" type=\"text\" readonly></div> <div class=\"field\"><label>?�別</label> <select id=\"caseShift\"> <option value=\"morning\">?�班 06:00??4:00</option> <option value=\"afternoon\">中班 14:00??2:00</option> <option value=\"night\">夜班 22:00??6:00</option> </select> </div> <div class=\"field\"><label>建�??��?</label><input id=\"caseCreatedAt\" type=\"text\" readonly></div> </div> <div class=\"form-grid\" style=\"grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:12px\"> <div class=\"field\"><label>?�屬單位�?第�?層�?</label> <select id=\"caseUnitL1\" onchange=\"onCaseUnitL1Change()\"> <option value=\"\">???��?第�?�???/option> </select> </div> <div class=\"field\"><label>�?組別（選填�?</label> <select id=\"caseUnitL2\" onchange=\"filterCaseReporter()\" disabled> <option value=\"\">???��?級單�???/option> </select> </div> <div class=\"field\"><label>?�報�?/label> <select id=\"caseReporter\"> <option value=\"\">???��??�報�???/option> </select> </div> <div class=\"field\"><label>?��??��?</label> <input id=\"caseLocation\" type=\"text\" placeholder=\"?��??��?\"> </div> </div> <input type=\"hidden\" id=\"caseReporterUnit\"> <div class=\"field\" style=\"margin-bottom:12px\"> <label>?��??��?</label> <div id=\"caseIncidentPicker\"></div> </div> <div class=\"form-grid\" style=\"grid-template-columns:1fr 1fr;margin-bottom:12px\"> <div class=\"field\"><label>?�常大�? *</label> <select id=\"caseCat\" onchange=\"onCaseCatChange()\"> <option value=\"\">???��?大�? ??/option> <option value=\"機電設�?�?>機電設�?�?/option> <option value=\"工�?事�?�?>工�?事�?�?/option> <option value=\"駐警?��?\">駐警?��?</option> <option value=\"市場?��?�?>市場?��?�?/option> <option value=\"?��?\">?��?</option> </select> </div> <div class=\"field\"><label>?�常小�?</label> <select id=\"caseSub\" disabled> <option value=\"\">??請�??��?大�? ??/option> </select> </div> </div> <div class=\"field\" id=\"caseOtherDiv\" style=\"display:none;margin-bottom:12px\"> <label>?��?說�?</label><input id=\"caseOther\" type=\"text\" placeholder=\"請說?�異常�???> </div> <div class=\"field\" style=\"margin-bottom:12px\"> <label>案件標�?</label><input id=\"caseTitle\" type=\"text\" placeholder=\"簡短?�述案件（�?空�??��??��?�?> </div> <div class=\"field\" style=\"margin-bottom:12px\"> <label>?�常事�?詳述</label> <textarea id=\"caseDesc\" placeholder=\"詳細?�述?�常事�??? style=\"min-height:80px\">"
+              - generic [ref=f2e93]:
+                - generic [ref=f2e94]: "?��??�形"
+                - textbox "已採?��??��??�施?? style=" [ref=f2e95]
+              - generic [ref=f2e96]:
+                - generic [ref=f2e97]: 後�?交接事�?
+                - textbox "?�交接給�?一?��?事�??? style=" [ref=f2e98]
+              - generic [ref=f2e99]:
+                - generic [ref=f2e100]: "?�註"
+                - textbox "?��??�註?? style=" [ref=f2e101]
+              - generic [ref=f2e102]:
+                - generic [ref=f2e103]:
+                  - generic [ref=f2e104]: "?�件�?span id=\"attachCount\">0/20"
+                  - text: �?/span>
+                  - button "�??��??�件" [ref=f2e106] [cursor=pointer]
+                - generic [ref=f2e107]:
+                  - text: "?�援?��?：JPG / PNG / PDF / DOCX / XLSX?�每�??��?20 ??/div>"
+                  - generic [ref=f2e108]: 尚無?�件
+              - generic [ref=f2e109]:
+                - button "?��?" [ref=f2e110] [cursor=pointer]
+                - button "?�交案件" [ref=f2e111] [cursor=pointer]
+  - button "切換介面風格" [ref=f2e112] [cursor=pointer]: 🌙

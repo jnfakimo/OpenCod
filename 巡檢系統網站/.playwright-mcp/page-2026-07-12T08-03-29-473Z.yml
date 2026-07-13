@@ -1,0 +1,44 @@
+- generic [active] [ref=f19e1]:
+  - navigation [ref=f19e2]:
+    - generic [ref=f19e3]:
+      - generic [ref=f19e4]: ◉ 設備履歷管理
+      - generic [ref=f19e5]: 設備主檔 · 完整生命週期履歷
+    - link [ref=f19e6] [cursor=pointer]:
+      - /url: dashboard.html
+      - button "◫ 戰情儀表板" [ref=f19e7]
+    - link [ref=f19e8] [cursor=pointer]:
+      - /url: workorder.html
+      - button "⚒ 報修系統" [ref=f19e9]
+    - link [ref=f19e10] [cursor=pointer]:
+      - /url: dispatch.html
+      - button "◪ 派工系統" [ref=f19e11]
+    - link [ref=f19e12] [cursor=pointer]:
+      - /url: app.html
+      - button "◉ 巡檢" [ref=f19e13]
+    - link [ref=f19e14] [cursor=pointer]:
+      - /url: admin.html
+      - button "← 後台" [ref=f19e15]
+  - generic [ref=f19e16]:
+    - generic [ref=f19e17]:
+      - combobox [ref=f19e18]:
+        - option "全部分類" [selected]
+      - combobox [ref=f19e19]:
+        - option "全部狀態" [selected]
+        - option "啟用"
+        - option "停用"
+        - option "汰除"
+      - textbox "搜尋 名稱 / QR / 序號…" [ref=f19e20]
+      - button "＋ 新增設備" [ref=f19e21] [cursor=pointer]
+    - table [ref=f19e22]:
+      - rowgroup [ref=f19e23]:
+        - row [ref=f19e24]:
+          - columnheader "設備名稱" [ref=f19e25]
+          - columnheader "分類" [ref=f19e26]
+          - columnheader "QR Code" [ref=f19e27]
+          - columnheader "位置" [ref=f19e28]
+          - columnheader "狀態" [ref=f19e29]
+          - columnheader [ref=f19e30]
+      - rowgroup [ref=f19e31]:
+        - row [ref=f19e32] [cursor=pointer]:
+          - cell "載入中…" [ref=f19e33]
+  - button "切換介面風格" [ref=f19e34] [cursor=pointer]: 🌙

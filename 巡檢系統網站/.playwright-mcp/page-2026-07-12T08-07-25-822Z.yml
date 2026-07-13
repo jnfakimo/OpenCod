@@ -1,0 +1,170 @@
+- generic [active] [ref=f33e1]:
+  - navigation [ref=f33e2]:
+    - generic [ref=f33e3]:
+      - generic [ref=f33e4]: ⇄ 整合 API 文件
+      - generic [ref=f33e5]: 系統整合 API 參考
+    - link [ref=f33e6] [cursor=pointer]:
+      - /url: dashboard.html
+      - button "◫ 戰情儀表板" [ref=f33e7]
+    - link [ref=f33e8] [cursor=pointer]:
+      - /url: workorder.html
+      - button "⚒ 報修系統" [ref=f33e9]
+    - link [ref=f33e10] [cursor=pointer]:
+      - /url: dispatch.html
+      - button "◪ 派工系統" [ref=f33e11]
+    - link [ref=f33e12] [cursor=pointer]:
+      - /url: app.html
+      - button "◉ 巡檢" [ref=f33e13]
+    - link [ref=f33e14] [cursor=pointer]:
+      - /url: admin.html
+      - button "← 後台" [ref=f33e15]
+  - generic [ref=f33e16]:
+    - paragraph [ref=f33e17]: 本系統建構於 Supabase（PostgreSQL + PostgREST），所有資料表皆自動對外提供標準 REST API，可供下列外部系統整合。所有系統共用同一組 設備編號 / 案件編號 / 設備履歷，避免重複建檔，形成完整的設備生命週期管理。
+    - heading "一、連線資訊" [level=2] [ref=f33e18]
+    - table [ref=f33e19]:
+      - rowgroup [ref=f33e20]:
+        - row [ref=f33e21]:
+          - columnheader "項目" [ref=f33e22]
+          - columnheader "值" [ref=f33e23]
+        - row [ref=f33e24]:
+          - cell "API 基礎網址" [ref=f33e25]
+          - cell [ref=f33e26]:
+            - code [ref=f33e27]: https://qztffronusdhgxhjjubt.supabase.co/rest/v1
+        - row [ref=f33e28]:
+          - cell "驗證方式" [ref=f33e29]
+          - cell [ref=f33e30]:
+            - text: HTTP Header：
+            - code [ref=f33e31]: apikey
+            - text: +
+            - code [ref=f33e32]: "Authorization: Bearer <JWT>"
+        - row [ref=f33e33]:
+          - cell "資料格式" [ref=f33e34]
+          - cell "JSON" [ref=f33e35]
+    - generic [ref=f33e36]: ⚠ 外部系統整合請使用獨立的 service_role 或為整合對象建立專屬 API 金鑰與 RLS 政策，勿外流前端 anon 金鑰。
+    - heading "二、共用主鍵（跨系統一致）" [level=2] [ref=f33e37]
+    - table [ref=f33e38]:
+      - rowgroup [ref=f33e39]:
+        - row [ref=f33e40]:
+          - columnheader "識別碼" [ref=f33e41]
+          - columnheader "欄位" [ref=f33e42]
+          - columnheader "說明" [ref=f33e43]
+        - row [ref=f33e44]:
+          - cell "設備編號" [ref=f33e45]
+          - cell [ref=f33e46]:
+            - code [ref=f33e47]: equipment.equipment_id
+            - text: /
+            - code [ref=f33e48]: qr_code
+          - cell "全系統唯一，QR 可掃描快查" [ref=f33e49]
+        - row [ref=f33e50]:
+          - cell "報修單號" [ref=f33e51]
+          - cell [ref=f33e52]:
+            - code [ref=f33e53]: repair_requests.req_no
+          - cell "RPyyyymmdd-NNNN" [ref=f33e54]
+        - row [ref=f33e55]:
+          - cell "派工單號" [ref=f33e56]
+          - cell [ref=f33e57]:
+            - code [ref=f33e58]: maintenance_orders.wo_no
+          - cell "WOyyyymmdd-NNNN" [ref=f33e59]
+        - row [ref=f33e60]:
+          - cell "位置編號" [ref=f33e61]
+          - cell [ref=f33e62]:
+            - code [ref=f33e63]: locations.location_id
+          - cell "市場→樓層→區域→細部" [ref=f33e64]
+        - row [ref=f33e65]:
+          - cell "部門編號" [ref=f33e66]
+          - cell [ref=f33e67]:
+            - code [ref=f33e68]: departments.dept_id
+          - cell "組織樹" [ref=f33e69]
+    - heading "三、主要端點" [level=2] [ref=f33e70]
+    - heading "設備 Equipment" [level=3] [ref=f33e71]
+    - paragraph [ref=f33e72]:
+      - generic [ref=f33e73]: GET
+      - code [ref=f33e74]: /equipment
+      - text: 查詢設備（含履歷主檔）
+    - generic [ref=f33e75]: GET /rest/v1/equipment?qr_code=eq.EQ-E007&select=* GET /rest/v1/equipment?select=equipment_id,name,category,status
+    - heading "報修 Repair Request" [level=3] [ref=f33e76]
+    - paragraph [ref=f33e77]:
+      - generic [ref=f33e78]: GET
+      - generic [ref=f33e79]: POST
+      - code [ref=f33e80]: /repair_requests
+    - generic [ref=f33e81]: "POST /rest/v1/repair_requests { \"source\":\"direct\", \"equipment_id\":\"<uuid>\", \"reporter\":\"王小明\", \"department\":\"蔬菜課\", \"fault_type\":\"電氣\", \"fault_desc\":\"無法啟動\", \"status\":\"pending\" }"
+    - heading "派工 / 維修 Work Order" [level=3] [ref=f33e82]
+    - paragraph [ref=f33e83]:
+      - generic [ref=f33e84]: GET
+      - generic [ref=f33e85]: POST
+      - generic [ref=f33e86]: PATCH
+      - code [ref=f33e87]: /maintenance_orders
+    - generic [ref=f33e88]: "PATCH /rest/v1/maintenance_orders?order_id=eq.<uuid> { \"status\":\"completed\", \"fault_cause\":\"軸承磨損\", \"labor_hours\":2.5 }"
+    - heading "狀態歷程 Status Log（唯讀，不可竄改）" [level=3] [ref=f33e89]
+    - paragraph [ref=f33e90]:
+      - generic [ref=f33e91]: GET
+      - code [ref=f33e92]: /case_status_log?request_id=eq.<uuid>&order=created_at
+    - heading "成本 / 通知" [level=3] [ref=f33e93]
+    - paragraph [ref=f33e94]:
+      - generic [ref=f33e95]: GET
+      - code [ref=f33e96]: /cost_records
+      - generic [ref=f33e97]: GET
+      - generic [ref=f33e98]: POST
+      - code [ref=f33e99]: /notifications
+    - heading "四、可整合系統對應" [level=2] [ref=f33e100]
+    - table [ref=f33e101]:
+      - rowgroup [ref=f33e102]:
+        - row [ref=f33e103]:
+          - columnheader "#" [ref=f33e104]
+          - columnheader "外部系統" [ref=f33e105]
+          - columnheader "共用資料 / 整合方式" [ref=f33e106]
+        - row [ref=f33e107]:
+          - cell "1" [ref=f33e108]
+          - cell "電子交接簿系統" [ref=f33e109]
+          - cell "共用 案件編號 / 設備編號；交接時帶入未結案件（handover_cases ⇄ repair_requests）" [ref=f33e110]
+        - row [ref=f33e111]:
+          - cell "2" [ref=f33e112]
+          - cell "巡檢管理系統" [ref=f33e113]
+          - cell [ref=f33e114]:
+            - code [ref=f33e115]: inspection_records
+            - text: 異常可直接轉報修（source=inspection）
+        - row [ref=f33e116]:
+          - cell "3" [ref=f33e117]
+          - cell "預防保養系統" [ref=f33e118]
+          - cell "依 equipment 履歷與保固到期排程；寫入 maintenance_orders" [ref=f33e119]
+        - row [ref=f33e120]:
+          - cell "4" [ref=f33e121]
+          - cell "設備管理 CMMS" [ref=f33e122]
+          - cell "共用 equipment 主檔與全生命週期履歷" [ref=f33e123]
+        - row [ref=f33e124]:
+          - cell "5" [ref=f33e125]
+          - cell "人員排班系統" [ref=f33e126]
+          - cell [ref=f33e127]:
+            - code [ref=f33e128]: users
+            - text: / 班別；派工時讀取值班技師
+        - row [ref=f33e129]:
+          - cell "6" [ref=f33e130]
+          - cell "門禁系統" [ref=f33e131]
+          - cell "以 user/設備位置 比對進出授權（讀 users、locations）" [ref=f33e132]
+        - row [ref=f33e133]:
+          - cell "7" [ref=f33e134]
+          - cell "ERP 系統" [ref=f33e135]
+          - cell "cost_records 維修成本回拋；資產編號對應 equipment" [ref=f33e136]
+        - row [ref=f33e137]:
+          - cell "8" [ref=f33e138]
+          - cell "採購系統" [ref=f33e139]
+          - cell "等待料件狀態觸發請購；零件對應 cost_records(parts)" [ref=f33e140]
+        - row [ref=f33e141]:
+          - cell "9" [ref=f33e142]
+          - cell "倉儲庫存系統" [ref=f33e143]
+          - cell "更換零件扣庫；parts_used 對應庫存品項" [ref=f33e144]
+        - row [ref=f33e145]:
+          - cell "10" [ref=f33e146]
+          - cell "BI 戰情儀表板" [ref=f33e147]
+          - cell "直接讀取本系統 REST 或 SQL view 供 BI 彙整" [ref=f33e148]
+    - heading "五、Webhook / 事件（預留）" [level=2] [ref=f33e149]
+    - paragraph [ref=f33e150]:
+      - text: 可於 Supabase 建立 Database Webhooks 或 Edge Functions，於
+      - code [ref=f33e151]: repair_requests
+      - text: /
+      - code [ref=f33e152]: maintenance_orders
+      - text: 異動時推送事件至外部系統（如 ERP、採購、LINE/Email）。本系統
+      - code [ref=f33e153]: notifications
+      - text: 表為站內通知來源，外部推播（Email / LINE / 手機推播）由 Edge Function 串接。
+    - generic [ref=f33e154]: 📌 所有資料表已啟用 RLS。正式對外整合前，請為每個整合對象建立最小權限的 Policy 與專屬金鑰。
+  - button "切換介面風格" [ref=f33e155] [cursor=pointer]: 🌙

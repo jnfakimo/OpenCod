@@ -5,7 +5,7 @@
 <script src="theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>系統初始化</title>
+<title>系統?��???/title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -45,40 +45,40 @@ h1{font-size:1.3rem;font-weight:700;color:#f8fafc;margin-bottom:6px}
 :root[data-theme="light"] .result.fail{background:#fee2e2;border-color:#dc2626;color:#991b1b}
 
 </style>
-<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="light-mode-fix.css?v=2">
 </head>
 <body>
 <div class="card">
-  <h1>🔧 系統初始化</h1>
-  <div class="sub">自動建立管理者帳號，請稍候…</div>
+  <h1>?�� 系統?��???/h1>
+  <div class="sub">?��?建�?管�??�帳?��?請�??��?/div>
 
   <div id="steps">
     <div class="step" id="s1">
       <div class="step-icon pending" id="i1">1</div>
       <div class="step-text">
-        <div class="step-label">連線 Supabase</div>
-        <div class="step-detail" id="d1">等待中…</div>
+        <div class="step-label">??? Supabase</div>
+        <div class="step-detail" id="d1">等�?中�?/div>
       </div>
     </div>
     <div class="step" id="s2">
       <div class="step-icon pending" id="i2">2</div>
       <div class="step-text">
-        <div class="step-label">確認資料表存在</div>
-        <div class="step-detail" id="d2">等待中…</div>
+        <div class="step-label">確�?資�?表�???/div>
+        <div class="step-detail" id="d2">等�?中�?/div>
       </div>
     </div>
     <div class="step" id="s3">
       <div class="step-icon pending" id="i3">3</div>
       <div class="step-text">
-        <div class="step-label">建立管理者帳號</div>
-        <div class="step-detail" id="d3">等待中…</div>
+        <div class="step-label">建�?管�??�帳??/div>
+        <div class="step-detail" id="d3">等�?中�?/div>
       </div>
     </div>
     <div class="step" id="s4">
       <div class="step-icon pending" id="i4">4</div>
       <div class="step-text">
-        <div class="step-label">建立初始巡檢週期</div>
-        <div class="step-detail" id="d4">等待中…</div>
+        <div class="step-label">建�??��?巡檢?��?</div>
+        <div class="step-detail" id="d4">等�?中�?/div>
       </div>
     </div>
   </div>
@@ -93,87 +93,87 @@ const ADMIN_AUTH_ID = 'eb771a87-aa4d-4066-b23d-9b810a5c00bd';
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 function translateError(msg) {
-  if (!msg) return '未知錯誤';
-  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
-  if (msg.includes('null value in column')) return '必填欄位不可空白';
-  if (msg.includes('violates row-level security')) return '無操作權限';
-  if (msg.includes('permission denied')) return '無操作權限';
-  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
-  return '操作失敗，請稍後再試或聯絡系統管理員';
+  if (!msg) return '?�知?�誤';
+  if (msg.includes('duplicate key value')) return '資�??��?，�?確�??�否已�???;
+  if (msg.includes('null value in column')) return '必填欄�?不可空白';
+  if (msg.includes('violates row-level security')) return '?��?作�???;
+  if (msg.includes('permission denied')) return '?��?作�???;
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資�?表�?存在，�?確�?資�?庫設�?;
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路???失�?，�?稍�??�試';
+  return '?��?失�?，�?稍�??�試?�聯絡系統管?�員';
 }
 
 function setStep(n, state, detail) {
   const icon = document.getElementById('i' + n);
   const det  = document.getElementById('d' + n);
   icon.className = 'step-icon ' + state;
-  icon.textContent = state === 'ok' ? '✓' : state === 'fail' ? '✗' : state === 'running' ? '…' : n;
+  icon.textContent = state === 'ok' ? '?? : state === 'fail' ? '?? : state === 'running' ? '?? : n;
   if (detail) det.textContent = detail;
 }
 
 function showResult(ok, msg, link) {
   const box = document.getElementById('resultBox');
   box.className = 'result ' + (ok ? 'ok' : 'fail');
-  box.innerHTML = msg + (link ? `<br><a class="btn" href="${link}">前往登入 →</a>` : '');
+  box.innerHTML = msg + (link ? `<br><a class="btn" href="${link}">?��??�入 ??/a>` : '');
 }
 
 async function run() {
   // Step 1: Connect
-  setStep(1, 'running', '連線中…');
+  setStep(1, 'running', '???中�?);
   try {
     const { error } = await db.from('users').select('user_id', { count: 'exact', head: true });
     if (error && error.code === '42P01') {
-      setStep(1, 'fail', '連線成功');
-      setStep(2, 'fail', '資料表不存在，請先在 SQL Editor 執行 schema.sql');
-      showResult(false, '❌ 請先在 Supabase SQL Editor 執行 system/sql/schema.sql，再重新開啟此頁面。');
+      setStep(1, 'fail', '????��?');
+      setStep(2, 'fail', '資�?表�?存在，�??�在 SQL Editor ?��? schema.sql');
+      showResult(false, '??請�???Supabase SQL Editor ?��? system/sql/schema.sql，�??�新?��?此�??��?);
       return;
     }
-    setStep(1, 'ok', '連線成功');
+    setStep(1, 'ok', '????��?');
   } catch(e) {
-    setStep(1, 'fail', '連線失敗：' + translateError(e.message));
-    showResult(false, '❌ 無法連線 Supabase，請確認網路連線。');
+    setStep(1, 'fail', '???失�?�? + translateError(e.message));
+    showResult(false, '???��???? Supabase，�?確�?網路?????);
     return;
   }
 
   // Step 2: Check table
-  setStep(2, 'running', '確認中…');
+  setStep(2, 'running', '確�?中�?);
   const { data: existing } = await db.from('users').select('user_id').eq('auth_id', ADMIN_AUTH_ID);
   if (existing && existing.length > 0) {
-    setStep(2, 'ok', '管理者帳號已存在');
-    setStep(3, 'ok', '跳過（已存在）');
-    setStep(4, 'ok', '跳過');
-    showResult(true, '✓ 系統已初始化完成，管理者帳號存在。', 'login.html');
+    setStep(2, 'ok', '管�??�帳?�已存在');
+    setStep(3, 'ok', '跳�?（已存在�?);
+    setStep(4, 'ok', '跳�?');
+    showResult(true, '??系統已�?始�?完�?，管?�者帳?��??��?, 'login.html');
     return;
   }
-  setStep(2, 'ok', '資料表正常');
+  setStep(2, 'ok', '資�?表正�?);
 
   // Step 3: Insert admin user
-  setStep(3, 'running', '建立中…');
+  setStep(3, 'running', '建�?中�?);
   const { error: insErr } = await db.from('users').insert({
     auth_id: ADMIN_AUTH_ID,
-    name: '系統管理者',
+    name: '系統管�???,
     phone: '',
-    department: '資訊部',
+    department: '資�???,
     role: 'admin',
     status: 'active',
   });
   if (insErr) {
-    setStep(3, 'fail', '失敗：' + translateError(insErr.message));
-    showResult(false, '❌ 建立管理者失敗：' + translateError(insErr.message) + '<br>請確認 schema.sql 已執行，且 RLS policy 已開啟。');
+    setStep(3, 'fail', '失�?�? + translateError(insErr.message));
+    showResult(false, '??建�?管�??�失?��?' + translateError(insErr.message) + '<br>請確�?schema.sql 已執行�?�?RLS policy 已�??��?);
     return;
   }
-  setStep(3, 'ok', '管理者帳號建立成功');
+  setStep(3, 'ok', '管�??�帳?�建立�???);
 
   // Step 4: Ensure cycle exists
-  setStep(4, 'running', '建立中…');
+  setStep(4, 'running', '建�?中�?);
   const { data: cycles } = await db.from('inspection_cycles').select('cycle_id').is('ended_at', null).limit(1);
   if (!cycles || cycles.length === 0) {
     await db.from('inspection_cycles').insert({ cycle_type: 'daily', started_at: new Date().toISOString() });
   }
-  setStep(4, 'ok', '巡檢週期就緒');
+  setStep(4, 'ok', '巡檢?��?就�?');
 
   showResult(true,
-    '✓ 初始化完成！管理者帳號已建立，現在可以登入後台。',
+    '???��??��??��?管�??�帳?�已建�?，現?�可以登?��??��?,
     'login.html'
   );
 }

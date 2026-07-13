@@ -1,0 +1,100 @@
+- generic [active] [ref=f11e1]:
+  - generic [ref=f11e2]:
+    - generic [ref=f11e3]:
+      - generic [ref=f11e4]: 臺北農產運銷股份有限公司 第一果菜市場
+      - generic [ref=f11e5]: ◈ 電子交接簿
+    - generic [ref=f11e6]:
+      - link "◫ 戰情儀表板" [ref=f11e7] [cursor=pointer]:
+        - /url: dashboard.html
+      - link "◪ 報修系統" [ref=f11e8] [cursor=pointer]:
+        - /url: workorder.html
+      - link "◉ 巡檢" [ref=f11e9] [cursor=pointer]:
+        - /url: app.html
+      - link "⬡ 後台" [ref=f11e10] [cursor=pointer]:
+        - /url: admin.html
+      - generic [ref=f11e11]: 電子交接簿
+      - generic [ref=f11e12]: 16:01:27
+      - button "↩ 返回" [ref=f11e13] [cursor=pointer]
+  - generic [ref=f11e14]:
+    - button "✏ 新增交接" [ref=f11e15] [cursor=pointer]
+    - button "◉ 案件管理" [ref=f11e16] [cursor=pointer]
+    - button "📋 交接記錄" [ref=f11e17] [cursor=pointer]
+  - generic [ref=f11e19]:
+    - generic [ref=f11e20]:
+      - generic [ref=f11e21]:
+        - generic [ref=f11e22]: ⊞ 基本資訊
+        - generic [ref=f11e23]: 填表日期：2026-07-12
+      - generic [ref=f11e25]:
+        - generic [ref=f11e26]:
+          - generic [ref=f11e27]: 班別
+          - combobox [ref=f11e28]:
+            - option "早班 06:00–14:00" [selected]
+            - option "中班 14:00–22:00"
+            - option "夜班 22:00–06:00"
+        - generic [ref=f11e29]: 交接日期
+    - generic [ref=f11e31]:
+      - generic [ref=f11e32]: ◉ 值班人員
+      - generic [ref=f11e34]:
+        - generic [ref=f11e35]:
+          - generic [ref=f11e36]: 交接人（離班）
+          - generic [ref=f11e37]:
+            - generic [ref=f11e38]:
+              - generic [ref=f11e39]: 第一層部門
+              - combobox [ref=f11e40]:
+                - option "— 選擇第一層 —" [selected]
+            - generic [ref=f11e41]:
+              - generic [ref=f11e42]: 第二層（課）
+              - combobox [disabled] [ref=f11e43]:
+                - option "— 無下級單位 —" [selected]
+            - generic [ref=f11e44]:
+              - generic [ref=f11e45]: 交接人員
+              - combobox [ref=f11e46]:
+                - option "— 選擇人員 —" [selected]
+        - generic [ref=f11e47]:
+          - generic [ref=f11e48]: 接班人（到班）
+          - generic [ref=f11e49]:
+            - generic [ref=f11e50]:
+              - generic [ref=f11e51]: 第一層部門
+              - combobox [ref=f11e52]:
+                - option "— 選擇第一層 —" [selected]
+            - generic [ref=f11e53]:
+              - generic [ref=f11e54]: 第二層（課）
+              - combobox [disabled] [ref=f11e55]:
+                - option "— 無下級單位 —" [selected]
+            - generic [ref=f11e56]:
+              - generic [ref=f11e57]: 接班人員
+              - combobox [ref=f11e58]:
+                - option "— 選擇人員 —" [selected]
+    - generic [ref=f11e59]:
+      - generic [ref=f11e60]:
+        - generic [ref=f11e61]: ◧ 設備運轉概況
+        - button "↻ 重新抓取" [ref=f11e62] [cursor=pointer]
+      - generic [ref=f11e63]:
+        - generic [ref=f11e64]:
+          - generic [ref=f11e65]:
+            - generic [ref=f11e66]: —
+            - generic [ref=f11e67]: ✓ 正常台數
+          - generic [ref=f11e68]:
+            - generic [ref=f11e69]: —
+            - generic [ref=f11e70]: ✗ 異常台數
+          - generic [ref=f11e71]:
+            - generic [ref=f11e72]: —
+            - generic [ref=f11e73]: ◈ 巡檢總數
+        - generic [ref=f11e74]: — 選擇班別與日期後自動載入當班巡檢結果 —
+    - generic [ref=f11e75]:
+      - generic [ref=f11e76]: ⚠ 異常事項
+      - generic [ref=f11e79]:
+        - textbox "輸入異常事項（按 Enter 新增）…" [ref=f11e80]
+        - button "＋ 新增" [ref=f11e81] [cursor=pointer]
+    - generic [ref=f11e82]:
+      - generic [ref=f11e83]: ◎ 待辦事項
+      - generic [ref=f11e86]:
+        - textbox "輸入待辦事項（按 Enter 新增）…" [ref=f11e87]
+        - button "＋ 新增" [ref=f11e88] [cursor=pointer]
+    - generic [ref=f11e89]:
+      - generic [ref=f11e90]: 備註
+      - textbox "其他需要說明的事項…" [ref=f11e93]
+    - generic [ref=f11e94]:
+      - button "儲存草稿" [ref=f11e95] [cursor=pointer]
+      - button "✓ 確認交接完成" [ref=f11e96] [cursor=pointer]
+  - button "切換介面風格" [ref=f11e98] [cursor=pointer]: 🌙

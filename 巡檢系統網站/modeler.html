@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<title>3D建模系統 — 臺北農產巡檢系統</title>
+<title>3D建模系統 ???��?農產巡檢系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.js"
         onerror="var s=document.createElement('script');s.src='https://unpkg.com/dxf-parser@1.1.2/dist/dxf-parser.js';document.head.appendChild(s);"></script>
@@ -61,64 +61,64 @@ select:focus,input:focus{border-color:var(--cyan)}
 .hintbox{font-size:.68rem;color:var(--text-dim);line-height:1.7;margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
 
 </style>
-<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="light-mode-fix.css?v=2">
 </head>
 <body>
 <nav class="navbar">
   <div>
-    <div class="nav-title">⬢ 3D建模系統</div>
-    <div class="nav-sub">上傳 DXF → 更新樓層平面圖 + 3D 立體模型</div>
+    <div class="nav-title">�?3D建模系統</div>
+    <div class="nav-sub">上傳 DXF ???�新樓層平面??+ 3D 立�?模�?</div>
   </div>
   <div class="nav-space"></div>
   <a href="modeler.html"><button class="nav-back">3D建模系統</button></a>
-  <a href="arealist.html"><button class="nav-back">區域位置表</button></a>
-  <a href="b1_integrated_marker_system.html"><button class="nav-back">整合標記系統</button></a>
+  <a href="arealist.html"><button class="nav-back">?�?��?置表</button></a>
+  <a href="b1_integrated_marker_system.html"><button class="nav-back">?��?標�?系統</button></a>
   <a href="admin.html#modelhub"><button class="nav-back">後台</button></a>
 </nav>
 
 <div class="wrap">
-  <!-- 控制面板 -->
+  <!-- ?�制?�板 -->
   <div class="card">
-    <h3>◈ 上傳設定</h3>
-    <label>選擇樓層</label>
+    <h3>??上傳設�?</h3>
+    <label>?��?樓層</label>
     <select id="floorSel">
-      <option value="B1">B1 地下一層</option>
-      <option value="1F" selected>1F 一樓</option>
-      <option value="2F">2F 二樓</option>
-      <option value="3F">3F 三樓</option>
-      <option value="4F">4F 四樓</option>
-      <option value="5F">5F 五樓</option>
-      <option value="__custom">＋ 自訂樓層代號…</option>
+      <option value="B1">B1 ?��?一�?/option>
+      <option value="1F" selected>1F 一�?/option>
+      <option value="2F">2F 二�?</option>
+      <option value="3F">3F 三�?</option>
+      <option value="4F">4F ?��?</option>
+      <option value="5F">5F 五�?</option>
+      <option value="__custom">�??��?樓層�????/option>
     </select>
-    <input type="text" id="floorCustom" placeholder="自訂樓層代號（如 R1 / B2）" style="display:none">
+    <input type="text" id="floorCustom" placeholder="?��?樓層�??（�? R1 / B2�? style="display:none">
 
-    <label>DXF 檔案（單位 mm）</label>
+    <label>DXF 檔�?（單�?mm�?/label>
     <div class="drop" id="drop">
-      點此選擇或拖曳 DXF 檔<br><span style="font-size:.7rem">.dxf</span>
+      點此?��??��???DXF �?br><span style="font-size:.7rem">.dxf</span>
       <input type="file" id="file" accept=".dxf" style="display:none">
     </div>
 
     <div class="stat" id="stat" style="display:none"></div>
-    <button class="btn btn-primary" id="saveBtn" disabled onclick="saveModel()">▲ 更新模型</button>
+    <button class="btn btn-primary" id="saveBtn" disabled onclick="saveModel()">???�新模�?</button>
     <div class="msg" id="msg"></div>
 
-    <h3 style="margin-top:18px">◉ 已建立的樓層模型</h3>
-    <div class="saved-list" id="savedList"><div class="stat">載入中…</div></div>
+    <h3 style="margin-top:18px">??已建立�?樓層模�?</h3>
+    <div class="saved-list" id="savedList"><div class="stat">載入中�?/div></div>
 
     <div class="links">
-      <a href="floor3d.html">⬡ 開啟 3D 立體模型</a>
-      <a href="b1plan.html">▣ 開啟平面圖</a>
+      <a href="floor3d.html">�??��? 3D 立�?模�?</a>
+      <a href="b1plan.html">???��?平面??/a>
     </div>
     <div class="hintbox">
-      ※ DXF 在瀏覽器即時解析渲染，更新後 3D 模型與平面圖會自動載入新版本。<br>
-      ※ 建議各樓層使用<b>相同座標系</b>的 DXF，立體疊合才會對齊。
+      ??DXF ?�瀏覽?�即?�解?�渲?��??�新�?3D 模�??�平?��??�自?��??�新?�本??br>
+      ??建議?��?層使??b>?��?座�?�?/b>??DXF，�?體�??��??��?齊�?
     </div>
   </div>
 
-  <!-- 預覽 -->
+  <!-- ?�覽 -->
   <div class="card" style="padding:12px">
     <div class="preview-wrap">
-      <div class="ph" id="ph">選擇樓層並上傳 DXF<br>即可在此預覽霓虹平面圖</div>
+      <div class="ph" id="ph">?��?樓層並�???DXF<br>?�可?�此?�覽?�虹平面??/div>
       <canvas id="cv" style="display:none"></canvas>
     </div>
   </div>
@@ -131,21 +131,21 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
 function escHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function translateError(msg) {
-  if (!msg) return '未知錯誤';
-  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
-  if (msg.includes('null value in column')) return '必填欄位不可空白';
-  if (msg.includes('violates row-level security')) return '無操作權限';
-  if (msg.includes('permission denied')) return '無操作權限';
-  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
-  return '操作失敗，請稍後再試或聯絡系統管理員';
+  if (!msg) return '?�知?�誤';
+  if (msg.includes('duplicate key value')) return '資�??��?，�?確�??�否已�???;
+  if (msg.includes('null value in column')) return '必填欄�?不可空白';
+  if (msg.includes('violates row-level security')) return '?��?作�???;
+  if (msg.includes('permission denied')) return '?��?作�???;
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資�?表�?存在，�?確�?資�?庫設�?;
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路???失�?，�?稍�??�試';
+  return '?��?失�?，�?稍�??�試?�聯絡系統管?�員';
 }
 function getParser(){ return window.DxfParser?.default || window.DxfParser || null; }
 
 let lastBlob=null, lastBBox=null;
 const TEX=2400; // texture long-side px
 
-// ─── floor select custom ───
+// ?�?�?� floor select custom ?�?�?�
 document.getElementById('floorSel').onchange=e=>{
   document.getElementById('floorCustom').style.display = e.target.value==='__custom' ? 'block':'none';
 };
@@ -154,7 +154,7 @@ function currentFloor(){
   return v==='__custom' ? (document.getElementById('floorCustom').value.trim().toUpperCase()||'NEW') : v;
 }
 
-// ─── file input / drop ───
+// ?�?�?� file input / drop ?�?�?�
 const drop=document.getElementById('drop'), fileInp=document.getElementById('file');
 drop.onclick=()=>fileInp.click();
 drop.ondragover=e=>{e.preventDefault();drop.classList.add('over');};
@@ -165,29 +165,29 @@ fileInp.onchange=e=>{if(e.target.files[0])handleFile(e.target.files[0]);};
 function setMsg(t,cls){const m=document.getElementById('msg');m.textContent=t;m.className='msg '+(cls||'');}
 
 async function handleFile(f){
-  if(!/\.dxf$/i.test(f.name)){setMsg('請選擇 .dxf 檔','err');return;}
+  if(!/\.dxf$/i.test(f.name)){setMsg('請選??.dxf �?,'err');return;}
   const ParserCls=getParser();
-  if(!ParserCls){ setMsg('DXF 解析元件尚未載入完成，請等 2~3 秒後重試（或檢查網路）','err'); return; }
-  setMsg('解析 DXF…','work');
+  if(!ParserCls){ setMsg('DXF �???�件尚未載入完�?，�?�?2~3 秒�??�試（�?檢查網路�?,'err'); return; }
+  setMsg('�?? DXF??,'work');
   try{
     const text=await f.text();
     const dxf=new ParserCls().parseSync(text);
     const polylines=[];
     collect(dxf.entities||[], dxf.blocks||{}, p=>p, polylines, 0);
-    if(!polylines.length){setMsg('找不到可繪製的幾何（線/弧/聚合線）','err');return;}
+    if(!polylines.length){setMsg('?��??�可繪製?�幾何�?�?�??��?線�?','err');return;}
     const bbox=computeBBox(polylines);
     renderNeon(polylines,bbox);
     lastBBox=bbox;
     const npts=polylines.reduce((s,p)=>s+p.length,0);
     document.getElementById('stat').style.display='block';
     document.getElementById('stat').innerHTML=
-      `檔名：<b>${escHtml(f.name)}</b><br>線段群組：<b>${polylines.length}</b>　頂點：<b>${npts}</b><br>`+
-      `範圍：<b>${Math.round(bbox.w)}</b> × <b>${Math.round(bbox.h)}</b> mm`;
-    document.getElementById('cv').toBlob(b=>{lastBlob=b;document.getElementById('saveBtn').disabled=false;setMsg('解析完成，可按「更新模型」','ok');},'image/png');
-  }catch(err){ setMsg('解析失敗：'+translateError(err.message),'err'); }
+      `檔�?�?b>${escHtml(f.name)}</b><br>線段群�?�?b>${polylines.length}</b>?�?��?�?b>${npts}</b><br>`+
+      `範�?�?b>${Math.round(bbox.w)}</b> ? <b>${Math.round(bbox.h)}</b> mm`;
+    document.getElementById('cv').toBlob(b=>{lastBlob=b;document.getElementById('saveBtn').disabled=false;setMsg('�??完�?，可?�「更?�模?��?,'ok');},'image/png');
+  }catch(err){ setMsg('�??失�?�?+translateError(err.message),'err'); }
 }
 
-// ─── recursive entity collection (expands INSERT/blocks) ───
+// ?�?�?� recursive entity collection (expands INSERT/blocks) ?�?�?�
 function collect(entities, blocks, tf, out, depth){
   if(depth>6) return;
   for(const e of entities){
@@ -260,12 +260,12 @@ function renderNeon(pls,bbox){
   cv.style.display='block'; document.getElementById('ph').style.display='none';
 }
 
-// ─── save to Supabase Storage + floor_models ───
+// ?�?�?� save to Supabase Storage + floor_models ?�?�?�
 async function saveModel(){
-  if(!lastBlob){setMsg('請先上傳 DXF','err');return;}
+  if(!lastBlob){setMsg('請�?上傳 DXF','err');return;}
   const floor=currentFloor();
-  if(!floor){setMsg('請選擇樓層','err');return;}
-  setMsg('上傳中…','work');
+  if(!floor){setMsg('請選?��?�?,'err');return;}
+  setMsg('上傳中�?,'work');
   document.getElementById('saveBtn').disabled=true;
   try{
     const path=`${floor}.png`;
@@ -276,18 +276,18 @@ async function saveModel(){
     const rec={floor_id:floor, name:label, image_path:path, bbox:lastBBox, updated_at:new Date().toISOString()};
     const ins=await db.from('floor_models').upsert(rec,{onConflict:'floor_id'});
     if(ins.error) throw ins.error;
-    setMsg('✓ 已更新 '+floor+' 模型，平面圖與 3D 已同步','ok');
+    setMsg('??已更??'+floor+' 模�?，平?��???3D 已�?�?,'ok');
     loadSaved();
   }catch(err){
-    setMsg('儲存失敗：'+translateError(err.message||String(err))+'（請確認已建立 floor_models 表與 floorplans 儲存桶）','err');
+    setMsg('?��?失�?�?+translateError(err.message||String(err))+'（�?確�?已建�?floor_models 表�? floorplans ?��?桶�?','err');
   }finally{ document.getElementById('saveBtn').disabled=false; }
 }
 
 async function loadSaved(){
   const box=document.getElementById('savedList');
   const {data,error}=await db.from('floor_models').select('*').order('floor_id');
-  if(error){box.innerHTML=`<div class="stat" style="color:var(--amber)">尚未建立 floor_models 表<br><small>請先執行 system/sql/floor_models.sql</small></div>`;return;}
-  if(!data?.length){box.innerHTML='<div class="stat">尚無樓層模型</div>';return;}
+  if(error){box.innerHTML=`<div class="stat" style="color:var(--amber)">尚未建�? floor_models �?br><small>請�??��? system/sql/floor_models.sql</small></div>`;return;}
+  if(!data?.length){box.innerHTML='<div class="stat">尚無樓層模�?</div>';return;}
   box.innerHTML=data.map(d=>{
     const dt=new Date(d.updated_at).toLocaleString('zh-TW',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
     return `<div class="saved-item"><span class="dot"></span><span class="fl">${escHtml(d.floor_id)}</span><span>${escHtml(d.name||'')}</span><span class="dt">${dt}</span></div>`;
@@ -301,7 +301,7 @@ setTimeout(()=>{
   if(!getParser()){
     const d=document.getElementById('drop');
     d.style.borderColor='var(--red)'; d.style.color='var(--red)';
-    d.innerHTML='⚠ DXF 解析元件載入失敗<br><span style="font-size:.7rem">請檢查網路或稍後重新整理頁面</span>';
+    d.innerHTML='??DXF �???�件載入失�?<br><span style="font-size:.7rem">請檢?�網路�?稍�??�新?��??�面</span>';
   }
 },2800);
 </script>

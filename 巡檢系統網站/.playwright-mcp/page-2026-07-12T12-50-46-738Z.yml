@@ -1,0 +1,142 @@
+- generic [active] [ref=f8e1]:
+  - navigation [ref=f8e3]:
+    - generic [ref=f8e4]:
+      - generic [ref=f8e5]: ◫ 戰情儀表板
+      - generic [ref=f8e6]: 報修派工管理系統 · 戰情總覽
+    - link [ref=f8e7] [cursor=pointer]:
+      - /url: dashboard.html
+      - button "◫ 戰情儀表板" [ref=f8e8]
+    - link [ref=f8e9] [cursor=pointer]:
+      - /url: workorder.html
+      - button "⚒ 報修系統" [ref=f8e10]
+    - link [ref=f8e11] [cursor=pointer]:
+      - /url: dispatch.html
+      - button "◪ 派工系統" [ref=f8e12]
+    - link [ref=f8e13] [cursor=pointer]:
+      - /url: app.html
+      - button "◉ 巡檢" [ref=f8e14]
+    - link [ref=f8e15] [cursor=pointer]:
+      - /url: admin.html
+      - button "← 後台" [ref=f8e16]
+  - generic [ref=f8e17]:
+    - generic [ref=f8e18]:
+      - button "今日" [ref=f8e19] [cursor=pointer]
+      - button "本月" [ref=f8e20] [cursor=pointer]
+      - button "本年" [ref=f8e21] [cursor=pointer]
+      - generic [ref=f8e22]: 自訂：
+      - textbox [ref=f8e23]: 2026-06-30
+      - generic [ref=f8e24]: ~
+      - textbox [ref=f8e25]: 2026-07-12
+      - button "查詢" [ref=f8e26] [cursor=pointer]
+      - generic [ref=f8e27]: 區間：2026-06-30 ~ 2026-07-12
+    - generic [ref=f8e68]:
+      - generic [ref=f8e69]:
+        - generic [ref=f8e70]: "0"
+        - generic [ref=f8e71]: 今日新增報修
+      - generic [ref=f8e72]:
+        - generic [ref=f8e73]: "0"
+        - generic [ref=f8e74]: 今日完成案件
+      - generic [ref=f8e75]:
+        - generic [ref=f8e76]: "1"
+        - generic [ref=f8e77]: 處理中案件
+      - generic [ref=f8e78]:
+        - generic [ref=f8e79]: "29"
+        - generic [ref=f8e80]: 已逾期案件
+      - generic [ref=f8e81]:
+        - generic [ref=f8e82]: "30"
+        - generic [ref=f8e83]: 待派工案件
+      - generic [ref=f8e84]:
+        - generic [ref=f8e85]: "30"
+        - generic [ref=f8e86]: 本月報修件數
+      - generic [ref=f8e87]:
+        - generic [ref=f8e88]: —
+        - generic [ref=f8e89]: SLA 達成率
+      - generic [ref=f8e90]:
+        - generic [ref=f8e91]: — 小時
+        - generic [ref=f8e92]: 平均修復時間 MTTR
+      - generic [ref=f8e93]:
+        - generic [ref=f8e94]: — 天
+        - generic [ref=f8e95]: 平均故障間隔 MTBF
+      - generic [ref=f8e96]:
+        - generic [ref=f8e97]: "30"
+        - generic [ref=f8e98]: 區間報修總數
+      - generic [ref=f8e99]:
+        - generic [ref=f8e100]: "0"
+        - generic [ref=f8e101]: 區間完成總數
+    - generic [ref=f8e28]:
+      - generic [ref=f8e29]:
+        - heading "◈ 各單位報修排行 前 8 名" [level=3] [ref=f8e30]:
+          - text: ◈ 各單位報修排行
+          - generic [ref=f8e31]: 前 8 名
+        - generic [ref=f8e102]:
+          - generic [ref=f8e103]:
+            - generic "改建室" [ref=f8e104]
+            - generic [ref=f8e107]: "27"
+          - generic [ref=f8e108]:
+            - generic "管理部 / 總務課" [ref=f8e109]
+            - generic [ref=f8e112]: "3"
+      - generic [ref=f8e32]:
+        - heading "◉ 各設備故障排行 前 8 名" [level=3] [ref=f8e33]:
+          - text: ◉ 各設備故障排行
+          - generic [ref=f8e34]: 前 8 名
+        - generic [ref=f8e113]:
+          - generic [ref=f8e114]:
+            - generic "未知設備" [ref=f8e115]
+            - generic [ref=f8e118]: "29"
+          - generic [ref=f8e119]:
+            - generic "冷卻水塔 1號" [ref=f8e120]
+            - generic [ref=f8e123]: "1"
+    - generic [ref=f8e35]:
+      - generic [ref=f8e36]:
+        - heading "⚒ 各維修人員案件數 前 8 名" [level=3] [ref=f8e37]:
+          - text: ⚒ 各維修人員案件數
+          - generic [ref=f8e38]: 前 8 名
+        - generic [ref=f8e124]:
+          - generic [ref=f8e125]:
+            - generic "未指派" [ref=f8e126]
+            - generic [ref=f8e129]: "3"
+          - generic [ref=f8e130]:
+            - generic "系統管理者" [ref=f8e131]
+            - generic [ref=f8e134]: "1"
+      - heading "📈 各月份報修趨勢 12 月" [level=3] [ref=f8e40]:
+        - text: 📈 各月份報修趨勢
+        - generic [ref=f8e41]: 12 月
+    - generic [ref=f8e44]:
+      - heading "◐ 案件狀態分佈" [level=3] [ref=f8e46]
+      - generic [ref=f8e49]:
+        - heading "⚑ 故障類型分析" [level=3] [ref=f8e50]
+        - generic [ref=f8e135]:
+          - generic [ref=f8e136]:
+            - generic "其他" [ref=f8e137]
+            - generic [ref=f8e140]: "22"
+          - generic [ref=f8e141]:
+            - generic "電氣" [ref=f8e142]
+            - generic [ref=f8e145]: "3"
+          - generic [ref=f8e146]:
+            - generic "異音" [ref=f8e147]
+            - generic [ref=f8e150]: "2"
+          - generic [ref=f8e151]:
+            - generic "未分類" [ref=f8e152]
+            - generic [ref=f8e155]: "1"
+          - generic [ref=f8e156]:
+            - generic "電器" [ref=f8e157]
+            - generic [ref=f8e160]: "1"
+          - generic [ref=f8e161]:
+            - generic "停機" [ref=f8e162]
+            - generic [ref=f8e165]: "1"
+    - generic [ref=f8e52]:
+      - heading "◈ 駐衛警巡檢即時 12s" [level=3] [ref=f8e53]:
+        - text: ◈ 駐衛警巡檢即時
+        - generic [ref=f8e54]: 12s
+      - generic [ref=f8e55]:
+        - generic [ref=f8e56]:
+          - generic [ref=f8e57]: "-"
+          - generic [ref=f8e58]: 已打卡
+        - generic [ref=f8e59]:
+          - generic [ref=f8e60]: "-"
+          - generic [ref=f8e61]: 待打卡
+        - generic [ref=f8e62]:
+          - generic [ref=f8e63]: "-"
+          - generic [ref=f8e64]: 逾期未打卡
+      - generic [ref=f8e65]: 載入中
+  - button "切換介面風格" [ref=f8e67] [cursor=pointer]: 🌙

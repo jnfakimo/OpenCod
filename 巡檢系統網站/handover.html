@@ -5,7 +5,7 @@
 <script src="theme.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>電子交接簿 — 臺北農產</title>
+<title>?��?交接�????��?農產</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -186,51 +186,51 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="light-mode-fix.css?v=2">
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-left">
-    <span class="topbar-org"><span data-sysname="org">臺北農產運銷股份有限公司</span> <span data-sysname="site">第一果菜市場</span></span>
-    <span class="topbar-title">◈ 電子交接簿</span>
+    <span class="topbar-org"><span data-sysname="org">?��?農產?�銷?�份?��??�司</span> <span data-sysname="site">第�??��?市場</span></span>
+    <span class="topbar-title">???��?交接�?/span>
   </div>
   <div class="topbar-right">
-    <a href="dashboard.html">◫ 戰情儀表板</a>
-    <a href="workorder.html">◪ 報修系統</a>
-    <a href="app.html">◉ 巡檢</a>
-    <a href="admin.html">⬡ 後台</a>
-    <span class="nav-user" id="navUser">載入中…</span>
+    <a href="dashboard.html">???��??�表板</a>
+    <a href="workorder.html">???�修系統</a>
+    <a href="app.html">??巡檢</a>
+    <a href="admin.html">�?後台</a>
+    <span class="nav-user" id="navUser">載入中�?/span>
     <span class="clock" id="topClock">--:--:--</span>
-    <button type="button" onclick="goBackPage()">↩ 返回</button>
+    <button type="button" onclick="goBackPage()">??返�?</button>
   </div>
 </div>
 
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('new')" id="tab-new">✏ 新增交接</button>
-  <button class="tab-btn" onclick="switchTab('cases')" id="tab-cases">◉ 案件管理</button>
-  <button class="tab-btn" onclick="switchTab('history')" id="tab-history">📋 交接記錄</button>
+  <button class="tab-btn active" onclick="switchTab('new')" id="tab-new">???��?交接</button>
+  <button class="tab-btn" onclick="switchTab('cases')" id="tab-cases">??案件管�?</button>
+  <button class="tab-btn" onclick="switchTab('history')" id="tab-history">?? 交接記�?</button>
 </div>
 
 <div class="tab-content">
 
-  <!-- ══ TAB: NEW HANDOVER ══ -->
+  <!-- ?��? TAB: NEW HANDOVER ?��? -->
   <div class="tab-panel active" id="panel-new">
 
     <div class="panel">
-      <div class="panel-head" style="display:flex;align-items:center;justify-content:space-between"><span class="panel-title">⊞ 基本資訊</span><span style="font-size:.72rem;color:var(--text-dim)">填表日期：<b id="hFiled" style="color:var(--cyan);font-family:var(--font-mono)"></b></span></div>
+      <div class="panel-head" style="display:flex;align-items:center;justify-content:space-between"><span class="panel-title">???�本資�?</span><span style="font-size:.72rem;color:var(--text-dim)">填表?��?�?b id="hFiled" style="color:var(--cyan);font-family:var(--font-mono)"></b></span></div>
       <div class="panel-body">
         <div class="form-grid" style="grid-template-columns:1fr 1fr">
           <div class="field">
-            <label>班別</label>
+            <label>?�別</label>
             <select id="hShift" onchange="onShiftChange()">
-              <option value="morning">早班 06:00–14:00</option>
-              <option value="afternoon">中班 14:00–22:00</option>
-              <option value="night">夜班 22:00–06:00</option>
+              <option value="morning">?�班 06:00??4:00</option>
+              <option value="afternoon">中班 14:00??2:00</option>
+              <option value="night">夜班 22:00??6:00</option>
             </select>
           </div>
           <div class="field">
-            <label>交接日期</label>
+            <label>交接?��?</label>
             <div id="hDate-dtp"></div>
           </div>
         </div>
@@ -238,50 +238,50 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
 
     <div class="panel">
-      <div class="panel-head"><span class="panel-title">◉ 值班人員</span></div>
+      <div class="panel-head"><span class="panel-title">???�班人員</span></div>
       <div class="panel-body">
         <div class="sub-section">
-          <div class="sub-label">交接人（離班）</div>
+          <div class="sub-label">交接人�??�班�?/div>
           <div class="form-grid">
             <div class="field">
-              <label>第一層部門</label>
+              <label>第�?層部?�</label>
               <select id="hHandoverL1" onchange="onHandoverL1Change()">
-                <option value="">— 選擇第一層 —</option>
+                <option value="">???��?第�?�???/option>
               </select>
             </div>
             <div class="field">
-              <label>第二層（課）</label>
+              <label>第�?層�?課�?</label>
               <select id="hHandoverL2" onchange="onHandoverDeptChange()" disabled>
-                <option value="">— 無下級單位 —</option>
+                <option value="">???��?級單�???/option>
               </select>
             </div>
             <div class="field">
               <label>交接人員</label>
               <select id="hHandoverBy">
-                <option value="">— 選擇人員 —</option>
+                <option value="">???��?人員 ??/option>
               </select>
             </div>
           </div>
         </div>
         <div class="sub-section">
-          <div class="sub-label">接班人（到班）</div>
+          <div class="sub-label">?�班人�??�班�?/div>
           <div class="form-grid">
             <div class="field">
-              <label>第一層部門</label>
+              <label>第�?層部?�</label>
               <select id="hTakeoverL1" onchange="onTakeoverL1Change()">
-                <option value="">— 選擇第一層 —</option>
+                <option value="">???��?第�?�???/option>
               </select>
             </div>
             <div class="field">
-              <label>第二層（課）</label>
+              <label>第�?層�?課�?</label>
               <select id="hTakeoverL2" onchange="onTakeoverDeptChange()" disabled>
-                <option value="">— 無下級單位 —</option>
+                <option value="">???��?級單�???/option>
               </select>
             </div>
             <div class="field">
-              <label>接班人員</label>
+              <label>?�班人員</label>
               <select id="hTakeoverBy">
-                <option value="">— 選擇人員 —</option>
+                <option value="">???��?人員 ??/option>
               </select>
             </div>
           </div>
@@ -291,86 +291,86 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
     <div class="panel">
       <div class="panel-head">
-        <span class="panel-title">◧ 設備運轉概況</span>
-        <button class="btn-secondary btn-sm" onclick="fetchEqStatus()">↻ 重新抓取</button>
+        <span class="panel-title">??設�??��?概�?</span>
+        <button class="btn-secondary btn-sm" onclick="fetchEqStatus()">???�新?��?</button>
       </div>
       <div class="panel-body">
         <div class="eq-cards">
-          <div class="eq-card"><div class="eq-val" id="eqNormal" style="color:var(--green)">—</div><div class="eq-label">✓ 正常台數</div></div>
-          <div class="eq-card"><div class="eq-val" id="eqAbnormal" style="color:var(--red)">—</div><div class="eq-label">✗ 異常台數</div></div>
-          <div class="eq-card"><div class="eq-val" id="eqTotal" style="color:var(--text-dim)">—</div><div class="eq-label">◈ 巡檢總數</div></div>
+          <div class="eq-card"><div class="eq-val" id="eqNormal" style="color:var(--green)">??/div><div class="eq-label">??�?��?�數</div></div>
+          <div class="eq-card"><div class="eq-val" id="eqAbnormal" style="color:var(--red)">??/div><div class="eq-label">???�常?�數</div></div>
+          <div class="eq-card"><div class="eq-val" id="eqTotal" style="color:var(--text-dim)">??/div><div class="eq-label">??巡檢總數</div></div>
         </div>
-        <div id="eqNote" style="margin-top:10px;font-size:.78rem;color:var(--text-dim)">— 選擇班別與日期後自動載入當班巡檢結果 —</div>
+        <div id="eqNote" style="margin-top:10px;font-size:.78rem;color:var(--text-dim)">???��??�別?�日?��??��?載入?�班巡檢結�? ??/div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-head"><span class="panel-title" style="color:var(--red)">⚠ 異常事項</span></div>
+      <div class="panel-head"><span class="panel-title" style="color:var(--red)">???�常事�?</span></div>
       <div class="panel-body">
         <div class="dyn-list" id="issueList"></div>
         <div class="add-row">
-          <input class="add-input" id="issueInput" placeholder="輸入異常事項（按 Enter 新增）…" onkeydown="if(event.key==='Enter')addIssue()">
-          <button class="add-btn" onclick="addIssue()">＋ 新增</button>
+          <input class="add-input" id="issueInput" placeholder="輸入?�常事�?（�? Enter ?��?）�? onkeydown="if(event.key==='Enter')addIssue()">
+          <button class="add-btn" onclick="addIssue()">�??��?</button>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-head"><span class="panel-title" style="color:var(--amber)">◎ 待辦事項</span></div>
+      <div class="panel-head"><span class="panel-title" style="color:var(--amber)">??待辦事�?</span></div>
       <div class="panel-body">
         <div class="dyn-list" id="pendingList"></div>
         <div class="add-row">
-          <input class="add-input" id="pendingInput" placeholder="輸入待辦事項（按 Enter 新增）…" onkeydown="if(event.key==='Enter')addPending()">
-          <button class="add-btn" style="border-color:var(--amber);color:var(--amber);background:rgba(255,179,0,.06)" onclick="addPending()">＋ 新增</button>
+          <input class="add-input" id="pendingInput" placeholder="輸入待辦事�?（�? Enter ?��?）�? onkeydown="if(event.key==='Enter')addPending()">
+          <button class="add-btn" style="border-color:var(--amber);color:var(--amber);background:rgba(255,179,0,.06)" onclick="addPending()">�??��?</button>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-head"><span class="panel-title">備註</span></div>
+      <div class="panel-head"><span class="panel-title">?�註</span></div>
       <div class="panel-body">
-        <textarea id="hNotes" class="add-input" style="min-height:80px;resize:vertical;width:100%;box-sizing:border-box" placeholder="其他需要說明的事項…"></textarea>
+        <textarea id="hNotes" class="add-input" style="min-height:80px;resize:vertical;width:100%;box-sizing:border-box" placeholder="?��??�要說?��?事�???></textarea>
       </div>
     </div>
 
     <div class="btn-row">
-      <button class="btn-primary" onclick="saveDraft()">儲存草稿</button>
-      <button class="btn-primary btn-confirm" onclick="confirmHandover()">✓ 確認交接完成</button>
+      <button class="btn-primary" onclick="saveDraft()">?��??�稿</button>
+      <button class="btn-primary btn-confirm" onclick="confirmHandover()">??確�?交接完�?</button>
     </div>
     <div style="height:24px"></div>
   </div>
 
-  <!-- ══ TAB: CASE MANAGEMENT ══ -->
+  <!-- ?��? TAB: CASE MANAGEMENT ?��? -->
   <div class="tab-panel" id="panel-cases">
 
     <div class="case-stats" id="caseStats">
-      <div class="stat-chip"><div class="stat-chip-val" id="statOpen" style="color:var(--red)">—</div><div class="stat-chip-label">待處理</div></div>
-      <div class="stat-chip"><div class="stat-chip-val" id="statInProgress" style="color:var(--amber)">—</div><div class="stat-chip-label">處理中</div></div>
-      <div class="stat-chip"><div class="stat-chip-val" id="statPending" style="color:var(--blue)">—</div><div class="stat-chip-label">待確認</div></div>
-      <div class="stat-chip"><div class="stat-chip-val" id="statOverdue" style="color:var(--red)">—</div><div class="stat-chip-label">⚠ 逾期</div></div>
-      <div class="stat-chip"><div class="stat-chip-val" id="statClosed" style="color:var(--green)">—</div><div class="stat-chip-label">已結案</div></div>
+      <div class="stat-chip"><div class="stat-chip-val" id="statOpen" style="color:var(--red)">??/div><div class="stat-chip-label">待�???/div></div>
+      <div class="stat-chip"><div class="stat-chip-val" id="statInProgress" style="color:var(--amber)">??/div><div class="stat-chip-label">?��?�?/div></div>
+      <div class="stat-chip"><div class="stat-chip-val" id="statPending" style="color:var(--blue)">??/div><div class="stat-chip-label">待確�?/div></div>
+      <div class="stat-chip"><div class="stat-chip-val" id="statOverdue" style="color:var(--red)">??/div><div class="stat-chip-label">???��?</div></div>
+      <div class="stat-chip"><div class="stat-chip-val" id="statClosed" style="color:var(--green)">??/div><div class="stat-chip-label">已�?�?/div></div>
     </div>
 
     <div class="filter-bar">
       <select id="cfStatus" onchange="loadCases()">
-        <option value="">全部狀態</option>
-        <option value="open">待處理</option>
-        <option value="in_progress">處理中</option>
-        <option value="pending">待確認</option>
-        <option value="closed">已結案</option>
+        <option value="">?�部?�??/option>
+        <option value="open">待�???/option>
+        <option value="in_progress">?��?�?/option>
+        <option value="pending">待確�?/option>
+        <option value="closed">已�?�?/option>
       </select>
       <select id="cfCat" onchange="loadCases()">
-        <option value="">全部類別</option>
-        <option value="機電設備類">機電設備類</option>
-        <option value="工務事項類">工務事項類</option>
-        <option value="駐警隊類">駐警隊類</option>
-        <option value="市場營運類">市場營運類</option>
-        <option value="其他">其他</option>
+        <option value="">?�部類別</option>
+        <option value="機電設�?�?>機電設�?�?/option>
+        <option value="工�?事�?�?>工�?事�?�?/option>
+        <option value="駐警?��?">駐警?��?</option>
+        <option value="市場?��?�?>市場?��?�?/option>
+        <option value="?��?">?��?</option>
       </select>
-      <div id="cfDateFrom-dtp" style="min-width:150px" title="起始日期"></div>
-      <div id="cfDateTo-dtp" style="min-width:150px" title="結束日期"></div>
-      <button class="btn-secondary btn-sm" onclick="loadCases()">↻ 重整</button>
-      <button class="btn-primary" style="width:auto;padding:7px 18px;font-size:.84rem;margin-top:0" onclick="openCaseForm()">＋ 新增案件</button>
+      <div id="cfDateFrom-dtp" style="min-width:150px" title="起�??��?"></div>
+      <div id="cfDateTo-dtp" style="min-width:150px" title="結�??��?"></div>
+      <button class="btn-secondary btn-sm" onclick="loadCases()">???�整</button>
+      <button class="btn-primary" style="width:auto;padding:7px 18px;font-size:.84rem;margin-top:0" onclick="openCaseForm()">�??��?案件</button>
     </div>
 
     <div class="panel">
@@ -378,13 +378,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <table class="data-table">
           <thead>
             <tr>
-              <th>案件編號</th><th>異常類別</th><th>案件標題</th>
-              <th>狀態</th><th>承辦人</th><th>到期日</th>
-              <th>建立時間</th><th>操作</th>
+              <th>案件編�?</th><th>?�常類別</th><th>案件標�?</th>
+              <th>?�??/th><th>?�辦�?/th><th>?��???/th>
+              <th>建�??��?</th><th>?��?</th>
             </tr>
           </thead>
           <tbody id="casesTbody">
-            <tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:24px">載入中…</td></tr>
+            <tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:24px">載入中�?/td></tr>
           </tbody>
         </table>
       </div>
@@ -392,39 +392,39 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     <div style="height:24px"></div>
   </div>
 
-  <!-- ══ TAB: HISTORY ══ -->
+  <!-- ?��? TAB: HISTORY ?��? -->
   <div class="tab-panel" id="panel-history">
     <div class="filter-bar">
-      <select id="fDeptL1" onchange="onFDeptL1Change()" style="min-width:120px"><option value="">全部部門</option></select>
-      <select id="fDeptL2" onchange="loadHistory()" style="min-width:120px;opacity:0.45;pointer-events:none"><option value="">全部課別</option></select>
+      <select id="fDeptL1" onchange="onFDeptL1Change()" style="min-width:120px"><option value="">?�部?��?</option></select>
+      <select id="fDeptL2" onchange="loadHistory()" style="min-width:120px;opacity:0.45;pointer-events:none"><option value="">?�部課別</option></select>
       <select id="fShift" onchange="loadHistory()">
-        <option value="">全部班別</option>
-        <option value="morning">早班</option>
+        <option value="">?�部?�別</option>
+        <option value="morning">?�班</option>
         <option value="afternoon">中班</option>
         <option value="night">夜班</option>
       </select>
       <select id="fStatus" onchange="loadHistory()">
-        <option value="">全部狀態</option>
-        <option value="draft">草稿</option>
-        <option value="confirmed">已確認</option>
+        <option value="">?�部?�??/option>
+        <option value="draft">?�稿</option>
+        <option value="confirmed">已確�?/option>
       </select>
-      <div id="fDateFrom-dtp" style="min-width:150px" title="起始日期"></div>
-      <div id="fDateTo-dtp" style="min-width:150px" title="結束日期"></div>
-      <button class="btn-secondary btn-sm" onclick="loadHistory()">↻ 重整</button>
+      <div id="fDateFrom-dtp" style="min-width:150px" title="起�??��?"></div>
+      <div id="fDateTo-dtp" style="min-width:150px" title="結�??��?"></div>
+      <button class="btn-secondary btn-sm" onclick="loadHistory()">???�整</button>
     </div>
     <div class="panel">
       <div style="overflow-x:auto">
         <table class="data-table">
           <thead>
             <tr>
-              <th>日期</th><th>班別</th><th>部門</th>
-              <th>交接人</th><th>接班人</th>
-              <th style="text-align:right">正常</th><th style="text-align:right">異常</th>
-              <th>事項摘要</th><th>狀態</th><th>操作</th>
+              <th>?��?</th><th>?�別</th><th>?��?</th>
+              <th>交接�?/th><th>?�班�?/th>
+              <th style="text-align:right">�?��</th><th style="text-align:right">?�常</th>
+              <th>事�??��?</th><th>?�??/th><th>?��?</th>
             </tr>
           </thead>
           <tbody id="historyTbody">
-            <tr><td colspan="10" style="color:var(--text-dim);text-align:center;padding:24px">載入中…</td></tr>
+            <tr><td colspan="10" style="color:var(--text-dim);text-align:center;padding:24px">載入中�?/td></tr>
           </tbody>
         </table>
       </div>
@@ -433,160 +433,160 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 </div>
 
-<!-- ══ HANDOVER DETAIL MODAL ══ -->
+<!-- ?��? HANDOVER DETAIL MODAL ?��? -->
 <div class="modal-bg" id="detailModal">
   <div class="modal">
     <div class="modal-head">
-      <span class="modal-title" id="modalTitle">交接記錄詳情</span>
-      <button class="modal-close" onclick="closeHandoverModal()">✕</button>
+      <span class="modal-title" id="modalTitle">交接記�?詳�?</span>
+      <button class="modal-close" onclick="closeHandoverModal()">??/button>
     </div>
     <div class="modal-body" id="modalBody"></div>
   </div>
 </div>
 
-<!-- ══ CASE FORM MODAL ══ -->
+<!-- ?��? CASE FORM MODAL ?��? -->
 <div class="modal-bg" id="caseFormModal">
   <div class="modal modal-wide">
     <div class="modal-head">
-      <span class="modal-title">◉ 新增案件</span>
-      <button class="modal-close" onclick="closeCaseForm()">✕</button>
+      <span class="modal-title">???��?案件</span>
+      <button class="modal-close" onclick="closeCaseForm()">??/button>
     </div>
     <div class="modal-body">
       <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:12px">
-        <div class="field"><label>案件編號</label><input id="caseNo" type="text" readonly></div>
-        <div class="field"><label>班別</label>
+        <div class="field"><label>案件編�?</label><input id="caseNo" type="text" readonly></div>
+        <div class="field"><label>?�別</label>
           <select id="caseShift">
-            <option value="morning">早班 06:00–14:00</option>
-            <option value="afternoon">中班 14:00–22:00</option>
-            <option value="night">夜班 22:00–06:00</option>
+            <option value="morning">?�班 06:00??4:00</option>
+            <option value="afternoon">中班 14:00??2:00</option>
+            <option value="night">夜班 22:00??6:00</option>
           </select>
         </div>
-        <div class="field"><label>建立日期</label><input id="caseCreatedAt" type="text" readonly></div>
+        <div class="field"><label>建�??��?</label><input id="caseCreatedAt" type="text" readonly></div>
       </div>
       <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;margin-bottom:12px">
-        <div class="field"><label>所屬單位（第一層）</label>
+        <div class="field"><label>?�屬單位�?第�?層�?</label>
           <select id="caseUnitL1" onchange="onCaseUnitL1Change()">
-            <option value="">— 選擇第一層 —</option>
+            <option value="">???��?第�?�???/option>
           </select>
         </div>
-        <div class="field"><label>課/組別（選填）</label>
+        <div class="field"><label>�?組別（選填�?</label>
           <select id="caseUnitL2" onchange="filterCaseReporter()" disabled>
-            <option value="">— 無下級單位 —</option>
+            <option value="">???��?級單�???/option>
           </select>
         </div>
-        <div class="field"><label>通報人</label>
+        <div class="field"><label>?�報�?/label>
           <select id="caseReporter">
-            <option value="">— 選擇通報人 —</option>
+            <option value="">???��??�報�???/option>
           </select>
         </div>
-        <div class="field"><label>發生地點</label>
-          <input id="caseLocation" type="text" placeholder="發生地點">
+        <div class="field"><label>?��??��?</label>
+          <input id="caseLocation" type="text" placeholder="?��??��?">
         </div>
       </div>
       <input type="hidden" id="caseReporterUnit">
       <div class="field" style="margin-bottom:12px">
-        <label>發生時間</label>
+        <label>?��??��?</label>
         <div id="caseIncidentPicker"></div>
       </div>
       <div class="form-grid" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
-        <div class="field"><label>異常大類 *</label>
+        <div class="field"><label>?�常大�? *</label>
           <select id="caseCat" onchange="onCaseCatChange()">
-            <option value="">— 選擇大類 —</option>
-            <option value="機電設備類">機電設備類</option>
-            <option value="工務事項類">工務事項類</option>
-            <option value="駐警隊類">駐警隊類</option>
-            <option value="市場營運類">市場營運類</option>
-            <option value="其他">其他</option>
+            <option value="">???��?大�? ??/option>
+            <option value="機電設�?�?>機電設�?�?/option>
+            <option value="工�?事�?�?>工�?事�?�?/option>
+            <option value="駐警?��?">駐警?��?</option>
+            <option value="市場?��?�?>市場?��?�?/option>
+            <option value="?��?">?��?</option>
           </select>
         </div>
-        <div class="field"><label>異常小類</label>
+        <div class="field"><label>?�常小�?</label>
           <select id="caseSub" disabled>
-            <option value="">— 請先選擇大類 —</option>
+            <option value="">??請�??��?大�? ??/option>
           </select>
         </div>
       </div>
       <div class="field" id="caseOtherDiv" style="display:none;margin-bottom:12px">
-        <label>其他說明</label><input id="caseOther" type="text" placeholder="請說明異常事項">
+        <label>?��?說�?</label><input id="caseOther" type="text" placeholder="請說?�異常�???>
       </div>
       <div class="field" style="margin-bottom:12px">
-        <label>案件標題</label><input id="caseTitle" type="text" placeholder="簡短描述案件（留空則自動產生）">
+        <label>案件標�?</label><input id="caseTitle" type="text" placeholder="簡短?�述案件（�?空�??��??��?�?>
       </div>
       <div class="field" style="margin-bottom:12px">
-        <label>異常事項詳述</label>
-        <textarea id="caseDesc" placeholder="詳細描述異常事項…" style="min-height:80px"></textarea>
+        <label>?�常事�?詳述</label>
+        <textarea id="caseDesc" placeholder="詳細?�述?�常事�??? style="min-height:80px"></textarea>
       </div>
       <div class="field" style="margin-bottom:12px">
-        <label>處理情形</label>
-        <textarea id="caseAction" placeholder="已採取的處理措施…" style="min-height:64px"></textarea>
+        <label>?��??�形</label>
+        <textarea id="caseAction" placeholder="已採?��??��??�施?? style="min-height:64px"></textarea>
       </div>
       <div class="field" style="margin-bottom:12px">
-        <label>後續交接事項</label>
-        <textarea id="caseFollowup" placeholder="需交接給下一班的事項…" style="min-height:64px"></textarea>
+        <label>後�?交接事�?</label>
+        <textarea id="caseFollowup" placeholder="?�交接給�?一?��?事�??? style="min-height:64px"></textarea>
       </div>
-      <!-- 負責單位、指派承辦人、到期日 由主管在案件詳情中指派 -->
+      <!-- 負責?��??��?派承辦人?�到?�日 ?�主管在案件詳�?中�?�?-->
       <input type="hidden" id="caseResponsibleUnit">
       <input type="hidden" id="caseAssignedTo">
       <input type="hidden" id="caseDueDate">
       <input type="hidden" id="caseStatus" value="open">
       <div class="field" style="margin-bottom:16px">
-        <label>備註</label>
-        <textarea id="caseNote" placeholder="其他備註…" style="min-height:56px"></textarea>
+        <label>?�註</label>
+        <textarea id="caseNote" placeholder="?��??�註?? style="min-height:56px"></textarea>
       </div>
 
-      <!-- 附件 -->
+      <!-- ?�件 -->
       <div style="border:1px solid var(--border);border-radius:2px;padding:12px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <span style="font-size:.75rem;color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em">附件（<span id="attachCount">0/20</span>）</span>
+          <span style="font-size:.75rem;color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em">?�件�?span id="attachCount">0/20</span>�?/span>
           <div>
             <input type="file" id="attachInput" accept=".jpg,.jpeg,.png,.pdf,.docx,.xlsx" multiple style="display:none" onchange="onAttachSelect()">
-            <button class="btn-secondary btn-sm" onclick="document.getElementById('attachInput').click()">＋ 選擇附件</button>
+            <button class="btn-secondary btn-sm" onclick="document.getElementById('attachInput').click()">�??��??�件</button>
           </div>
         </div>
-        <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px">支援格式：JPG / PNG / PDF / DOCX / XLSX　每案最多 20 個</div>
-        <div id="pendingAttachList"><span style="font-size:.78rem;color:var(--text-dim)">尚無附件</span></div>
+        <div style="font-size:.72rem;color:var(--text-dim);margin-bottom:8px">?�援?��?：JPG / PNG / PDF / DOCX / XLSX?�每�??��?20 ??/div>
+        <div id="pendingAttachList"><span style="font-size:.78rem;color:var(--text-dim)">尚無?�件</span></div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeCaseForm()">取消</button>
-      <button class="btn-primary" style="width:auto;padding:9px 28px;margin-top:0" onclick="submitCase()">提交案件</button>
+      <button class="btn-secondary" onclick="closeCaseForm()">?��?</button>
+      <button class="btn-primary" style="width:auto;padding:9px 28px;margin-top:0" onclick="submitCase()">?�交案件</button>
     </div>
   </div>
 </div>
 
-<!-- ══ CASE DETAIL MODAL ══ -->
+<!-- ?��? CASE DETAIL MODAL ?��? -->
 <div class="modal-bg" id="caseDetailModal">
   <div class="modal modal-wide">
     <div class="modal-head">
-      <span class="modal-title" id="caseDetailTitle">案件詳情</span>
-      <button class="modal-close" onclick="closeCaseDetail()">✕</button>
+      <span class="modal-title" id="caseDetailTitle">案件詳�?</span>
+      <button class="modal-close" onclick="closeCaseDetail()">??/button>
     </div>
     <div class="modal-body" id="caseDetailBody"></div>
   </div>
 </div>
 
-<!-- 首次登入提醒 -->
+<!-- 首次?�入?��? -->
 <div class="modal-bg" id="firstLoginModal">
   <div class="modal">
-    <div class="modal-title">⚠ 初次登入提醒</div>
-    <p style="margin-bottom:16px;color:var(--text-hi);line-height:1.7;font-size:.9rem">您尚未更改預設密碼，為保障帳號安全，建議立即更改密碼。</p>
+    <div class="modal-title">???�次?�入?��?</div>
+    <p style="margin-bottom:16px;color:var(--text-hi);line-height:1.7;font-size:.9rem">?��??�更?��?設�?碼�??��??�帳?��??��?建議立即?�改密碼??/p>
     <div class="modal-actions">
-      <button class="btn btn-sm" onclick="dismissFirstLogin()">稍後再說</button>
-      <button class="btn btn-primary btn-sm" onclick="openChangePwModal()">前往更改</button>
+      <button class="btn btn-sm" onclick="dismissFirstLogin()">稍�??�說</button>
+      <button class="btn btn-primary btn-sm" onclick="openChangePwModal()">?��??�改</button>
     </div>
   </div>
 </div>
 
-<!-- 更改密碼 -->
+<!-- ?�改密碼 -->
 <div class="modal-bg" id="changePwModal">
   <div class="modal">
-    <div class="modal-title">◉ 更改密碼</div>
+    <div class="modal-title">???�改密碼</div>
     <div class="form-grid">
-      <div class="field"><label>新密碼</label><input id="new-pw" type="password" placeholder="至少 8 個字元" autocomplete="new-password"></div>
-      <div class="field"><label>確認新密碼</label><input id="new-pw2" type="password" placeholder="再輸入一次" autocomplete="new-password"></div>
+      <div class="field"><label>?��?�?/label><input id="new-pw" type="password" placeholder="?��? 8 ?��??? autocomplete="new-password"></div>
+      <div class="field"><label>確�??��?�?/label><input id="new-pw2" type="password" placeholder="?�輸?��?�? autocomplete="new-password"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-sm" onclick="closeThisModal('changePwModal')">取消</button>
-      <button class="btn btn-primary btn-sm" onclick="changePassword()">確認更改</button>
+      <button class="btn btn-sm" onclick="closeThisModal('changePwModal')">?��?</button>
+      <button class="btn btn-primary btn-sm" onclick="changePassword()">確�??�改</button>
     </div>
   </div>
 </div>
@@ -594,16 +594,16 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div class="toast" id="toast"></div>
 
 <script>
-// ── DATETIME PICKER COMPONENT ──────────────────────────────────────────────
+// ?�?� DATETIME PICKER COMPONENT ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 const DTP=(()=>{
   const S={};const _p=n=>String(n).padStart(2,'0');
   function _days(y,m){return new Date(y,m,0).getDate();}
   function _fmt(s){if(!s||!s.d)return null;return s.mode==='datetime'?`${s.y}/${_p(s.m)}/${_p(s.d)} ${_p(s.H||0)}:${_p(s.M||0)}`:`${s.y}/${_p(s.m)}/${_p(s.d)}`;}
   function getValue(id){const s=S[id];if(!s||!s.d)return null;const b=`${s.y}-${_p(s.m)}-${_p(s.d)}`;return s.mode==='datetime'?`${b}T${_p(s.H||0)}:${_p(s.M||0)}:00`:b;}
   function setValue(id,val){const s=S[id];if(!s)return;if(!val){s.y=s.m=s.d=null;s.H=0;s.M=0;}else{const dt=new Date(typeof val==='string'&&!val.includes('T')?val+'T00:00:00':val);s.y=dt.getFullYear();s.m=dt.getMonth()+1;s.d=dt.getDate();s.H=dt.getHours();s.M=dt.getMinutes();s.vy=s.y;s.vm=s.m;}_rD(id);}
-  function _rD(id){const s=S[id];const f=_fmt(s);const v=document.getElementById(id+'_v');const b=document.getElementById(id+'_b');const p=document.getElementById(id+'_p');if(v)v.textContent=f||'— 點選選擇 —';if(b)b.style.color=f?'var(--text-hi,#e0f0ff)':'var(--text-dim,#4a7a8a)';if(p){if(s._o){const r=b.getBoundingClientRect();p.style.top=(r.bottom+3)+'px';p.style.left=r.left+'px';p.style.display='block';}else p.style.display='none';}if(s._o)_rP(id);}
-  function _rP(id){const p=document.getElementById(id+'_p');if(!p)return;const s=S[id];const now=new Date();const vy=s.vy||s.y||now.getFullYear();const vm=s.vm||s.m||(now.getMonth()+1);const dim=_days(vy,vm);const fdow=new Date(vy,vm-1,1).getDay();let rows='<tr>';let col=0;for(let i=0;i<fdow;i++,col++)rows+='<td></td>';for(let d=1;d<=dim;d++,col++){if(col&&col%7===0)rows+='</tr><tr>';const sel=s.d===d&&s.m===vm&&s.y===vy;const tod=now.getDate()===d&&now.getMonth()+1===vm&&now.getFullYear()===vy;rows+=`<td onclick="DTP._pd('${id}',${vy},${vm},${d})" style="width:32px;height:26px;text-align:center;cursor:pointer;border-radius:2px;font-size:.76rem;${sel?'background:var(--cyan,#00d4ff);color:#000;font-weight:bold':tod?'color:var(--cyan,#00d4ff);outline:1px solid var(--cyan,#00d4ff)':''}">${d}</td>`;}rows+='</tr>';const th=['日','一','二','三','四','五','六'].map(d=>`<td style="color:var(--text-dim,#4a7a8a);font-size:.7rem;text-align:center;padding-bottom:3px">${d}</td>`).join('');const tH=s.mode==='datetime'?`<div style="display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border,#1a3a4a)"><span style="color:var(--text-dim,#4a7a8a);font-size:.78rem">時</span><select onchange="DTP._sh('${id}',this.value)" style="flex:1;padding:4px;background:rgba(2,8,20,.9);border:1px solid var(--border,#1a3a4a);color:var(--text-hi,#e0f0ff);font-size:.78rem">${Array.from({length:24},(_,i)=>`<option value="${i}"${(s.H||0)===i?' selected':''}>${_p(i)}</option>`).join('')}</select><span style="color:var(--text-dim,#4a7a8a);font-size:.78rem">分</span><select onchange="DTP._sm('${id}',this.value)" style="flex:1;padding:4px;background:rgba(2,8,20,.9);border:1px solid var(--border,#1a3a4a);color:var(--text-hi,#e0f0ff);font-size:.78rem">${Array.from({length:12},(_,i)=>`<option value="${i*5}"${(s.M||0)===i*5?' selected':''}>${_p(i*5)}</option>`).join('')}</select></div>`:'';p.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><button type="button" onclick="DTP._pm('${id}')" style="background:none;border:none;color:var(--cyan,#00d4ff);cursor:pointer;font-size:1rem;padding:2px 8px">◀</button><span style="font-size:.8rem;color:var(--text-hi,#e0f0ff);font-family:var(--font-head,monospace)">${vy} 年 ${vm} 月</span><button type="button" onclick="DTP._nm('${id}')" style="background:none;border:none;color:var(--cyan,#00d4ff);cursor:pointer;font-size:1rem;padding:2px 8px">▶</button></div><table style="width:100%;border-collapse:collapse"><tr>${th}</tr>${rows}</table>${tH}<div style="display:flex;gap:8px;margin-top:10px"><button type="button" onclick="DTP._cl('${id}')" style="flex:1;background:none;border:1px solid var(--border,#1a3a4a);color:var(--text-dim,#4a7a8a);padding:5px;cursor:pointer;font-size:.75rem;border-radius:2px">清除</button><button type="button" onclick="DTP._ok('${id}')" style="flex:1;background:var(--cyan,#00d4ff);border:none;color:#000;padding:5px;cursor:pointer;font-size:.75rem;font-weight:bold;border-radius:2px">確認</button></div>`;}
-  function init(id,mode,cb){S[id]={mode:mode||'date',y:null,m:null,d:null,H:0,M:0,vy:null,vm:null,_o:false,_cb:cb||null};const el=document.getElementById(id);if(!el)return;el.innerHTML=`<button id="${id}_b" type="button" onclick="DTP._tog('${id}')" style="width:100%;text-align:left;padding:8px 10px;background:rgba(2,8,20,.8);border:1px solid var(--border,#1a3a4a);color:var(--text-dim,#4a7a8a);font-family:var(--font-mono,monospace);font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;border-radius:2px"><span id="${id}_v">— 點選選擇 —</span><span style="color:var(--cyan,#00d4ff);font-size:.65rem">▾</span></button>`;const pop=document.createElement('div');pop.id=id+'_p';pop.style.cssText='display:none;position:fixed;z-index:9999;min-width:240px;background:#071220;border:1px solid #1a3a4a;padding:12px;box-shadow:0 6px 24px rgba(0,212,255,.18);box-sizing:border-box';document.body.appendChild(pop);if(!DTP._gl){document.addEventListener('click',e=>{const path=e.composedPath?e.composedPath():[];Object.keys(S).forEach(pid=>{if(!S[pid]._o)return;const btn=document.getElementById(pid+'_b');const pop=document.getElementById(pid+'_p');if((!btn||!path.includes(btn))&&(!pop||!path.includes(pop))){S[pid]._o=false;_rD(pid);}});});DTP._gl=true;}}
+  function _rD(id){const s=S[id];const f=_fmt(s);const v=document.getElementById(id+'_v');const b=document.getElementById(id+'_b');const p=document.getElementById(id+'_p');if(v)v.textContent=f||'??點選?��? ??;if(b)b.style.color=f?'var(--text-hi,#e0f0ff)':'var(--text-dim,#4a7a8a)';if(p){if(s._o){const r=b.getBoundingClientRect();p.style.top=(r.bottom+3)+'px';p.style.left=r.left+'px';p.style.display='block';}else p.style.display='none';}if(s._o)_rP(id);}
+  function _rP(id){const p=document.getElementById(id+'_p');if(!p)return;const s=S[id];const now=new Date();const vy=s.vy||s.y||now.getFullYear();const vm=s.vm||s.m||(now.getMonth()+1);const dim=_days(vy,vm);const fdow=new Date(vy,vm-1,1).getDay();let rows='<tr>';let col=0;for(let i=0;i<fdow;i++,col++)rows+='<td></td>';for(let d=1;d<=dim;d++,col++){if(col&&col%7===0)rows+='</tr><tr>';const sel=s.d===d&&s.m===vm&&s.y===vy;const tod=now.getDate()===d&&now.getMonth()+1===vm&&now.getFullYear()===vy;rows+=`<td onclick="DTP._pd('${id}',${vy},${vm},${d})" style="width:32px;height:26px;text-align:center;cursor:pointer;border-radius:2px;font-size:.76rem;${sel?'background:var(--cyan,#00d4ff);color:#000;font-weight:bold':tod?'color:var(--cyan,#00d4ff);outline:1px solid var(--cyan,#00d4ff)':''}">${d}</td>`;}rows+='</tr>';const th=['??,'一','�?,'�?,'??,'�?,'??].map(d=>`<td style="color:var(--text-dim,#4a7a8a);font-size:.7rem;text-align:center;padding-bottom:3px">${d}</td>`).join('');const tH=s.mode==='datetime'?`<div style="display:flex;align-items:center;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border,#1a3a4a)"><span style="color:var(--text-dim,#4a7a8a);font-size:.78rem">??/span><select onchange="DTP._sh('${id}',this.value)" style="flex:1;padding:4px;background:rgba(2,8,20,.9);border:1px solid var(--border,#1a3a4a);color:var(--text-hi,#e0f0ff);font-size:.78rem">${Array.from({length:24},(_,i)=>`<option value="${i}"${(s.H||0)===i?' selected':''}>${_p(i)}</option>`).join('')}</select><span style="color:var(--text-dim,#4a7a8a);font-size:.78rem">??/span><select onchange="DTP._sm('${id}',this.value)" style="flex:1;padding:4px;background:rgba(2,8,20,.9);border:1px solid var(--border,#1a3a4a);color:var(--text-hi,#e0f0ff);font-size:.78rem">${Array.from({length:12},(_,i)=>`<option value="${i*5}"${(s.M||0)===i*5?' selected':''}>${_p(i*5)}</option>`).join('')}</select></div>`:'';p.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><button type="button" onclick="DTP._pm('${id}')" style="background:none;border:none;color:var(--cyan,#00d4ff);cursor:pointer;font-size:1rem;padding:2px 8px">?�</button><span style="font-size:.8rem;color:var(--text-hi,#e0f0ff);font-family:var(--font-head,monospace)">${vy} �?${vm} ??/span><button type="button" onclick="DTP._nm('${id}')" style="background:none;border:none;color:var(--cyan,#00d4ff);cursor:pointer;font-size:1rem;padding:2px 8px">??/button></div><table style="width:100%;border-collapse:collapse"><tr>${th}</tr>${rows}</table>${tH}<div style="display:flex;gap:8px;margin-top:10px"><button type="button" onclick="DTP._cl('${id}')" style="flex:1;background:none;border:1px solid var(--border,#1a3a4a);color:var(--text-dim,#4a7a8a);padding:5px;cursor:pointer;font-size:.75rem;border-radius:2px">清除</button><button type="button" onclick="DTP._ok('${id}')" style="flex:1;background:var(--cyan,#00d4ff);border:none;color:#000;padding:5px;cursor:pointer;font-size:.75rem;font-weight:bold;border-radius:2px">確�?</button></div>`;}
+  function init(id,mode,cb){S[id]={mode:mode||'date',y:null,m:null,d:null,H:0,M:0,vy:null,vm:null,_o:false,_cb:cb||null};const el=document.getElementById(id);if(!el)return;el.innerHTML=`<button id="${id}_b" type="button" onclick="DTP._tog('${id}')" style="width:100%;text-align:left;padding:8px 10px;background:rgba(2,8,20,.8);border:1px solid var(--border,#1a3a4a);color:var(--text-dim,#4a7a8a);font-family:var(--font-mono,monospace);font-size:.82rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;box-sizing:border-box;border-radius:2px"><span id="${id}_v">??點選?��? ??/span><span style="color:var(--cyan,#00d4ff);font-size:.65rem">??/span></button>`;const pop=document.createElement('div');pop.id=id+'_p';pop.style.cssText='display:none;position:fixed;z-index:9999;min-width:240px;background:#071220;border:1px solid #1a3a4a;padding:12px;box-shadow:0 6px 24px rgba(0,212,255,.18);box-sizing:border-box';document.body.appendChild(pop);if(!DTP._gl){document.addEventListener('click',e=>{const path=e.composedPath?e.composedPath():[];Object.keys(S).forEach(pid=>{if(!S[pid]._o)return;const btn=document.getElementById(pid+'_b');const pop=document.getElementById(pid+'_p');if((!btn||!path.includes(btn))&&(!pop||!path.includes(pop))){S[pid]._o=false;_rD(pid);}});});DTP._gl=true;}}
   function _tog(id){Object.keys(S).forEach(pid=>{if(pid!==id&&S[pid]._o){S[pid]._o=false;_rD(pid);}});S[id]._o=!S[id]._o;_rD(id);}
   function _pm(id){const s=S[id];const now=new Date();let y=s.vy||s.y||now.getFullYear();let m=s.vm||s.m||(now.getMonth()+1);if(--m<1){m=12;y--;}s.vy=y;s.vm=m;_rP(id);}
   function _nm(id){const s=S[id];const now=new Date();let y=s.vy||s.y||now.getFullYear();let m=s.vm||s.m||(now.getMonth()+1);if(++m>12){m=1;y++;}s.vy=y;s.vm=m;_rP(id);}
@@ -614,23 +614,23 @@ const DTP=(()=>{
   function _ok(id){S[id]._o=false;_rD(id);if(S[id]._cb)S[id]._cb(getValue(id));}
   return{init,getValue,setValue,_tog,_pm,_nm,_pd,_sh,_sm,_cl,_ok};
 })();
-// ─────────────────────────────────────────────────────────────────────────────
+// ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 const SUPABASE_URL = 'https://qztffronusdhgxhjjubt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
 
-// 全系統統一日期格式：西元 YYYY-MM-DD
+// ?�系統統一?��??��?：西??YYYY-MM-DD
 function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function fmtDate(v){if(!v)return '—';const d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtDate(v){if(!v)return '??;const d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 window.addEventListener('DOMContentLoaded',()=>{const el=document.getElementById('hFiled');if(el)el.textContent=todayISO();});
 
 let _shifts = [
-  {id:'morning',  label:'早班', start:'06:00', end:'14:00'},
+  {id:'morning',  label:'?�班', start:'06:00', end:'14:00'},
   {id:'afternoon',label:'中班', start:'14:00', end:'22:00'},
   {id:'night',    label:'夜班', start:'22:00', end:'06:00'},
 ];
-let SHIFT_LABEL = { morning:'早班', afternoon:'中班', night:'夜班' };
+let SHIFT_LABEL = { morning:'?�班', afternoon:'中班', night:'夜班' };
 let SHIFT_HOURS = { morning:[6,14], afternoon:[14,22], night:[22,30] };
 let SHIFT_CLASS = { morning:'shift-morning', afternoon:'shift-afternoon', night:'shift-night' };
 
@@ -665,36 +665,36 @@ function rebuildShiftSelects() {
     const el = document.getElementById(id);
     if (!el) return;
     const cur = el.value;
-    el.innerHTML = (addAll ? '<option value="">全部班別</option>' : '') +
-      _shifts.map(s => `<option value="${s.id}">${s.label} ${s.start}–${s.end}</option>`).join('');
+    el.innerHTML = (addAll ? '<option value="">?�部?�別</option>' : '') +
+      _shifts.map(s => `<option value="${s.id}">${s.label} ${s.start}??{s.end}</option>`).join('');
     if (_shifts.find(s => s.id === cur)) el.value = cur;
   });
 }
 
 const CASE_STATUS = {
-  open:        { label:'待處理', cls:'badge-open' },
-  in_progress: { label:'處理中', cls:'badge-in_progress' },
-  pending:     { label:'待確認', cls:'badge-pending' },
-  closed:      { label:'已結案', cls:'badge-closed' }
+  open:        { label:'待�???, cls:'badge-open' },
+  in_progress: { label:'?��?�?, cls:'badge-in_progress' },
+  pending:     { label:'待確�?, cls:'badge-pending' },
+  closed:      { label:'已�?�?, cls:'badge-closed' }
 };
 
 const ACTION_LABEL = {
-  create:'建立案件', assign:'指派承辦', transfer:'轉派案件',
-  update:'進度更新', close:'結案',    reopen:'重新開啟'
+  create:'建�?案件', assign:'?�派?�辦', transfer:'轉派案件',
+  update:'?�度?�新', close:'結�?',    reopen:'?�新?��?'
 };
 
 const ANOMALY_SUBS = {
-  '機電設備類': ['高壓設備','變壓器','發電機','冰水主機','空調設備','電梯設備','給排水設備','消防設備','弱電設備'],
-  '工務事項類': ['設施損壞','工程施工','漏水事件','照明異常','環境設施異常'],
-  '駐警隊類':   ['門禁異常','車輛事故','人員糾紛','緊急事件'],
-  '市場營運類': ['拍賣設備異常','攤商陳情','環境清潔','廢棄物處理'],
-  '其他':       []
+  '機電設�?�?: ['高�?設�?','變�???,'?�電�?,'?�水主�?','空調設�?','?�梯設�?','給�?水設??,'消防設�?','弱電設�?'],
+  '工�?事�?�?: ['設施?��?','工�??�工','漏水事件','?��??�常','?��?設施?�常'],
+  '駐警?��?':   ['?�禁異�?,'車�?事�?','人員糾�?','緊急�?�?],
+  '市場?��?�?: ['?�賣設�??�常','?��??��?','?��?清�?','廢�??��???],
+  '?��?':       []
 };
 
 let currentUser = null;
 let _handoverHasSession = false;
 let allDepts = [], allUsers = [];
-let issues = ['無異常事項。如果有需要再填列'], pendings = ['無代辦事項。如果有需要再填列'];
+let issues = ['?�異常�??�。�??��??�要�?填�?'], pendings = ['?�代辦�??�。�??��??�要�?填�?'];
 let editingId = null;
 let pendingAttachments = [];
 let currentCaseId = null;
@@ -731,17 +731,17 @@ function applyPerms() {
     document.querySelectorAll('a[href="workorder.html"]').forEach(el => el.style.display = 'none');
 }
 
-// ── CLOCK ──────────────────────────────────────────
+// ?�?� CLOCK ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 (function tick(){
   const n=new Date(),p=x=>String(x).padStart(2,'0');
   document.getElementById('topClock').textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
   setTimeout(tick,1000);
 })();
 
-// ── INIT ───────────────────────────────────────────
+// ?�?� INIT ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 (async () => {
   currentUser = { user_id: null, name: '交接人員' };
-  document.getElementById('navUser').textContent = '電子交接簿';
+  document.getElementById('navUser').textContent = '?��?交接�?;
 
   db.from('system_settings').select('key,value').then(({ data }) => {
     if (!data) return;
@@ -758,7 +758,7 @@ function applyPerms() {
   allDepts = depts || [];
   allUsers = users || [];
 
-  // 載入目前登入使用者
+  // 載入?��??�入使用??
   try {
     const { data: { session } } = await db.auth.getSession();
     _handoverHasSession = !!session;
@@ -799,16 +799,16 @@ function applyPerms() {
   await loadHistory();
 })();
 
-// ── DEPT DROPDOWNS ─────────────────────────────────
+// ?�?� DEPT DROPDOWNS ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function buildDeptSelects() {
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
-  const l1Opts = '<option value="">— 選擇第一層 —</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
+  const l1Opts = '<option value="">???��?第�?�???/option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   document.getElementById('hHandoverL1').innerHTML = l1Opts;
   document.getElementById('hTakeoverL1').innerHTML = l1Opts;
-  const fL1Opts = '<option value="">全部部門</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
+  const fL1Opts = '<option value="">?�部?��?</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   document.getElementById('fDeptL1').innerHTML = fL1Opts;
   const fL2 = document.getElementById('fDeptL2');
-  fL2.innerHTML = '<option value="">全部課別</option>';
+  fL2.innerHTML = '<option value="">?�部課別</option>';
   fL2.style.opacity = '0.45';
   fL2.style.pointerEvents = 'none';
 }
@@ -819,16 +819,16 @@ function onFDeptL1Change() {
   if (l1) {
     const children = allDepts.filter(d => d.parent_id === l1).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
     if (children.length) {
-      l2Sel.innerHTML = '<option value="">全部課別</option>' + children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
+      l2Sel.innerHTML = '<option value="">?�部課別</option>' + children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
       l2Sel.style.opacity = '1';
       l2Sel.style.pointerEvents = 'auto';
     } else {
-      l2Sel.innerHTML = '<option value="">— 無下級單位 —</option>';
+      l2Sel.innerHTML = '<option value="">???��?級單�???/option>';
       l2Sel.style.opacity = '0.45';
       l2Sel.style.pointerEvents = 'none';
     }
   } else {
-    l2Sel.innerHTML = '<option value="">全部課別</option>';
+    l2Sel.innerHTML = '<option value="">?�部課別</option>';
     l2Sel.style.opacity = '0.45';
     l2Sel.style.pointerEvents = 'none';
   }
@@ -841,7 +841,7 @@ function buildFlatDeptOpts() {
   for (const r of roots) {
     html += `<option value="${r.dept_id}">${escHtml(r.name)}</option>`;
     allDepts.filter(d => d.parent_id === r.dept_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0)).forEach(c => {
-      html += `<option value="${c.dept_id}">&nbsp;&nbsp;└ ${escHtml(c.name)}</option>`;
+      html += `<option value="${c.dept_id}">&nbsp;&nbsp;??${escHtml(c.name)}</option>`;
     });
   }
   return html;
@@ -851,10 +851,10 @@ function fillL2(l1Id, l2SelId) {
   const l2Sel = document.getElementById(l2SelId);
   const children = allDepts.filter(d => d.parent_id === l1Id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
   if (!l1Id || !children.length) {
-    l2Sel.innerHTML = '<option value="">— 無下級單位 —</option>';
+    l2Sel.innerHTML = '<option value="">???��?級單�???/option>';
     l2Sel.disabled = true;
   } else {
-    l2Sel.innerHTML = '<option value="">— 選擇課別（選填）—</option>' +
+    l2Sel.innerHTML = '<option value="">???��?課別（選填�???/option>' +
       children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
     l2Sel.disabled = false;
   }
@@ -862,7 +862,7 @@ function fillL2(l1Id, l2SelId) {
 
 function fillPersonSelect(selId, deptId) {
   const filtered = deptId ? allUsers.filter(u => u.dept_id === deptId) : allUsers;
-  document.getElementById(selId).innerHTML = '<option value="">— 選擇人員 —</option>' +
+  document.getElementById(selId).innerHTML = '<option value="">???��?人員 ??/option>' +
     filtered.map(u => `<option value="${u.user_id}">${escHtml(u.name)}</option>`).join('');
 }
 
@@ -879,7 +879,7 @@ function filterCaseReporter() {
   if (deptId) {
     const dept = allDepts.find(d => d.dept_id === deptId);
     if (dept && !dept.parent_id) {
-      // 選了 L1：包含本身及所有下級
+      // ?��? L1：�??�本身�??�?��?�?
       const childIds = allDepts.filter(d => d.parent_id === deptId).map(d => d.dept_id);
       filtered = allUsers.filter(u => u.dept_id === deptId || childIds.includes(u.dept_id));
     } else {
@@ -890,7 +890,7 @@ function filterCaseReporter() {
   }
   const cur = document.getElementById('caseReporter').value;
   document.getElementById('caseReporter').innerHTML =
-    '<option value="">— 選擇通報人 —</option>' +
+    '<option value="">???��??�報�???/option>' +
     filtered.map(u => `<option value="${escHtml(u.name)}">${escHtml(u.name)}</option>`).join('');
   if (filtered.find(u => u.name === cur)) document.getElementById('caseReporter').value = cur;
   const unitDept = allDepts.find(d => d.dept_id === deptId);
@@ -916,7 +916,7 @@ function onTakeoverDeptChange() {
   fillPersonSelect('hTakeoverBy', deptId);
 }
 
-// ── SHIFT CHANGE ───────────────────────────────────
+// ?�?� SHIFT CHANGE ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function onShiftChange() { fetchEqStatus(); }
 
 function shiftRange(dateStr, type) {
@@ -928,7 +928,7 @@ function shiftRange(dateStr, type) {
   };
 }
 
-// ── FETCH EQ STATUS ────────────────────────────────
+// ?�?� FETCH EQ STATUS ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 async function fetchEqStatus() {
   const date = DTP.getValue('hDate-dtp');
   const shift = document.getElementById('hShift').value;
@@ -944,27 +944,27 @@ async function fetchEqStatus() {
   document.getElementById('eqTotal').textContent     = recs.length;
   document.getElementById('eqAbnormal').style.color  = abnRecs.length ? 'var(--red)' : 'var(--green)';
   document.getElementById('eqNote').textContent = recs.length ?
-    `已取得 ${date} ${SHIFT_LABEL[shift]} 共 ${recs.length} 筆巡檢紀錄` :
-    `${date} ${SHIFT_LABEL[shift]} 尚無巡檢紀錄`;
+    `已�?�?${date} ${SHIFT_LABEL[shift]} ??${recs.length} 筆巡檢�??�` :
+    `${date} ${SHIFT_LABEL[shift]} 尚無巡檢紀?�`;
   if (abnRecs.length > 0 && issues.length === 0) {
-    issues = abnRecs.map(r => `【${r.equipment?.name||'設備'}】${r.abnormal_note||'異常'}`);
+    issues = abnRecs.map(r => `??{r.equipment?.name||'設�?'}??{r.abnormal_note||'?�常'}`);
     renderIssues();
   }
 }
 
-// ── DYNAMIC LISTS ──────────────────────────────────
+// ?�?� DYNAMIC LISTS ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function renderIssues() {
   document.getElementById('issueList').innerHTML = issues.map((txt,i) => `
     <div class="dyn-item">
-      <div class="dyn-item-text issue">⚠ ${escHtml(txt)}</div>
-      <button class="dyn-del" onclick="removeIssue(${i})">✕</button>
+      <div class="dyn-item-text issue">??${escHtml(txt)}</div>
+      <button class="dyn-del" onclick="removeIssue(${i})">??/button>
     </div>`).join('');
 }
 function renderPendings() {
   document.getElementById('pendingList').innerHTML = pendings.map((txt,i) => `
     <div class="dyn-item">
-      <div class="dyn-item-text pending">◎ ${escHtml(txt)}</div>
-      <button class="dyn-del" onclick="removePending(${i})">✕</button>
+      <div class="dyn-item-text pending">??${escHtml(txt)}</div>
+      <button class="dyn-del" onclick="removePending(${i})">??/button>
     </div>`).join('');
 }
 function addIssue() {
@@ -980,10 +980,10 @@ function addPending() {
 }
 function removePending(i) { pendings.splice(i,1); renderPendings(); }
 
-// ── SAVE HANDOVER ──────────────────────────────────
+// ?�?� SAVE HANDOVER ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 async function saveDraft() { await doSave('draft'); }
 async function confirmHandover() {
-  if (!document.getElementById('hTakeoverBy').value) { showToast('請選擇接班人再確認交接', true); return; }
+  if (!document.getElementById('hTakeoverBy').value) { showToast('請選?�接?�人?�確認交??, true); return; }
   await doSave('confirmed');
 }
 
@@ -996,8 +996,8 @@ async function doSave(status) {
   const notes     = document.getElementById('hNotes').value.trim();
   const eqNormal  = parseInt(document.getElementById('eqNormal').textContent) || 0;
   const eqAbnormal= parseInt(document.getElementById('eqAbnormal').textContent) || 0;
-  if (!date) { showToast('請選擇交接日期', true); return; }
-  if (!handoverBy && !takeoverBy) { showToast('請至少填寫交接人或接班人', true); return; }
+  if (!date) { showToast('請選?�交?�日??, true); return; }
+  if (!handoverBy && !takeoverBy) { showToast('請至少填寫交?�人?�接?�人', true); return; }
   const record = {
     shift_date: date, shift_type: shift, dept_id: deptId,
     handover_by: handoverBy, takeover_by: takeoverBy,
@@ -1013,8 +1013,8 @@ async function doSave(status) {
   } else {
     ({ error: err } = await db.from('handover_records').insert(record));
   }
-  if (err) { showToast('儲存失敗：' + translateError(err.message || err.code), true); return; }
-  showToast(status==='confirmed' ? '✓ 交接已確認完成' : '草稿已儲存');
+  if (err) { showToast('?��?失�?�? + translateError(err.message || err.code), true); return; }
+  showToast(status==='confirmed' ? '??交接已確認�??? : '?�稿已儲�?);
   resetHandoverForm();
   editingId = null;
   await loadHistory();
@@ -1022,16 +1022,16 @@ async function doSave(status) {
 }
 
 function resetHandoverForm() {
-  issues = ['無異常事項。如果有需要再填列']; pendings = ['無代辦事項。如果有需要再填列']; renderIssues(); renderPendings();
+  issues = ['?�異常�??�。�??��??�要�?填�?']; pendings = ['?�代辦�??�。�??��??�要�?填�?']; renderIssues(); renderPendings();
   document.getElementById('hNotes').value = '';
   document.getElementById('hHandoverBy').value = '';
   document.getElementById('hTakeoverBy').value = '';
-  document.getElementById('eqNormal').textContent = '—';
-  document.getElementById('eqAbnormal').textContent = '—';
-  document.getElementById('eqTotal').textContent = '—';
+  document.getElementById('eqNormal').textContent = '??;
+  document.getElementById('eqAbnormal').textContent = '??;
+  document.getElementById('eqTotal').textContent = '??;
 }
 
-// ── HISTORY ────────────────────────────────────────
+// ?�?� HISTORY ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 async function loadHistory() {
   const l1Filter     = document.getElementById('fDeptL1').value;
   const l2Filter     = document.getElementById('fDeptL2').value;
@@ -1053,59 +1053,59 @@ async function loadHistory() {
   if (dateFrom)     q = q.gte('shift_date', dateFrom);
   if (dateTo)       q = q.lte('shift_date', dateTo);
   const { data, error } = await q;
-  if (error) { showToast('載入失敗', true); return; }
+  if (error) { showToast('載入失�?', true); return; }
   const rows = data || [];
   document.getElementById('historyTbody').innerHTML = rows.length ? rows.map(r => {
     const issueLines = r.issues ? r.issues.split('\n').filter(Boolean) : [];
     const pendLines  = r.pending ? r.pending.split('\n').filter(Boolean) : [];
-    const summary = issueLines.length ? `⚠ ${issueLines.length}項異常` : (pendLines.length ? `◎ ${pendLines.length}項待辦` : '—');
+    const summary = issueLines.length ? `??${issueLines.length}?�異常` : (pendLines.length ? `??${pendLines.length}?��?辦` : '??);
     return `<tr>
       <td style="font-family:var(--font-mono);font-size:.78rem">${r.shift_date}</td>
       <td><span class="${SHIFT_CLASS[r.shift_type]}">${SHIFT_LABEL[r.shift_type]}</span></td>
-      <td style="font-size:.82rem">${r.departments?.name||'—'}</td>
-      <td style="font-size:.82rem">${r.handover_user?.name||'—'}</td>
-      <td style="font-size:.82rem">${r.takeover_user?.name||'—'}</td>
-      <td style="text-align:right;font-family:var(--font-mono);color:var(--green)">${r.eq_normal||'—'}</td>
-      <td style="text-align:right;font-family:var(--font-mono);color:${r.eq_abnormal?'var(--red)':'var(--text-dim)'}">${r.eq_abnormal||'—'}</td>
+      <td style="font-size:.82rem">${r.departments?.name||'??}</td>
+      <td style="font-size:.82rem">${r.handover_user?.name||'??}</td>
+      <td style="font-size:.82rem">${r.takeover_user?.name||'??}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:var(--green)">${r.eq_normal||'??}</td>
+      <td style="text-align:right;font-family:var(--font-mono);color:${r.eq_abnormal?'var(--red)':'var(--text-dim)'}">${r.eq_abnormal||'??}</td>
       <td style="font-size:.8rem;color:${r.issues?'var(--red)':'var(--text-dim)'}">${escHtml(summary)}</td>
-      <td><span class="badge badge-${r.status}">${r.status==='confirmed'?'已確認':'草稿'}</span></td>
+      <td><span class="badge badge-${r.status}">${r.status==='confirmed'?'已確�?:'?�稿'}</span></td>
       <td>
-        <button class="btn-secondary btn-sm" onclick="openHandoverDetail('${r.record_id}')">查看</button>
-        ${r.status==='draft'?`<button class="btn-secondary btn-sm" style="margin-left:4px;color:var(--green);border-color:var(--green)" onclick="quickConfirm('${r.record_id}')">確認</button>`:''}
+        <button class="btn-secondary btn-sm" onclick="openHandoverDetail('${r.record_id}')">?��?</button>
+        ${r.status==='draft'?`<button class="btn-secondary btn-sm" style="margin-left:4px;color:var(--green);border-color:var(--green)" onclick="quickConfirm('${r.record_id}')">確�?</button>`:''}
       </td>
     </tr>`;
-  }).join('') : '<tr><td colspan="10" style="color:var(--text-dim);text-align:center;padding:24px">目前無紀錄</td></tr>';
+  }).join('') : '<tr><td colspan="10" style="color:var(--text-dim);text-align:center;padding:24px">?��??��???/td></tr>';
 }
 
 async function openHandoverDetail(id) {
   const { data: r } = await db.from('handover_records')
     .select('*,departments(name),handover_user:users!handover_by(name),takeover_user:users!takeover_by(name),confirmed_user:users!confirmed_by(name)')
     .eq('record_id', id).single();
-  if (!r) { showToast('載入失敗', true); return; }
+  if (!r) { showToast('載入失�?', true); return; }
   const issueLines   = r.issues  ? r.issues.split('\n').filter(Boolean)  : [];
   const pendingLines = r.pending ? r.pending.split('\n').filter(Boolean) : [];
-  document.getElementById('modalTitle').textContent = `${r.shift_date} ${SHIFT_LABEL[r.shift_type]} 交接記錄`;
+  document.getElementById('modalTitle').textContent = `${r.shift_date} ${SHIFT_LABEL[r.shift_type]} 交接記�?`;
   document.getElementById('modalBody').innerHTML = `
-    <div class="detail-row"><span class="detail-label">日期</span><span class="detail-value">${r.shift_date}</span></div>
-    <div class="detail-row"><span class="detail-label">班別</span><span class="detail-value"><span class="${SHIFT_CLASS[r.shift_type]}">${SHIFT_LABEL[r.shift_type]}</span></span></div>
-    <div class="detail-row"><span class="detail-label">部門</span><span class="detail-value">${r.departments?.name||'—'}</span></div>
-    <div class="detail-row"><span class="detail-label">交接人</span><span class="detail-value">${r.handover_user?.name||'—'}</span></div>
-    <div class="detail-row"><span class="detail-label">接班人</span><span class="detail-value">${r.takeover_user?.name||'—'}</span></div>
-    <div class="detail-row"><span class="detail-label">設備狀況</span><span class="detail-value"><span style="color:var(--green)">✓ 正常 ${r.eq_normal} 台</span>&nbsp;&nbsp;<span style="color:${r.eq_abnormal?'var(--red)':'var(--text-dim)'}">✗ 異常 ${r.eq_abnormal} 台</span></span></div>
-    <div class="detail-row"><span class="detail-label">狀態</span><span class="detail-value"><span class="badge badge-${r.status}">${r.status==='confirmed'?'已確認':'草稿'}</span>${r.confirmed_at?`<span style="font-size:.72rem;color:var(--text-dim);margin-left:8px">${new Date(r.confirmed_at).toLocaleString('zh-TW')} by ${r.confirmed_user?.name||'—'}</span>`:''}</span></div>
+    <div class="detail-row"><span class="detail-label">?��?</span><span class="detail-value">${r.shift_date}</span></div>
+    <div class="detail-row"><span class="detail-label">?�別</span><span class="detail-value"><span class="${SHIFT_CLASS[r.shift_type]}">${SHIFT_LABEL[r.shift_type]}</span></span></div>
+    <div class="detail-row"><span class="detail-label">?��?</span><span class="detail-value">${r.departments?.name||'??}</span></div>
+    <div class="detail-row"><span class="detail-label">交接�?/span><span class="detail-value">${r.handover_user?.name||'??}</span></div>
+    <div class="detail-row"><span class="detail-label">?�班�?/span><span class="detail-value">${r.takeover_user?.name||'??}</span></div>
+    <div class="detail-row"><span class="detail-label">設�??��?/span><span class="detail-value"><span style="color:var(--green)">??�?�� ${r.eq_normal} ??/span>&nbsp;&nbsp;<span style="color:${r.eq_abnormal?'var(--red)':'var(--text-dim)'}">???�常 ${r.eq_abnormal} ??/span></span></div>
+    <div class="detail-row"><span class="detail-label">?�??/span><span class="detail-value"><span class="badge badge-${r.status}">${r.status==='confirmed'?'已確�?:'?�稿'}</span>${r.confirmed_at?`<span style="font-size:.72rem;color:var(--text-dim);margin-left:8px">${new Date(r.confirmed_at).toLocaleString('zh-TW')} by ${r.confirmed_user?.name||'??}</span>`:''}</span></div>
     <div class="detail-section">
-      <div class="detail-section-title" style="color:var(--red)">⚠ 異常事項（${issueLines.length}項）</div>
-      ${issueLines.length ? issueLines.map(l=>`<div class="detail-item issue">${escHtml(l)}</div>`).join('') : '<span class="detail-empty">無異常事項</span>'}
+      <div class="detail-section-title" style="color:var(--red)">???�常事�?�?{issueLines.length}?��?</div>
+      ${issueLines.length ? issueLines.map(l=>`<div class="detail-item issue">${escHtml(l)}</div>`).join('') : '<span class="detail-empty">?�異常�???/span>'}
     </div>
     <div class="detail-section">
-      <div class="detail-section-title" style="color:var(--amber)">◎ 待辦事項（${pendingLines.length}項）</div>
-      ${pendingLines.length ? pendingLines.map(l=>`<div class="detail-item pending">${escHtml(l)}</div>`).join('') : '<span class="detail-empty">無待辦事項</span>'}
+      <div class="detail-section-title" style="color:var(--amber)">??待辦事�?�?{pendingLines.length}?��?</div>
+      ${pendingLines.length ? pendingLines.map(l=>`<div class="detail-item pending">${escHtml(l)}</div>`).join('') : '<span class="detail-empty">?��?辦�???/span>'}
     </div>
-    ${r.notes?`<div class="detail-section"><div class="detail-section-title">備註</div><div style="font-size:.85rem;color:var(--text-hi);white-space:pre-wrap">${escHtml(r.notes)}</div></div>`:''}
+    ${r.notes?`<div class="detail-section"><div class="detail-section-title">?�註</div><div style="font-size:.85rem;color:var(--text-hi);white-space:pre-wrap">${escHtml(r.notes)}</div></div>`:''}
     <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
-      ${r.status==='draft'?`<button class="btn-primary btn-confirm" style="flex:1;min-width:120px" onclick="quickConfirm('${r.record_id}',true)">✓ 確認交接</button>`:''}
-      <button class="btn-secondary" onclick="window.print()">🖨 列印</button>
-      <button class="btn-secondary" onclick="closeHandoverModal()" style="margin-left:auto">關閉</button>
+      ${r.status==='draft'?`<button class="btn-primary btn-confirm" style="flex:1;min-width:120px" onclick="quickConfirm('${r.record_id}',true)">??確�?交接</button>`:''}
+      <button class="btn-secondary" onclick="window.print()">?�� ?�印</button>
+      <button class="btn-secondary" onclick="closeHandoverModal()" style="margin-left:auto">?��?</button>
     </div>
   `;
   document.getElementById('detailModal').classList.add('show');
@@ -1114,17 +1114,17 @@ async function openHandoverDetail(id) {
 async function quickConfirm(id, closeAfter) {
   const updates = { status:'confirmed', confirmed_at:new Date().toISOString(), confirmed_by:currentUser.user_id };
   const { error } = await db.from('handover_records').update(updates).eq('record_id', id);
-  if (error) { showToast('確認失敗', true); return; }
-  showToast('✓ 交接已確認');
+  if (error) { showToast('確�?失�?', true); return; }
+  showToast('??交接已確�?);
   if (closeAfter) closeHandoverModal();
   await loadHistory();
 }
 
 function closeHandoverModal() { document.getElementById('detailModal').classList.remove('show'); }
 
-// ══════════════════════════════════════════════════
-// ── CASE MANAGEMENT ────────────────────────────────
-// ══════════════════════════════════════════════════
+// ?��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��?
+// ?�?� CASE MANAGEMENT ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// ?��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��?
 
 async function genCaseNo() {
   const d = new Date();
@@ -1145,7 +1145,7 @@ async function openCaseForm() {
   const h = now.getHours();
   document.getElementById('caseShift').value = h>=6&&h<14 ? 'morning' : h>=14&&h<22 ? 'afternoon' : 'night';
   document.getElementById('caseCat').value = '';
-  document.getElementById('caseSub').innerHTML = '<option value="">— 請先選擇大類 —</option>';
+  document.getElementById('caseSub').innerHTML = '<option value="">??請�??��?大�? ??/option>';
   document.getElementById('caseSub').disabled = true;
   document.getElementById('caseOtherDiv').style.display = 'none';
   ['caseTitle','caseLocation','caseDesc','caseAction','caseFollowup','caseNote','caseOther'].forEach(id => {
@@ -1154,10 +1154,10 @@ async function openCaseForm() {
   });
   DTP.setValue('caseIncidentPicker', null);
 
-  // 所屬單位：二層下拉
+  // ?�屬單位�?二層下�?
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
-  document.getElementById('caseUnitL1').innerHTML = '<option value="">— 選擇第一層 —</option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
-  document.getElementById('caseUnitL2').innerHTML = '<option value="">— 無下級單位 —</option>';
+  document.getElementById('caseUnitL1').innerHTML = '<option value="">???��?第�?�???/option>' + l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
+  document.getElementById('caseUnitL2').innerHTML = '<option value="">???��?級單�???/option>';
   document.getElementById('caseUnitL2').disabled = true;
   if (currentUser?.dept_id) {
     const dept = allDepts.find(d => d.dept_id === currentUser.dept_id);
@@ -1185,17 +1185,17 @@ function onCaseCatChange() {
   const otherDiv = document.getElementById('caseOtherDiv');
   const subs = ANOMALY_SUBS[cat] || [];
   if (!cat) {
-    subSel.innerHTML = '<option value="">— 請先選擇大類 —</option>';
+    subSel.innerHTML = '<option value="">??請�??��?大�? ??/option>';
     subSel.disabled = true;
     otherDiv.style.display = 'none';
     return;
   }
-  if (cat === '其他') {
-    subSel.innerHTML = '<option value="">— 無小類 —</option>';
+  if (cat === '?��?') {
+    subSel.innerHTML = '<option value="">???��?�???/option>';
     subSel.disabled = true;
     otherDiv.style.display = '';
   } else {
-    subSel.innerHTML = '<option value="">— 選擇小類 —</option>' + subs.map(s => `<option value="${s}">${s}</option>`).join('');
+    subSel.innerHTML = '<option value="">???��?小�? ??/option>' + subs.map(s => `<option value="${s}">${s}</option>`).join('');
     subSel.disabled = false;
     otherDiv.style.display = 'none';
   }
@@ -1204,12 +1204,12 @@ function onCaseCatChange() {
 async function submitCase() {
   const caseNo   = document.getElementById('caseNo').value;
   const cat      = document.getElementById('caseCat').value;
-  if (!cat) { showToast('請選擇異常大類', true); return; }
+  if (!cat) { showToast('請選?�異常大�?, true); return; }
 
   const sub      = document.getElementById('caseSub').value;
   const other    = document.getElementById('caseOther').value.trim();
   const title    = document.getElementById('caseTitle').value.trim() ||
-                   (cat + (sub ? ' – ' + sub : '') + (other ? ' – ' + other : ''));
+                   (cat + (sub ? ' ??' + sub : '') + (other ? ' ??' + other : ''));
   const incTime = DTP.getValue('caseIncidentPicker');
 
   const newCase = {
@@ -1232,11 +1232,11 @@ async function submitCase() {
   };
 
   const { data, error } = await db.from('handover_cases').insert(newCase).select().single();
-  if (error) { showToast('建立案件失敗：' + translateError(error.message), true); return; }
+  if (error) { showToast('建�?案件失�?�? + translateError(error.message), true); return; }
 
   await db.from('handover_case_logs').insert({
     case_id: data.case_id, action: 'create',
-    content: `案件建立：${title}`, new_data: newCase, created_by: currentUser.user_id
+    content: `案件建�?�?{title}`, new_data: newCase, created_by: currentUser.user_id
   });
 
   if (pendingAttachments.length > 0) await uploadAttachments(data.case_id);
@@ -1246,7 +1246,7 @@ async function submitCase() {
   await loadCases();
 }
 
-// ── CASE LIST ──────────────────────────────────────
+// ?�?� CASE LIST ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 async function loadCases() {
   const statusFilter = document.getElementById('cfStatus').value;
   const catFilter    = document.getElementById('cfCat').value;
@@ -1262,7 +1262,7 @@ async function loadCases() {
   if (dateTo)       q = q.lte('created_at', dateTo + 'T23:59:59');
 
   const { data, error } = await q;
-  if (error) { showToast('載入失敗', true); return; }
+  if (error) { showToast('載入失�?', true); return; }
   const rows = data || [];
   const today = new Date().toISOString().split('T')[0];
 
@@ -1280,18 +1280,18 @@ async function loadCases() {
     const isOverdue = c.due_date && c.due_date < today && c.status !== 'closed';
     return `<tr ${isOverdue?'class="overdue-row"':''}>
       <td style="font-family:var(--font-mono);font-size:.76rem;white-space:nowrap">${escHtml(c.case_no)}</td>
-      <td style="font-size:.8rem">${escHtml(c.anomaly_category||'—')}${c.anomaly_sub?`<br><span style="font-size:.7rem;color:var(--text-dim)">└ ${escHtml(c.anomaly_sub)}</span>`:''}</td>
-      <td style="font-size:.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml((c.title||'—').substring(0,40))}</td>
+      <td style="font-size:.8rem">${escHtml(c.anomaly_category||'??)}${c.anomaly_sub?`<br><span style="font-size:.7rem;color:var(--text-dim)">??${escHtml(c.anomaly_sub)}</span>`:''}</td>
+      <td style="font-size:.8rem;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml((c.title||'??).substring(0,40))}</td>
       <td><span class="badge ${s.cls}">${s.label}</span></td>
-      <td style="font-size:.8rem">${c.assigned_user?.name?escHtml(c.assigned_user.name):'<span style="color:var(--text-dim)">未指派</span>'}</td>
-      <td style="font-size:.76rem;color:${isOverdue?'var(--red)':'var(--text-dim)'};white-space:nowrap">${c.due_date||'—'}${isOverdue?' ⚠':''}</td>
+      <td style="font-size:.8rem">${c.assigned_user?.name?escHtml(c.assigned_user.name):'<span style="color:var(--text-dim)">?��?�?/span>'}</td>
+      <td style="font-size:.76rem;color:${isOverdue?'var(--red)':'var(--text-dim)'};white-space:nowrap">${c.due_date||'??}${isOverdue?' ??:''}</td>
       <td style="font-family:var(--font-mono);font-size:.74rem;white-space:nowrap">${fmtDate(c.created_at)}</td>
-      <td><button class="btn-secondary btn-sm" onclick="openCaseDetail('${c.case_id}')">詳情</button></td>
+      <td><button class="btn-secondary btn-sm" onclick="openCaseDetail('${c.case_id}')">詳�?</button></td>
     </tr>`;
-  }).join('') : '<tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:24px;font-family:var(--font-mono)">目前無案件</td></tr>';
+  }).join('') : '<tr><td colspan="8" style="color:var(--text-dim);text-align:center;padding:24px;font-family:var(--font-mono)">?��??��?�?/td></tr>';
 }
 
-// ── CASE DETAIL ────────────────────────────────────
+// ?�?� CASE DETAIL ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 async function openCaseDetail(caseId) {
   currentCaseId = caseId;
   const [{ data: c }, { data: logs }, { data: attachments }] = await Promise.all([
@@ -1299,7 +1299,7 @@ async function openCaseDetail(caseId) {
     db.from('handover_case_logs').select('*,log_user:users!created_by(name)').eq('case_id', caseId).order('created_at'),
     db.from('handover_case_attachments').select('*').eq('case_id', caseId).order('uploaded_at')
   ]);
-  if (!c) { showToast('載入失敗', true); return; }
+  if (!c) { showToast('載入失�?', true); return; }
 
   const s = CASE_STATUS[c.status] || { label:c.status, cls:'' };
   const today = new Date().toISOString().split('T')[0];
@@ -1310,78 +1310,78 @@ async function openCaseDetail(caseId) {
   document.getElementById('caseDetailTitle').textContent = `案件 ${c.case_no}`;
   document.getElementById('caseDetailBody').innerHTML = `
     <div class="detail-section">
-      <div class="detail-section-title">基本資訊</div>
-      <div class="detail-row"><span class="detail-label">案件編號</span><span class="detail-value" style="font-family:var(--font-mono)">${escHtml(c.case_no)}</span></div>
-      <div class="detail-row"><span class="detail-label">建立時間</span><span class="detail-value" style="font-family:var(--font-mono);font-size:.78rem">${new Date(c.created_at).toLocaleString('zh-TW')}</span></div>
-      <div class="detail-row"><span class="detail-label">班別</span><span class="detail-value">${SHIFT_LABEL[c.shift_type]||c.shift_type||'—'}</span></div>
-      <div class="detail-row"><span class="detail-label">通報人</span><span class="detail-value">${escHtml(c.reporter||'—')}</span></div>
-      <div class="detail-row"><span class="detail-label">所屬單位</span><span class="detail-value">${escHtml(c.reporter_unit||'—')}</span></div>
-      <div class="detail-row"><span class="detail-label">發生時間</span><span class="detail-value">${c.incident_time?new Date(c.incident_time).toLocaleString('zh-TW'):'—'}</span></div>
-      <div class="detail-row"><span class="detail-label">發生地點</span><span class="detail-value">${escHtml(c.incident_location||'—')}</span></div>
+      <div class="detail-section-title">?�本資�?</div>
+      <div class="detail-row"><span class="detail-label">案件編�?</span><span class="detail-value" style="font-family:var(--font-mono)">${escHtml(c.case_no)}</span></div>
+      <div class="detail-row"><span class="detail-label">建�??��?</span><span class="detail-value" style="font-family:var(--font-mono);font-size:.78rem">${new Date(c.created_at).toLocaleString('zh-TW')}</span></div>
+      <div class="detail-row"><span class="detail-label">?�別</span><span class="detail-value">${SHIFT_LABEL[c.shift_type]||c.shift_type||'??}</span></div>
+      <div class="detail-row"><span class="detail-label">?�報�?/span><span class="detail-value">${escHtml(c.reporter||'??)}</span></div>
+      <div class="detail-row"><span class="detail-label">?�屬單�?/span><span class="detail-value">${escHtml(c.reporter_unit||'??)}</span></div>
+      <div class="detail-row"><span class="detail-label">?��??��?</span><span class="detail-value">${c.incident_time?new Date(c.incident_time).toLocaleString('zh-TW'):'??}</span></div>
+      <div class="detail-row"><span class="detail-label">?��??��?</span><span class="detail-value">${escHtml(c.incident_location||'??)}</span></div>
     </div>
 
     <div class="detail-section">
-      <div class="detail-section-title" style="color:var(--red)">⚠ 異常事項</div>
-      <div class="detail-row"><span class="detail-label">大類</span><span class="detail-value">${escHtml(c.anomaly_category||'—')}</span></div>
-      <div class="detail-row"><span class="detail-label">小類</span><span class="detail-value">${escHtml(c.anomaly_sub||'—')}</span></div>
-      ${c.anomaly_other?`<div class="detail-row"><span class="detail-label">其他說明</span><span class="detail-value">${escHtml(c.anomaly_other)}</span></div>`:''}
-      <div class="detail-row"><span class="detail-label">事項說明</span><span class="detail-value">${escHtml(c.description||'—')}</span></div>
-      <div class="detail-row"><span class="detail-label">處理情形</span><span class="detail-value">${escHtml(c.action_taken||'—')}</span></div>
-      <div class="detail-row"><span class="detail-label">後續交接</span><span class="detail-value">${escHtml(c.followup||'—')}</span></div>
+      <div class="detail-section-title" style="color:var(--red)">???�常事�?</div>
+      <div class="detail-row"><span class="detail-label">大�?</span><span class="detail-value">${escHtml(c.anomaly_category||'??)}</span></div>
+      <div class="detail-row"><span class="detail-label">小�?</span><span class="detail-value">${escHtml(c.anomaly_sub||'??)}</span></div>
+      ${c.anomaly_other?`<div class="detail-row"><span class="detail-label">?��?說�?</span><span class="detail-value">${escHtml(c.anomaly_other)}</span></div>`:''}
+      <div class="detail-row"><span class="detail-label">事�?說�?</span><span class="detail-value">${escHtml(c.description||'??)}</span></div>
+      <div class="detail-row"><span class="detail-label">?��??�形</span><span class="detail-value">${escHtml(c.action_taken||'??)}</span></div>
+      <div class="detail-row"><span class="detail-label">後�?交接</span><span class="detail-value">${escHtml(c.followup||'??)}</span></div>
     </div>
 
     <div class="detail-section">
-      <div class="detail-section-title">案件狀態</div>
-      <div class="detail-row"><span class="detail-label">狀態</span><span class="detail-value"><span class="badge ${s.cls}">${s.label}</span>${isOverdue?' <span style="color:var(--red);font-size:.76rem">⚠ 逾期</span>':''}</span></div>
-      <div class="detail-row"><span class="detail-label">承辦人</span><span class="detail-value">${c.assigned_user?.name?escHtml(c.assigned_user.name):'<span style="color:var(--text-dim)">未指派</span>'}</span></div>
-      <div class="detail-row"><span class="detail-label">負責單位</span><span class="detail-value">${escHtml(c.responsible_unit||'—')}</span></div>
-      <div class="detail-row"><span class="detail-label">到期日</span><span class="detail-value" style="color:${isOverdue?'var(--red)':'inherit'}">${c.due_date||'—'}</span></div>
-      ${c.closed_at?`<div class="detail-row"><span class="detail-label">結案時間</span><span class="detail-value" style="font-family:var(--font-mono);font-size:.76rem">${new Date(c.closed_at).toLocaleString('zh-TW')} by ${escHtml(c.closed_user?.name||'—')}</span></div>`:''}
-      ${c.note?`<div class="detail-row"><span class="detail-label">備註</span><span class="detail-value">${escHtml(c.note)}</span></div>`:''}
+      <div class="detail-section-title">案件?�??/div>
+      <div class="detail-row"><span class="detail-label">?�??/span><span class="detail-value"><span class="badge ${s.cls}">${s.label}</span>${isOverdue?' <span style="color:var(--red);font-size:.76rem">???��?</span>':''}</span></div>
+      <div class="detail-row"><span class="detail-label">?�辦�?/span><span class="detail-value">${c.assigned_user?.name?escHtml(c.assigned_user.name):'<span style="color:var(--text-dim)">?��?�?/span>'}</span></div>
+      <div class="detail-row"><span class="detail-label">負責?��?</span><span class="detail-value">${escHtml(c.responsible_unit||'??)}</span></div>
+      <div class="detail-row"><span class="detail-label">?��???/span><span class="detail-value" style="color:${isOverdue?'var(--red)':'inherit'}">${c.due_date||'??}</span></div>
+      ${c.closed_at?`<div class="detail-row"><span class="detail-label">結�??��?</span><span class="detail-value" style="font-family:var(--font-mono);font-size:.76rem">${new Date(c.closed_at).toLocaleString('zh-TW')} by ${escHtml(c.closed_user?.name||'??)}</span></div>`:''}
+      ${c.note?`<div class="detail-row"><span class="detail-label">?�註</span><span class="detail-value">${escHtml(c.note)}</span></div>`:''}
     </div>
 
-    <!-- 操作區 -->
+    <!-- ?��??� -->
     ${c.status !== 'closed' ? `
     <div class="detail-section">
-      <div class="detail-section-title">操作</div>
+      <div class="detail-section-title">?��?</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
         <select id="actionAssignTo" style="background:rgba(2,8,20,.85);border:1px solid var(--border);color:var(--text-hi);padding:7px 10px;font-family:var(--font-mono);font-size:.82rem;border-radius:2px;outline:none">
-          <option value="">— 指派承辦人 —</option>
+          <option value="">???�派?�辦�???/option>
           ${allUsers.map(u=>`<option value="${u.user_id}" ${u.user_id===c.assigned_to?'selected':''}>${escHtml(u.name)}</option>`).join('')}
         </select>
-        <button class="btn-secondary btn-sm" onclick="assignCase('${caseId}')">指派／轉派</button>
+        <button class="btn-secondary btn-sm" onclick="assignCase('${caseId}')">?�派／�?�?/button>
         <select id="actionStatus" style="background:rgba(2,8,20,.85);border:1px solid var(--border);color:var(--text-hi);padding:7px 10px;font-family:var(--font-mono);font-size:.82rem;border-radius:2px;outline:none">
-          <option value="open" ${c.status==='open'?'selected':''}>待處理</option>
-          <option value="in_progress" ${c.status==='in_progress'?'selected':''}>處理中</option>
-          <option value="pending" ${c.status==='pending'?'selected':''}>待確認</option>
-          <option value="closed">已結案</option>
+          <option value="open" ${c.status==='open'?'selected':''}>待�???/option>
+          <option value="in_progress" ${c.status==='in_progress'?'selected':''}>?��?�?/option>
+          <option value="pending" ${c.status==='pending'?'selected':''}>待確�?/option>
+          <option value="closed">已�?�?/option>
         </select>
-        <button class="btn-secondary btn-sm" onclick="updateCaseStatus('${caseId}','${c.status}')">更新狀態</button>
+        <button class="btn-secondary btn-sm" onclick="updateCaseStatus('${caseId}','${c.status}')">?�新?�??/button>
       </div>
       <div style="display:flex;gap:8px">
-        <input id="progressNote" type="text" placeholder="輸入進度說明…" style="flex:1;background:rgba(2,8,20,.85);border:1px solid var(--border);color:var(--text-hi);padding:7px 10px;font-family:var(--font-mono);font-size:.82rem;border-radius:2px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'">
-        <button class="btn-secondary btn-sm" onclick="addProgressNote('${caseId}')">新增進度</button>
+        <input id="progressNote" type="text" placeholder="輸入?�度說�??? style="flex:1;background:rgba(2,8,20,.85);border:1px solid var(--border);color:var(--text-hi);padding:7px 10px;font-family:var(--font-mono);font-size:.82rem;border-radius:2px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'">
+        <button class="btn-secondary btn-sm" onclick="addProgressNote('${caseId}')">?��??�度</button>
       </div>
     </div>` : `
     <div class="detail-section" style="border-color:rgba(0,255,157,.2)">
       <div style="display:flex;align-items:center;gap:10px">
-        <span style="color:var(--green)">✓ 已結案</span>
-        <button class="btn-secondary btn-sm" onclick="reopenCase('${caseId}')">重新開啟</button>
+        <span style="color:var(--green)">??已�?�?/span>
+        <button class="btn-secondary btn-sm" onclick="reopenCase('${caseId}')">?�新?��?</button>
       </div>
     </div>`}
 
-    <!-- 附件 -->
+    <!-- ?�件 -->
     <div class="detail-section">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-        <div class="detail-section-title" style="margin-bottom:0">附件（${attachList.length}/20）</div>
-        ${canAddAttach?`<div><input type="file" id="addAttachInput" accept=".jpg,.jpeg,.png,.pdf,.docx,.xlsx" multiple style="display:none" onchange="addAttachmentToCase('${caseId}')"><button class="btn-secondary btn-sm" onclick="document.getElementById('addAttachInput').click()">＋ 新增附件</button></div>`:''}
+        <div class="detail-section-title" style="margin-bottom:0">?�件�?{attachList.length}/20�?/div>
+        ${canAddAttach?`<div><input type="file" id="addAttachInput" accept=".jpg,.jpeg,.png,.pdf,.docx,.xlsx" multiple style="display:none" onchange="addAttachmentToCase('${caseId}')"><button class="btn-secondary btn-sm" onclick="document.getElementById('addAttachInput').click()">�??��??�件</button></div>`:''}
       </div>
       ${buildAttachmentList(attachList)}
     </div>
 
-    <!-- 歷程 -->
+    <!-- 歷�? -->
     <div class="detail-section">
-      <div class="detail-section-title">案件歷程（${logs?.length||0} 筆，永久保留）</div>
+      <div class="detail-section-title">案件歷�?�?{logs?.length||0} 筆�?永�?保�?�?/div>
       <div class="log-timeline">${buildCaseLogTimeline(logs||[])}</div>
     </div>
   `;
@@ -1389,7 +1389,7 @@ async function openCaseDetail(caseId) {
 }
 
 function buildAttachmentList(list) {
-  if (!list.length) return '<span class="detail-empty">尚無附件</span>';
+  if (!list.length) return '<span class="detail-empty">尚無?�件</span>';
   return list.map(a => {
     const isImage = /\.(jpg|jpeg|png)$/i.test(a.file_name);
     let publicUrl = '#';
@@ -1400,15 +1400,15 @@ function buildAttachmentList(list) {
       <span class="attach-name">${escHtml(a.file_name)}</span>
       <span class="attach-meta">${a.file_size ? Math.round(a.file_size/1024) + 'KB' : ''}</span>
       <div class="attach-actions">
-        ${isImage ? `<a href="${publicUrl}" target="_blank">預覽</a>` : ''}
-        <a href="${publicUrl}" target="_blank">下載</a>
+        ${isImage ? `<a href="${publicUrl}" target="_blank">?�覽</a>` : ''}
+        <a href="${publicUrl}" target="_blank">下�?</a>
       </div>
     </div>`;
   }).join('');
 }
 
 function buildCaseLogTimeline(logs) {
-  if (!logs.length) return '<span class="detail-empty">尚無歷程紀錄</span>';
+  if (!logs.length) return '<span class="detail-empty">尚無歷�?紀??/span>';
   return logs.map(l => {
     const d = new Date(l.created_at);
     const timeStr = `${d.getMonth()+1}/${d.getDate()}<br>${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
@@ -1428,79 +1428,79 @@ function closeCaseDetail() {
   currentCaseId = null;
 }
 
-// ── CASE ACTIONS ───────────────────────────────────
+// ?�?� CASE ACTIONS ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 async function assignCase(caseId) {
   const assignedTo = document.getElementById('actionAssignTo').value || null;
   const { data: old } = await db.from('handover_cases').select('assigned_to').eq('case_id', caseId).single();
   const { error } = await db.from('handover_cases').update({ assigned_to: assignedTo, updated_at: new Date().toISOString() }).eq('case_id', caseId);
-  if (error) { showToast('指派失敗：' + translateError(error.message), true); return; }
-  const name = allUsers.find(u => u.user_id === assignedTo)?.name || '—';
+  if (error) { showToast('?�派失�?�? + translateError(error.message), true); return; }
+  const name = allUsers.find(u => u.user_id === assignedTo)?.name || '??;
   await db.from('handover_case_logs').insert({
     case_id: caseId,
     action: old?.assigned_to ? 'transfer' : 'assign',
-    content: `${old?.assigned_to ? '轉派' : '指派'}承辦人：${name}`,
+    content: `${old?.assigned_to ? '轉派' : '?�派'}?�辦人�?${name}`,
     old_data: { assigned_to: old?.assigned_to },
     new_data: { assigned_to: assignedTo },
     created_by: currentUser.user_id
   });
-  showToast(`已${old?.assigned_to?'轉派':'指派'}：${name}`);
+  showToast(`�?{old?.assigned_to?'轉派':'?�派'}�?{name}`);
   await openCaseDetail(caseId);
   await loadCases();
 }
 
 async function updateCaseStatus(caseId, oldStatus) {
   const newStatus = document.getElementById('actionStatus').value;
-  if (newStatus === oldStatus) { showToast('狀態未變更', true); return; }
+  if (newStatus === oldStatus) { showToast('?�?�未變更', true); return; }
   const updates = { status: newStatus, updated_at: new Date().toISOString() };
   if (newStatus === 'closed') { updates.closed_at = new Date().toISOString(); updates.closed_by = currentUser.user_id; }
   const { error } = await db.from('handover_cases').update(updates).eq('case_id', caseId);
-  if (error) { showToast('更新失敗：' + translateError(error.message), true); return; }
+  if (error) { showToast('?�新失�?�? + translateError(error.message), true); return; }
   const oldL = CASE_STATUS[oldStatus]?.label || oldStatus;
   const newL = CASE_STATUS[newStatus]?.label || newStatus;
   await db.from('handover_case_logs').insert({
     case_id: caseId,
     action: newStatus === 'closed' ? 'close' : 'update',
-    content: `狀態更新：${oldL} → ${newL}`,
+    content: `?�?�更?��?${oldL} ??${newL}`,
     old_data: { status: oldStatus }, new_data: { status: newStatus },
     created_by: currentUser.user_id
   });
-  showToast(`狀態已更新為：${newL}`);
+  showToast(`?�?�已?�新?��?${newL}`);
   await openCaseDetail(caseId);
   await loadCases();
 }
 
 async function reopenCase(caseId) {
   const { error } = await db.from('handover_cases').update({ status:'open', closed_at:null, closed_by:null, updated_at:new Date().toISOString() }).eq('case_id', caseId);
-  if (error) { showToast('操作失敗', true); return; }
-  await db.from('handover_case_logs').insert({ case_id:caseId, action:'reopen', content:'案件重新開啟', created_by:currentUser.user_id });
-  showToast('案件已重新開啟');
+  if (error) { showToast('?��?失�?', true); return; }
+  await db.from('handover_case_logs').insert({ case_id:caseId, action:'reopen', content:'案件?�新?��?', created_by:currentUser.user_id });
+  showToast('案件已�??��???);
   await openCaseDetail(caseId);
   await loadCases();
 }
 
 async function addProgressNote(caseId) {
   const note = document.getElementById('progressNote').value.trim();
-  if (!note) { showToast('請輸入進度說明', true); return; }
+  if (!note) { showToast('請輸?�進度說�?', true); return; }
   await db.from('handover_cases').update({ updated_at: new Date().toISOString() }).eq('case_id', caseId);
   const { error } = await db.from('handover_case_logs').insert({ case_id:caseId, action:'update', content:note, created_by:currentUser.user_id });
-  if (error) { showToast('新增失敗：' + translateError(error.message), true); return; }
-  showToast('進度已更新');
+  if (error) { showToast('?��?失�?�? + translateError(error.message), true); return; }
+  showToast('?�度已更??);
   await openCaseDetail(caseId);
 }
 
-// ── ATTACHMENTS ────────────────────────────────────
+// ?�?� ATTACHMENTS ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function renderPendingAttachments() {
   const container = document.getElementById('pendingAttachList');
   document.getElementById('attachCount').textContent = pendingAttachments.length + '/20';
   if (!pendingAttachments.length) {
-    container.innerHTML = '<span style="font-size:.78rem;color:var(--text-dim)">尚無附件</span>';
+    container.innerHTML = '<span style="font-size:.78rem;color:var(--text-dim)">尚無?�件</span>';
     return;
   }
   container.innerHTML = pendingAttachments.map((f,i) => `
     <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:.8rem">
       <span style="flex:1;color:var(--text-hi)">${escHtml(f.name)}</span>
       <span style="color:var(--text-dim)">${(f.size/1024).toFixed(1)} KB</span>
-      <button onclick="removePendingAttach(${i})" style="background:transparent;border:none;color:var(--red);cursor:pointer;font-size:.9rem">✕</button>
+      <button onclick="removePendingAttach(${i})" style="background:transparent;border:none;color:var(--red);cursor:pointer;font-size:.9rem">??/button>
     </div>`).join('');
 }
 
@@ -1508,8 +1508,8 @@ function onAttachSelect() {
   const input = document.getElementById('attachInput');
   const allowed = /\.(jpg|jpeg|png|pdf|docx|xlsx)$/i;
   for (const f of Array.from(input.files)) {
-    if (!allowed.test(f.name)) { showToast(`不支援的格式：${f.name}`, true); continue; }
-    if (pendingAttachments.length >= 20) { showToast('每案最多 20 個附件', true); break; }
+    if (!allowed.test(f.name)) { showToast(`不支?��??��?�?{f.name}`, true); continue; }
+    if (pendingAttachments.length >= 20) { showToast('每�??��?20 ?��?�?, true); break; }
     pendingAttachments.push(f);
   }
   input.value = '';
@@ -1522,7 +1522,7 @@ async function uploadAttachments(caseId) {
   for (const file of pendingAttachments) {
     const path = `${caseId}/${Date.now()}_${file.name}`;
     const { error: upErr } = await db.storage.from('handover-attachments').upload(path, file);
-    if (upErr) { showToast(`附件上傳失敗：${file.name}`, true); continue; }
+    if (upErr) { showToast(`?�件上傳失�?�?{file.name}`, true); continue; }
     await db.from('handover_case_attachments').insert({
       case_id: caseId, file_name: file.name, file_type: file.type,
       file_size: file.size, storage_path: path, uploaded_by: currentUser.user_id
@@ -1536,24 +1536,24 @@ async function addAttachmentToCase(caseId) {
   const files = Array.from(input.files);
   const { data: existing } = await db.from('handover_case_attachments').select('attachment_id').eq('case_id', caseId);
   const cnt = existing?.length || 0;
-  if (cnt + files.length > 20) { showToast(`目前 ${cnt} 個附件，最多可新增 ${20-cnt} 個`, true); input.value=''; return; }
+  if (cnt + files.length > 20) { showToast(`?��? ${cnt} ?��?件�??�多可?��? ${20-cnt} ?�`, true); input.value=''; return; }
   const allowed = /\.(jpg|jpeg|png|pdf|docx|xlsx)$/i;
   for (const file of files) {
-    if (!allowed.test(file.name)) { showToast(`不支援格式：${file.name}`, true); continue; }
+    if (!allowed.test(file.name)) { showToast(`不支?�格式�?${file.name}`, true); continue; }
     const path = `${caseId}/${Date.now()}_${file.name}`;
     const { error: upErr } = await db.storage.from('handover-attachments').upload(path, file);
-    if (upErr) { showToast(`上傳失敗：${file.name}`, true); continue; }
+    if (upErr) { showToast(`上傳失�?�?{file.name}`, true); continue; }
     await db.from('handover_case_attachments').insert({
       case_id: caseId, file_name: file.name, file_type: file.type,
       file_size: file.size, storage_path: path, uploaded_by: currentUser.user_id
     });
   }
-  showToast('附件已上傳');
+  showToast('?�件已�???);
   input.value = '';
   await openCaseDetail(caseId);
 }
 
-// ── TAB SWITCH ─────────────────────────────────────
+// ?�?� TAB SWITCH ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function switchTab(name, opts = {}) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -1612,33 +1612,33 @@ function goBackPage() {
 
 window.addEventListener('pagehide', saveHandoverState);
 
-// ── UTILS ──────────────────────────────────────────
+// ?�?� UTILS ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function escHtml(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function translateError(msg) {
-  if (!msg) return '未知錯誤';
-  if (msg.includes('User already registered')) return '此 Email 已被註冊';
-  if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
-  if (msg.includes('Email not confirmed')) return 'Email 尚未驗證，請檢查信箱';
-  if (msg.includes('New password should be different')) return '新密碼不能與舊密碼相同';
-  if (msg.includes('Password should be at least')) return '密碼長度不足，請輸入更長的密碼';
-  if (msg.includes('Signup requires a valid password')) return '請輸入有效密碼';
-  if (msg.includes('For security purposes') && msg.includes('second')) return '操作過於頻繁，請稍後再試';
-  if (msg.includes('Email link is invalid or has expired') || msg.includes('otp_expired')) return '連結已失效或過期，請重新申請';
-  if (msg.includes('invalid format')) return 'Email 格式不正確';
-  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
-  if (msg.includes('null value in column')) return '必填欄位不可空白';
-  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
-  if (msg.includes('violates row-level security')) return '無操作權限';
-  if (msg.includes('permission denied')) return '無操作權限';
-  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
-  if (msg.includes('value too long')) return '輸入值過長';
-  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
-  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
-  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請先執行 handover_cases.sql';
-  return '操作失敗，請稍後再試或聯絡系統管理員';
+  if (!msg) return '?�知?�誤';
+  if (msg.includes('User already registered')) return '�?Email 已被註�?';
+  if (msg.includes('Invalid login credentials')) return '帳�??��?碼錯�?;
+  if (msg.includes('Email not confirmed')) return 'Email 尚未驗�?，�?檢查信箱';
+  if (msg.includes('New password should be different')) return '?��?碼�??��??��?碼相??;
+  if (msg.includes('Password should be at least')) return '密碼?�度不足，�?輸入?�長?��?�?;
+  if (msg.includes('Signup requires a valid password')) return '請輸?��??��?�?;
+  if (msg.includes('For security purposes') && msg.includes('second')) return '?��??�於?��?，�?稍�??�試';
+  if (msg.includes('Email link is invalid or has expired') || msg.includes('otp_expired')) return '???已失?��??��?，�??�新?��?';
+  if (msg.includes('invalid format')) return 'Email ?��?不正�?;
+  if (msg.includes('duplicate key value')) return '資�??��?，�?確�??�否已�???;
+  if (msg.includes('null value in column')) return '必填欄�?不可空白';
+  if (msg.includes('violates foreign key constraint')) return '?�聯資�??�誤，無法刪??;
+  if (msg.includes('violates row-level security')) return '?��?作�???;
+  if (msg.includes('permission denied')) return '?��?作�???;
+  if (msg.includes('JWT expired')) return '?�入已�??��?請�??�整?��???;
+  if (msg.includes('value too long')) return '輸入?��???;
+  if (msg.includes('invalid input syntax')) return '輸入?��?不正�?;
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路???失�?，�?稍�??�試';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資�?表�?存在，�??�執�?handover_cases.sql';
+  return '?��?失�?，�?稍�??�試?�聯絡系統管?�員';
 }
 
 function showToast(msg, isErr = false) {
@@ -1677,14 +1677,14 @@ function openChangePwModal() {
 async function changePassword() {
   const pw  = document.getElementById('new-pw').value;
   const pw2 = document.getElementById('new-pw2').value;
-  if (pw.length < 8) { showToast('密碼至少需要 8 個字元', true); return; }
-  if (pw !== pw2) { showToast('兩次密碼不一致', true); return; }
+  if (pw.length < 8) { showToast('密碼?��??��?8 ?��???, true); return; }
+  if (pw !== pw2) { showToast('?�次密碼不�???, true); return; }
   const { data: { session } } = await db.auth.getSession();
-  if (!session) { showToast('請先透過登入頁面登入後再更改密碼', true); return; }
+  if (!session) { showToast('請�??��??�入?�面?�入後�??�改密碼', true); return; }
   const { error } = await db.auth.updateUser({ password: pw });
-  if (error) { showToast('更改失敗：' + translateError(error.message), true); return; }
+  if (error) { showToast('?�改失�?�? + translateError(error.message), true); return; }
   if (currentUser?.user_id) localStorage.setItem('pw_noted_' + currentUser.user_id, '1');
-  showToast('密碼已更改');
+  showToast('密碼已更??);
   closeThisModal('changePwModal');
 }
 </script>

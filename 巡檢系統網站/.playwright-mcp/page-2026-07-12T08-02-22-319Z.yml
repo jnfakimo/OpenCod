@@ -1,0 +1,206 @@
+- generic [active] [ref=f14e1]:
+  - navigation [ref=f14e2]:
+    - generic [ref=f14e3]:
+      - generic [ref=f14e4]: 臺北農產運銷股份有限公司 第一果菜市場
+      - generic [ref=f14e5]: ⬡ 巡檢系統
+    - generic [ref=f14e6]:
+      - generic [ref=f14e51]: 黃建發
+      - link "◫ 戰情儀表板" [ref=f14e7] [cursor=pointer]:
+        - /url: dashboard.html
+      - link "◪ 報修系統" [ref=f14e8] [cursor=pointer]:
+        - /url: workorder.html
+      - generic [ref=f14e9]: ◉ 巡檢
+      - link "⬡ 後台" [ref=f14e10] [cursor=pointer]:
+        - /url: admin.html
+      - button "⏻" [ref=f14e11] [cursor=pointer]
+  - generic [ref=f14e12]:
+    - generic [ref=f14e13]:
+      - generic [ref=f14e14]: ◈ 設備清單
+      - generic [ref=f14e15]: 待巡檢 31 / 31
+    - generic [ref=f14e16]:
+      - generic [ref=f14e18]:
+        - generic [ref=f14e19]: 今日巡檢概況
+        - generic [ref=f14e20]: 2026/07/12
+      - generic [ref=f14e23]:
+        - generic [ref=f14e24]:
+          - generic [ref=f14e25]: ✓ 正常
+          - generic [ref=f14e26]: "0"
+        - generic [ref=f14e27]:
+          - generic [ref=f14e28]: ✗ 異常
+          - generic [ref=f14e29]: "0"
+        - generic [ref=f14e30]:
+          - generic [ref=f14e31]: ○ 未巡檢
+          - generic [ref=f14e32]: "31"
+    - generic [ref=f14e35]:
+      - generic [ref=f14e36]: 巡檢進度
+      - generic [ref=f14e37]: 0 / 31
+    - textbox "搜尋設備名稱或位置…" [ref=f14e40]
+    - generic [ref=f14e41]:
+      - generic [ref=f14e52] [cursor=pointer]:
+        - generic [ref=f14e54]:
+          - generic [ref=f14e55]: 冷卻水塔 1號
+          - generic [ref=f14e56]: 📍 屋頂A區
+        - generic [ref=f14e57]: 待巡檢
+      - generic [ref=f14e58] [cursor=pointer]:
+        - generic [ref=f14e60]:
+          - generic [ref=f14e61]: 冷卻水塔 2號
+          - generic [ref=f14e62]: 📍 屋頂A區
+        - generic [ref=f14e63]: 待巡檢
+      - generic [ref=f14e64] [cursor=pointer]:
+        - generic [ref=f14e66]:
+          - generic [ref=f14e67]: 冷卻水塔 3號
+          - generic [ref=f14e68]: 📍 屋頂B區
+        - generic [ref=f14e69]: 待巡檢
+      - generic [ref=f14e70] [cursor=pointer]:
+        - generic [ref=f14e72]:
+          - generic [ref=f14e73]: 客梯 1號
+          - generic [ref=f14e74]: 📍 大樓A棟
+        - generic [ref=f14e75]: 待巡檢
+      - generic [ref=f14e76] [cursor=pointer]:
+        - generic [ref=f14e78]:
+          - generic [ref=f14e79]: 客梯 2號
+          - generic [ref=f14e80]: 📍 大樓A棟
+        - generic [ref=f14e81]: 待巡檢
+      - generic [ref=f14e82] [cursor=pointer]:
+        - generic [ref=f14e84]:
+          - generic [ref=f14e85]: 客梯 3號
+          - generic [ref=f14e86]: 📍 大樓B棟
+        - generic [ref=f14e87]: 待巡檢
+      - generic [ref=f14e88] [cursor=pointer]:
+        - generic [ref=f14e90]:
+          - generic [ref=f14e91]: 客梯 4號
+          - generic [ref=f14e92]: 📍 大樓B棟
+        - generic [ref=f14e93]: 待巡檢
+      - generic [ref=f14e94] [cursor=pointer]:
+        - generic [ref=f14e96]:
+          - generic [ref=f14e97]: 水塔 1號
+          - generic [ref=f14e98]: 📍 屋頂A區
+        - generic [ref=f14e99]: 待巡檢
+      - generic [ref=f14e100] [cursor=pointer]:
+        - generic [ref=f14e102]:
+          - generic [ref=f14e103]: 水塔 2號
+          - generic [ref=f14e104]: 📍 屋頂A區
+        - generic [ref=f14e105]: 待巡檢
+      - generic [ref=f14e106] [cursor=pointer]:
+        - generic [ref=f14e108]:
+          - generic [ref=f14e109]: 水塔 3號
+          - generic [ref=f14e110]: 📍 屋頂B區
+        - generic [ref=f14e111]: 待巡檢
+      - generic [ref=f14e112] [cursor=pointer]:
+        - generic [ref=f14e114]:
+          - generic [ref=f14e115]: 消防幫浦 1號
+          - generic [ref=f14e116]: 📍 B1機房
+        - generic [ref=f14e117]: 待巡檢
+      - generic [ref=f14e118] [cursor=pointer]:
+        - generic [ref=f14e120]:
+          - generic [ref=f14e121]: 消防幫浦 2號
+          - generic [ref=f14e122]: 📍 B1機房
+        - generic [ref=f14e123]: 待巡檢
+      - generic [ref=f14e124] [cursor=pointer]:
+        - generic [ref=f14e126]:
+          - generic [ref=f14e127]: 消防控制盤
+          - generic [ref=f14e128]: 📍 警衛室
+        - generic [ref=f14e129]: 待巡檢
+      - generic [ref=f14e130] [cursor=pointer]:
+        - generic [ref=f14e132]:
+          - generic [ref=f14e133]: 發電機 1號
+          - generic [ref=f14e134]: 📍 機電室
+        - generic [ref=f14e135]: 待巡檢
+      - generic [ref=f14e136] [cursor=pointer]:
+        - generic [ref=f14e138]:
+          - generic [ref=f14e139]: 發電機 2號
+          - generic [ref=f14e140]: 📍 機電室
+        - generic [ref=f14e141]: 待巡檢
+      - generic [ref=f14e142] [cursor=pointer]:
+        - generic [ref=f14e144]:
+          - generic [ref=f14e145]: 發電機 3號
+          - generic [ref=f14e146]: 📍 機電室
+        - generic [ref=f14e147]: 待巡檢
+      - generic [ref=f14e148] [cursor=pointer]:
+        - generic [ref=f14e150]:
+          - generic [ref=f14e151]: 發電機 4號
+          - generic [ref=f14e152]: 📍 機電室
+        - generic [ref=f14e153]: 待巡檢
+      - generic [ref=f14e154] [cursor=pointer]:
+        - generic [ref=f14e156]:
+          - generic [ref=f14e157]: 發電機 5號
+          - generic [ref=f14e158]: 📍 機電室
+        - generic [ref=f14e159]: 待巡檢
+      - generic [ref=f14e160] [cursor=pointer]:
+        - generic [ref=f14e162]:
+          - generic [ref=f14e163]: 空氣壓縮機 1號
+          - generic [ref=f14e164]: 📍 機房
+        - generic [ref=f14e165]: 待巡檢
+      - generic [ref=f14e166] [cursor=pointer]:
+        - generic [ref=f14e168]:
+          - generic [ref=f14e169]: 空氣壓縮機 2號
+          - generic [ref=f14e170]: 📍 機房
+        - generic [ref=f14e171]: 待巡檢
+      - generic [ref=f14e172] [cursor=pointer]:
+        - generic [ref=f14e174]:
+          - generic [ref=f14e175]: 變電站 A
+          - generic [ref=f14e176]: 📍 廠區北側
+        - generic [ref=f14e177]: 待巡檢
+      - generic [ref=f14e178] [cursor=pointer]:
+        - generic [ref=f14e180]:
+          - generic [ref=f14e181]: 變電站 B
+          - generic [ref=f14e182]: 📍 廠區南側
+        - generic [ref=f14e183]: 待巡檢
+      - generic [ref=f14e184] [cursor=pointer]:
+        - generic [ref=f14e186]:
+          - generic [ref=f14e187]: 變電站 C
+          - generic [ref=f14e188]: 📍 廠區東側
+        - generic [ref=f14e189]: 待巡檢
+      - generic [ref=f14e190] [cursor=pointer]:
+        - generic [ref=f14e192]:
+          - generic [ref=f14e193]: 貨梯 1號
+          - generic [ref=f14e194]: 📍 廠房東側
+        - generic [ref=f14e195]: 待巡檢
+      - generic [ref=f14e196] [cursor=pointer]:
+        - generic [ref=f14e198]:
+          - generic [ref=f14e199]: 貨梯 2號
+          - generic [ref=f14e200]: 📍 廠房西側
+        - generic [ref=f14e201]: 待巡檢
+      - generic [ref=f14e202] [cursor=pointer]:
+        - generic [ref=f14e204]:
+          - generic [ref=f14e205]: 起重機 1號
+          - generic [ref=f14e206]: 📍 廠房A區
+        - generic [ref=f14e207]: 待巡檢
+      - generic [ref=f14e208] [cursor=pointer]:
+        - generic [ref=f14e210]:
+          - generic [ref=f14e211]: 起重機 2號
+          - generic [ref=f14e212]: 📍 廠房B區
+        - generic [ref=f14e213]: 待巡檢
+      - generic [ref=f14e214] [cursor=pointer]:
+        - generic [ref=f14e216]:
+          - generic [ref=f14e217]: 配電盤 1F
+          - generic [ref=f14e218]: 📍 1樓電氣室
+        - generic [ref=f14e219]: 待巡檢
+      - generic [ref=f14e220] [cursor=pointer]:
+        - generic [ref=f14e222]:
+          - generic [ref=f14e223]: 配電盤 2F
+          - generic [ref=f14e224]: 📍 2樓電氣室
+        - generic [ref=f14e225]: 待巡檢
+      - generic [ref=f14e226] [cursor=pointer]:
+        - generic [ref=f14e228]:
+          - generic [ref=f14e229]: 配電盤 3F
+          - generic [ref=f14e230]: 📍 3樓電氣室
+        - generic [ref=f14e231]: 待巡檢
+      - generic [ref=f14e232] [cursor=pointer]:
+        - generic [ref=f14e234]:
+          - generic [ref=f14e235]: 配電盤 4F
+          - generic [ref=f14e236]: 📍 4樓電氣室
+        - generic [ref=f14e237]: 待巡檢
+  - text: ◈ ◈
+  - generic [ref=f14e43]:
+    - generic [ref=f14e44] [cursor=pointer]:
+      - generic [ref=f14e45]: ◈
+      - text: 待巡檢
+    - generic [ref=f14e46] [cursor=pointer]:
+      - generic [ref=f14e47]: ◉
+      - text: 掃描
+    - generic [ref=f14e48] [cursor=pointer]:
+      - generic [ref=f14e49]: ◪
+      - text: 報修
+  - text: ◈
+  - button "切換介面風格" [ref=f14e50] [cursor=pointer]: 🌙

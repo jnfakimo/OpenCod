@@ -1,0 +1,185 @@
+- generic [active] [ref=f25e1]:
+  - navigation [ref=f25e2]:
+    - generic [ref=f25e3]:
+      - generic [ref=f25e4]: 📊 統計分析
+      - generic [ref=f25e5]: 報表 · KPI · 匯出 PDF/Excel/CSV
+    - link [ref=f25e6] [cursor=pointer]:
+      - /url: dashboard.html
+      - button "◫ 戰情儀表板" [ref=f25e7]
+    - link [ref=f25e8] [cursor=pointer]:
+      - /url: workorder.html
+      - button "⚒ 報修系統" [ref=f25e9]
+    - link [ref=f25e10] [cursor=pointer]:
+      - /url: dispatch.html
+      - button "◪ 派工系統" [ref=f25e11]
+    - link [ref=f25e12] [cursor=pointer]:
+      - /url: app.html
+      - button "◉ 巡檢" [ref=f25e13]
+    - link [ref=f25e14] [cursor=pointer]:
+      - /url: admin.html
+      - button "← 後台" [ref=f25e15]
+  - generic [ref=f25e16]:
+    - generic [ref=f25e17]:
+      - button "本月" [ref=f25e18] [cursor=pointer]
+      - button "本季" [ref=f25e19] [cursor=pointer]
+      - button "本年" [ref=f25e20] [cursor=pointer]
+      - textbox [ref=f25e21]: 2026-06-30
+      - text: ~
+      - textbox [ref=f25e22]: 2026-07-12
+      - button "查詢" [ref=f25e23] [cursor=pointer]
+      - button "🖨 全部列印 / PDF" [ref=f25e24] [cursor=pointer]
+    - generic [ref=f25e26]:
+      - generic [ref=f25e27]:
+        - generic [ref=f25e28]: "30"
+        - generic [ref=f25e29]: 報修總件數
+      - generic [ref=f25e30]:
+        - generic [ref=f25e31]: "0"
+        - generic [ref=f25e32]: 完成維修
+      - generic [ref=f25e33]:
+        - generic [ref=f25e34]: —
+        - generic [ref=f25e35]: SLA 達成率
+      - generic [ref=f25e36]:
+        - generic [ref=f25e37]: —
+        - generic [ref=f25e38]: 平均修復 MTTR
+      - generic [ref=f25e39]:
+        - generic [ref=f25e40]: —
+        - generic [ref=f25e41]: 平均派工時間
+    - generic [ref=f25e42]:
+      - generic [ref=f25e43]:
+        - heading [level=3] [ref=f25e44]:
+          - text: 設備故障排行
+          - generic [ref=f25e45]:
+            - button "CSV" [ref=f25e46] [cursor=pointer]
+            - button "Excel" [ref=f25e47] [cursor=pointer]
+        - table [ref=f25e48]:
+          - rowgroup [ref=f25e49]:
+            - row [ref=f25e50]:
+              - columnheader "設備" [ref=f25e51]
+              - columnheader "次數" [ref=f25e52]
+            - row [ref=f25e53]:
+              - cell "（未填）" [ref=f25e54]
+              - cell "29" [ref=f25e55]
+            - row [ref=f25e56]:
+              - cell "冷卻水塔 1號" [ref=f25e57]
+              - cell "1" [ref=f25e58]
+      - generic [ref=f25e59]:
+        - heading [level=3] [ref=f25e60]:
+          - text: 單位報修排行
+          - generic [ref=f25e61]:
+            - button "CSV" [ref=f25e62] [cursor=pointer]
+            - button "Excel" [ref=f25e63] [cursor=pointer]
+        - table [ref=f25e64]:
+          - rowgroup [ref=f25e65]:
+            - row [ref=f25e66]:
+              - columnheader "單位" [ref=f25e67]
+              - columnheader "件數" [ref=f25e68]
+            - row [ref=f25e69]:
+              - cell "改建室" [ref=f25e70]
+              - cell "27" [ref=f25e71]
+            - row [ref=f25e72]:
+              - cell "管理部 / 總務課" [ref=f25e73]
+              - cell "3" [ref=f25e74]
+      - generic [ref=f25e75]:
+        - heading [level=3] [ref=f25e76]:
+          - text: 維修人員工作量
+          - generic [ref=f25e77]:
+            - button "CSV" [ref=f25e78] [cursor=pointer]
+            - button "Excel" [ref=f25e79] [cursor=pointer]
+        - table [ref=f25e80]:
+          - rowgroup [ref=f25e81]:
+            - row [ref=f25e82]:
+              - columnheader "維修人員" [ref=f25e83]
+              - columnheader "案件數" [ref=f25e84]
+              - columnheader "總工時" [ref=f25e85]
+            - row [ref=f25e86]:
+              - cell "（未指派）" [ref=f25e87]
+              - cell "3" [ref=f25e88]
+              - cell "0.0" [ref=f25e89]
+            - row [ref=f25e90]:
+              - cell "系統管理者" [ref=f25e91]
+              - cell "1" [ref=f25e92]
+              - cell "0.0" [ref=f25e93]
+      - generic [ref=f25e94]:
+        - heading [level=3] [ref=f25e95]:
+          - text: 故障原因分析
+          - generic [ref=f25e96]:
+            - button "CSV" [ref=f25e97] [cursor=pointer]
+            - button "Excel" [ref=f25e98] [cursor=pointer]
+        - table [ref=f25e99]:
+          - rowgroup [ref=f25e100]:
+            - row [ref=f25e101]:
+              - columnheader "故障類型" [ref=f25e102]
+              - columnheader "次數" [ref=f25e103]
+            - row [ref=f25e104]:
+              - cell "其他" [ref=f25e105]
+              - cell "22" [ref=f25e106]
+            - row [ref=f25e107]:
+              - cell "電氣" [ref=f25e108]
+              - cell "3" [ref=f25e109]
+            - row [ref=f25e110]:
+              - cell "異音" [ref=f25e111]
+              - cell "2" [ref=f25e112]
+            - row [ref=f25e113]:
+              - cell "（未填）" [ref=f25e114]
+              - cell "1" [ref=f25e115]
+            - row [ref=f25e116]:
+              - cell "電器" [ref=f25e117]
+              - cell "1" [ref=f25e118]
+            - row [ref=f25e119]:
+              - cell "停機" [ref=f25e120]
+              - cell "1" [ref=f25e121]
+      - generic [ref=f25e122]:
+        - heading [level=3] [ref=f25e123]:
+          - text: 各月份報修趨勢
+          - generic [ref=f25e124]:
+            - button "CSV" [ref=f25e125] [cursor=pointer]
+            - button "Excel" [ref=f25e126] [cursor=pointer]
+        - table [ref=f25e127]:
+          - rowgroup [ref=f25e128]:
+            - row [ref=f25e129]:
+              - columnheader "月份" [ref=f25e130]
+              - columnheader "件數" [ref=f25e131]
+            - row [ref=f25e132]:
+              - cell "2026-07" [ref=f25e133]
+              - cell "30" [ref=f25e134]
+      - generic [ref=f25e135]:
+        - heading [level=3] [ref=f25e136]:
+          - text: 材料/零件成本
+          - generic [ref=f25e137]:
+            - button "CSV" [ref=f25e138] [cursor=pointer]
+            - button "Excel" [ref=f25e139] [cursor=pointer]
+        - generic [ref=f25e140]: 無資料
+      - generic [ref=f25e141]:
+        - heading [level=3] [ref=f25e142]:
+          - text: 委外成本分析
+          - generic [ref=f25e143]:
+            - button "CSV" [ref=f25e144] [cursor=pointer]
+            - button "Excel" [ref=f25e145] [cursor=pointer]
+        - generic [ref=f25e146]: 無資料
+      - generic [ref=f25e147]:
+        - heading [level=3] [ref=f25e148]:
+          - text: SLA 達成分析
+          - generic [ref=f25e149]:
+            - button "CSV" [ref=f25e150] [cursor=pointer]
+            - button "Excel" [ref=f25e151] [cursor=pointer]
+        - table [ref=f25e152]:
+          - rowgroup [ref=f25e153]:
+            - row [ref=f25e154]:
+              - columnheader "項目" [ref=f25e155]
+              - columnheader "數值" [ref=f25e156]
+            - row [ref=f25e157]:
+              - cell "完成案件" [ref=f25e158]
+              - cell "0" [ref=f25e159]
+            - row [ref=f25e160]:
+              - cell "準時完成" [ref=f25e161]
+              - cell "0" [ref=f25e162]
+            - row [ref=f25e163]:
+              - cell "SLA 達成率" [ref=f25e164]
+              - cell "—" [ref=f25e165]
+            - row [ref=f25e166]:
+              - cell "平均修復時間" [ref=f25e167]
+              - cell "—" [ref=f25e168]
+            - row [ref=f25e169]:
+              - cell "平均派工時間" [ref=f25e170]
+              - cell "—" [ref=f25e171]
+  - button "切換介面風格" [ref=f25e25] [cursor=pointer]: 🌙

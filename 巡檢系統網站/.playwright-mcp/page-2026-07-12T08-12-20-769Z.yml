@@ -1,0 +1,89 @@
+- generic [active] [ref=f37e1]:
+  - generic [ref=f37e2]:
+    - generic [ref=f37e3]:
+      - generic [ref=f37e4]: ■ TAIPEC-MKT-1 後台
+      - generic [ref=f37e5]: 臺北農產運銷股份有限公司
+      - text: ／
+      - generic [ref=f37e6]: 第一果菜市場
+    - generic [ref=f37e7]:
+      - link "◫ 戰情儀表板" [ref=f37e8] [cursor=pointer]:
+        - /url: dashboard.html
+      - link "◪ 報修系統" [ref=f37e9] [cursor=pointer]:
+        - /url: workorder.html
+      - link "◉ 巡檢" [ref=f37e10] [cursor=pointer]:
+        - /url: app.html
+      - generic [ref=f37e11]: ⬡ 後台
+      - generic [ref=f37e12]: 系統連線中
+      - generic [ref=f37e14]: 2026-07-12 16:12:20
+  - generic [ref=f37e15]:
+    - complementary [ref=f37e16]:
+      - generic [ref=f37e17]:
+        - generic [ref=f37e18]: 臺北農產運銷股份有限公司第一果菜市場
+        - heading "⬡ 後台管理系統" [level=1] [ref=f37e19]
+      - navigation [ref=f37e20]:
+        - link "◫ 戰情儀表板" [ref=f37e21] [cursor=pointer]:
+          - /url: dashboard.html
+          - generic [ref=f37e22]: ◫
+          - text: 戰情儀表板
+        - generic [ref=f37e23] [cursor=pointer]:
+          - generic [ref=f37e24]: ⚙
+          - text: 系統設定
+        - generic [ref=f37e25] [cursor=pointer]:
+          - generic [ref=f37e26]: ◉
+          - text: 帳號管理
+        - link "◧ 設備材料管理" [ref=f37e27] [cursor=pointer]:
+          - /url: materials.html
+          - generic [ref=f37e28]: ◧
+          - text: 設備材料管理
+        - generic [ref=f37e29] [cursor=pointer]:
+          - generic [ref=f37e30]: ◪
+          - text: 報修 & 維修
+        - link "◪ 派工系統" [ref=f37e31] [cursor=pointer]:
+          - /url: dispatch.html
+          - generic [ref=f37e32]: ◪
+          - text: 派工系統
+        - link "◈ 電子交接簿" [ref=f37e33] [cursor=pointer]:
+          - /url: handover.html
+          - generic [ref=f37e34]: ◈
+          - text: 電子交接簿
+        - generic [ref=f37e35] [cursor=pointer]:
+          - generic [ref=f37e36]: ⬢
+          - text: 3D雲台建模
+        - generic [ref=f37e37] [cursor=pointer]:
+          - generic [ref=f37e38]: ◬
+          - text: 費用統計
+        - generic [ref=f37e39] [cursor=pointer]:
+          - generic [ref=f37e40]: ◭
+          - text: 系統紀錄
+      - generic [ref=f37e41]:
+        - generic [ref=f37e42]: 載入中…
+        - button "🔑 更改密碼" [ref=f37e43] [cursor=pointer]
+        - button "⏻ 登出" [ref=f37e44] [cursor=pointer]
+    - main [ref=f37e45]:
+      - generic [ref=f37e46]:
+        - generic [ref=f37e47]:
+          - generic [ref=f37e48]:
+            - heading "◫ 戰情儀表板" [level=2] [ref=f37e49]
+            - paragraph [ref=f37e50]: 系統狀態 — 上次更新：—
+          - button "↻ 重新整理" [ref=f37e51] [cursor=pointer]
+        - generic [ref=f37e52]:
+          - generic [ref=f37e53]:
+            - generic [ref=f37e54]: —
+            - generic [ref=f37e55]: 設備總數
+          - generic [ref=f37e56]:
+            - generic [ref=f37e57]: —
+            - generic [ref=f37e58]: 待處理維修
+          - generic [ref=f37e59]:
+            - generic [ref=f37e60]: —
+            - generic [ref=f37e61]: 今日巡檢
+          - generic [ref=f37e62]:
+            - generic [ref=f37e63]: —
+            - generic [ref=f37e64]: 今日異常
+          - generic [ref=f37e65]:
+            - generic [ref=f37e66]: —
+            - generic [ref=f37e67]: 啟用帳號
+        - generic [ref=f37e68]:
+          - generic [ref=f37e69]: ◈ 最新維修單
+          - generic [ref=f37e70]: 載入中…
+      - text: ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈ ◈
+  - button "切換介面風格" [ref=f37e72] [cursor=pointer]: 🌙
