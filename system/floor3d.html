@@ -341,6 +341,14 @@ function addMarker3D(m){
     new THREE.LineBasicMaterial({color:col,transparent:true,opacity:.55}));
   const head=new THREE.Mesh(new THREE.SphereGeometry(1.05,12,8),new THREE.MeshBasicMaterial({color:col}));
   head.position.y=MARK_H;
+  // 巡邏點的球體會依打卡狀態即時變色（見 refreshPatrolStatus），額外加一顆固定
+  // 紫色（MARK_COL.patrol）的線框外殼標示類別，避免已打卡/逾期的顏色跟空間
+  // （綠）／報修點（紅）的固定類別色撞色混淆。
+  if(m.kind==='patrol'){
+    const ring=new THREE.Mesh(new THREE.SphereGeometry(1.7,12,8),new THREE.MeshBasicMaterial({color:MARK_COL.patrol,wireframe:true,transparent:true,opacity:.7}));
+    ring.position.y=MARK_H;
+    g.add(ring);
+  }
   const lab=makeLabelSprite(m.label,'#'+col.toString(16).padStart(6,'0'));
   lab.position.y=MARK_H+5; lab.visible=showLabels3D;
   g.add(stem); g.add(head); g.add(lab);

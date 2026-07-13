@@ -71,7 +71,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 
 /* 整合標記（唯讀顯示，與整合標記系統 / 3D 同步）*/
 .pin{position:relative;transform:translate(-50%,-50%);pointer-events:auto;cursor:default}
-.pin .pdot{width:8px;height:8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto}
+.pin .pdot{width:8px;height:8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto}
 .pin .plab{position:absolute;left:50%;top:-3px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
 .pin:hover .plab,.pin.show-lab .plab{opacity:1}
 #mkToggle{position:fixed;left:14px;top:62px;z-index:151;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
@@ -244,9 +244,12 @@ async function refreshPatrolStatus(){
   catch(e){ /* patrol_shifts 尚未建表時，靜默略過，圖釘維持原色 */ }
   drawPlanMarkers();
 }
+// 巡邏點會依打卡狀態即時變色（填色），但外框固定用類別色，避免跟其他類別的
+// 固定色（例如已打卡的綠 = 空間的綠、逾期的紅 = 報修點的紅）撞色混淆。
+function markerCatColor(m){ return MK_COL[m.kind]||'#ffb300'; }
 function markerColor(m){
   if(m.kind==='patrol' && patrolStatusMap.has(m.marker_id)) return PatrolStatus.COLORS[patrolStatusMap.get(m.marker_id)];
-  return MK_COL[m.kind]||'#ffb300';
+  return markerCatColor(m);
 }
 function drawPlanMarkers(){
   if(!viewer.viewport) return;
@@ -254,8 +257,8 @@ function drawPlanMarkers(){
   const list=planMarkers.filter(m=>m.floor_id===curFloor && KV[m.kind]!==false);
   list.forEach(m=>{
     const el=document.createElement('div'); el.className='pin'+(showLab?' show-lab':'');
-    const col=markerColor(m);
-    el.innerHTML=`<div class="pdot" style="background:${col}"></div><div class="plab">${escB(m.label)}</div>`;
+    const fill=markerColor(m), cat=markerCatColor(m);
+    el.innerHTML=`<div class="pdot" style="background:${fill};border-color:${cat}"></div><div class="plab">${escB(m.label)}</div>`;
     viewer.addOverlay({element:el, location:new OpenSeadragon.Point(m.x,m.y), placement:OpenSeadragon.Placement.CENTER, checkResize:false});
   });
   const n=document.getElementById('mkNum'); if(n) n.textContent=list.length+' 個';
