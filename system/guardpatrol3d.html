@@ -69,6 +69,10 @@ body.mode-flat #c3d,body.mode-flat #panel,body.mode-flat #panelToggle,body.mode-
 #panel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
 #panel input[type=range]{width:100%;accent-color:var(--patrol)}
 #panel input[type=checkbox]{accent-color:var(--patrol)}
+.status-filter{border-top:1px solid var(--border);margin-top:6px;padding-top:7px}
+.status-filter-title{color:var(--patrol);font-weight:700;margin-bottom:2px}
+.status-filter label{color:var(--text);line-height:1.9}
+.status-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;box-shadow:0 0 5px currentColor}
 .ctrl-val{color:var(--text);font-family:monospace}
 #panelToggle{display:none;position:fixed;left:14px;top:62px;z-index:155;align-items:center;gap:6px;padding:8px 12px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--patrol);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(199,125,255,.12);cursor:pointer}
 #panelToggle:hover{border-color:var(--patrol)}
@@ -171,7 +175,12 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <input type="range" id="yPan" min="-160" max="160" value="0" step="2" oninput="setYPan(this.value)">
   <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"> 顯示巡檢點名稱</label>
   <div class="h-r" style="color:var(--text2)">巡檢點總數：<span style="color:var(--text)" id="mkCount">0</span></div>
-  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-shifttime" onchange="toggleShiftInfo(this.checked)"> 顯示巡邏點時間</label>
+  <div class="status-filter">
+    <div class="status-filter-title">◆ 巡檢點狀態</div>
+    <label><input type="checkbox" checked onchange="togglePatrolStatus('ok',this.checked)"><i class="status-dot" style="color:var(--green);background:var(--green)"></i> 已打卡</label>
+    <label><input type="checkbox" checked onchange="togglePatrolStatus('pending',this.checked)"><i class="status-dot" style="color:var(--patrol);background:var(--patrol)"></i> 待打卡</label>
+    <label><input type="checkbox" checked onchange="togglePatrolStatus('overdue',this.checked)"><i class="status-dot" style="color:var(--red);background:var(--red)"></i> 逾期未打卡</label>
+  </div>
   <div class="btnrow">
     <button class="mini" onclick="resetView()">⊡ 重置</button>
     <button class="mini" onclick="topView()">⊤ 俯視</button>
@@ -290,6 +299,7 @@ const PATROL_BASE=0xc77dff;
 let markerObjs=[];                               // {group,fl,label,markerId,name,head,stem}
 let showLabels3D=false;                          // 顯示巡檢點名稱
 let showShiftTime3D=false;                       // 顯示巡邏點時間（班別時段＋打卡人員）
+const patrolStatusVisible={ok:true,pending:true,overdue:true};
 async function loadMarkers(){
   try{
     const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,label').eq('status','active').eq('kind','patrol');
@@ -327,6 +337,7 @@ async function refreshPatrolStatus(){
     mk.head.material.color.setHex(hex);
     mk.stem.material.color.setHex(hex);
     if(showLabels3D||showShiftTime3D) rebuildMarkerLabel(mk);
+    syncMarkerVisibility(mk);
   });
 }
 // 依目前開關組出某巡邏點的標籤文字（可多行）
@@ -392,8 +403,14 @@ function addMarker3D(m){
 function layoutMarkers(){
   markerObjs.forEach(mk=>{
     mk.group.position.y=mk.fl.level*FLOOR_GAP*EXPLODE;
-    mk.group.visible=mk.fl.visible;
+    syncMarkerVisibility(mk);
   });
+}
+function markerPatrolState(mk){return patrolStatusMap.get(mk.markerId)||'pending';}
+function syncMarkerVisibility(mk){mk.group.visible=mk.fl.visible&&patrolStatusVisible[markerPatrolState(mk)]!==false;}
+function togglePatrolStatus(state,on){
+  patrolStatusVisible[state]=on;
+  markerObjs.forEach(syncMarkerVisibility);
 }
 function toggleMarkLabels(on){
   showLabels3D=on;
@@ -497,7 +514,7 @@ function animate(){ requestAnimationFrame(animate); updateCam(); renderer.render
 function toggleFloor(id){
   const fl=FLOORS.find(f=>f.id===id); fl.visible=!fl.visible;
   if(fl.mesh)fl.mesh.visible=fl.visible; if(fl.frame)fl.frame.visible=fl.visible;
-  markerObjs.forEach(mk=>{ if(mk.fl===fl) mk.group.visible=fl.visible; });
+  markerObjs.forEach(mk=>{ if(mk.fl===fl) syncMarkerVisibility(mk); });
   document.getElementById('t-'+id).classList.toggle('on',fl.visible);
   document.getElementById('t-'+id).classList.toggle('off',!fl.visible);
   if(fl.visible){ const img=document.getElementById('planThumbImg'); if(img) img.src=fl.tex; }
