@@ -103,7 +103,7 @@ body.panel-open #panelToggle{display:none}
 /* 放大可點擊範圍（透明），視覺圓點仍維持小尺寸，方便點選 */
 .pin::before{content:'';position:absolute;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%);border-radius:50%}
 .pin:hover .pdot{transform:rotate(-45deg) scale(1.25)}
-.pin .pdot{width:9px;height:9px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto;transition:transform .12s}
+.pin .pdot{width:9px;height:9px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto;transition:transform .12s}
 .pin .plab{position:absolute;left:50%;top:-3px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
 .pin:hover .plab,.pin.show-lab .plab{opacity:1}
 .pin.sel .pdot{outline:3px solid rgba(255,255,255,.5);outline-offset:2px}
@@ -460,12 +460,9 @@ function fillLinkSelects(){
 
 // ── Draw overlays ──────────────────────────────────────────
 let patrolStatusMap=new Map();
-// 巡邏點會依打卡狀態即時變色（填色），但外框固定用類別色，避免跟其他類別的
-// 固定色（例如已打卡的綠 = 空間的綠、逾期的紅 = 報修點的紅）撞色混淆。
-function markerCatColor(m){ return m.color||KIND[m.kind]?.c||'#ffb300'; }
 function markerColor(m){
   if(m.kind==='patrol' && patrolStatusMap.has(m.marker_id)) return PatrolStatus.COLORS[patrolStatusMap.get(m.marker_id)];
-  return markerCatColor(m);
+  return m.color||KIND[m.kind]?.c||'#ffb300';
 }
 async function refreshPatrolStatus(){
   try{ const r=await PatrolStatus.compute(db); patrolStatusMap=r.map; }
@@ -478,8 +475,8 @@ function drawMarkers(){
     const el=document.createElement('div');
     el.className='pin'+(showLabels?' show-lab':'');
     el.dataset.id=m.marker_id;
-    const fill=markerColor(m), cat=markerCatColor(m);
-    el.innerHTML=`<div class="pdot" style="background:${fill};border-color:${cat}"></div><div class="plab">${esc(m.label)}</div>`;
+    const col=markerColor(m);
+    el.innerHTML=`<div class="pdot" style="background:${col}"></div><div class="plab">${esc(m.label)}</div>`;
     el.addEventListener('click',ev=>{ ev.stopPropagation(); openDetail(m.marker_id,ev); });
     viewer.addOverlay({element:el, location:new OpenSeadragon.Point(m.x,m.y), placement:OpenSeadragon.Placement.CENTER, checkResize:false});
   });
