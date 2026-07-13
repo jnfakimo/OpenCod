@@ -393,9 +393,23 @@ function makeLabelSprite(lines,colorHex){
   lines.forEach((l,i)=>ctx.fillText(l,c.width/2,lh*i+lh/2));
   const tex=new THREE.CanvasTexture(c); tex.minFilter=THREE.LinearFilter;
   const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false,sizeAttenuation:true}));
-  const totalM=5.5*lines.length;                     // 每行約 5.5 m，維持原本單行時的字級比例
-  spr.scale.set((c.width/c.height)*totalM, totalM, 1);
+  spr.userData.labelAspect=c.width/c.height;
+  spr.userData.screenHeightPx=24*lines.length;       // 每行固定 24px；不隨 3D 縮放改變字級
+  spr.scale.set(spr.userData.labelAspect,1,1);        // animate() 首幀會換算成對應世界尺寸
   return spr;
+}
+const labelWorldPos=new THREE.Vector3();
+function syncMarkerLabelSizes(){
+  if(!camera||!renderer)return;
+  const viewportH=Math.max(1,renderer.domElement.clientHeight);
+  const worldPerPixel=2*Math.tan(THREE.MathUtils.degToRad(camera.fov)*.5)/viewportH;
+  markerObjs.forEach(mk=>{
+    const lab=mk.label;
+    if(!lab||!lab.visible)return;
+    lab.getWorldPosition(labelWorldPos);
+    const height=Math.max(.1,camera.position.distanceTo(labelWorldPos)*worldPerPixel*(lab.userData.screenHeightPx||24));
+    lab.scale.set(height*(lab.userData.labelAspect||1),height,1);
+  });
 }
 // 重建（或首次建立）某巡邏點的浮動標籤，套用目前開關與最新資料
 function rebuildMarkerLabel(mk){
@@ -540,7 +554,7 @@ function setupOrbit(){
   el.addEventListener('touchend',()=>{orb.down=false;pm=null;});
 }
 
-function animate(){ requestAnimationFrame(animate); updateCam(); renderer.render(scene,camera); }
+function animate(){ requestAnimationFrame(animate); updateCam(); syncMarkerLabelSizes(); renderer.render(scene,camera); }
 
 // ── UI ──
 function toggleFloor(id){

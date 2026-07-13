@@ -340,9 +340,9 @@
   color: var(--text) !important;
 }
 :root[data-theme="light"] .pin .plab {
-  background: rgba(255,255,255,0.92) !important;
-  border-color: var(--border) !important;
-  color: #1e293b !important;
+  background: #000000 !important;
+  border-color: rgba(255,255,255,0.42) !important;
+  color: #ffffff !important;
 }
 :root[data-theme="light"] #planThumb,
 :root[data-theme="light"] #planThumb img {

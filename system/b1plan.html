@@ -78,7 +78,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 /* 整合標記（唯讀顯示，與整合標記系統 / 3D 同步）*/
 .pin{position:relative;transform:translate(-50%,-50%);pointer-events:auto;cursor:default}
 .pin .pdot{width:8px;height:8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto}
-.pin .plab{position:absolute;left:50%;top:-3px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.pin .plab{position:absolute;left:50%;top:-3px;transform:translate(-50%,-100%);background:#000;border:1px solid rgba(255,255,255,.42);color:#fff;font-size:12px!important;font-weight:600;line-height:1.35;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;box-shadow:0 2px 7px rgba(0,0,0,.48)}
 .pin:hover .plab,.pin.show-lab .plab{opacity:1}
 #mkToggle{position:fixed;left:14px;top:62px;z-index:151;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
 #mkToggle:hover{border-color:var(--cyan)}

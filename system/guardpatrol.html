@@ -10,6 +10,7 @@
 <meta http-equiv="Expires" content="0">
 <title>駐衛警巡檢系統 — 臺北農產巡檢系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="patrolstatus.js"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
@@ -43,6 +44,15 @@ a{color:inherit;text-decoration:none}
 .datebar input[type=date]:focus{border-color:var(--patrol)}
 .mini{font-size:.68rem;padding:5px 11px;border:1px solid var(--border);border-radius:2px;cursor:pointer;background:none;color:var(--text-dim);transition:all .2s}
 .mini:hover{border-color:var(--patrol);color:var(--patrol)}
+.mini.primary{border-color:var(--patrol);color:var(--patrol)}
+.mini:disabled{opacity:.5;cursor:not-allowed}
+.toolbar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:3px}
+.tool-field{display:flex;flex-direction:column;gap:4px;min-width:130px}
+.tool-field label{font-size:.64rem;color:var(--text-dim);letter-spacing:.05em}
+.tool-field select,.tool-field input{height:32px;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:2px;font-size:.75rem;outline:none}
+.tool-field select:focus,.tool-field input:focus{border-color:var(--patrol)}
+.toolbar-sep{width:1px;height:38px;background:var(--border);margin:0 2px}
+.export-status{font-size:.68rem;color:var(--text-dim);min-height:1em}
 
 .stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
 .stat-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:10px 16px;min-width:110px}
@@ -59,10 +69,17 @@ a{color:inherit;text-decoration:none}
 .grid-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--border);border-radius:4px}
 table{border-collapse:collapse;width:100%;font-size:.8rem}
 th{text-align:left;color:var(--text-dim);font-size:.68rem;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+th.floorcol{width:72px}
 th.pointcol{position:sticky;left:0;z-index:2;background:var(--panel)}
 td{padding:6px 8px;border-bottom:1px solid rgba(12,40,64,.4);text-align:center}
 td.pointcol{text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--panel);font-size:.78rem}
 td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
+.floor-row{cursor:pointer;background:rgba(199,125,255,.07)}
+.floor-row td{text-align:left;color:var(--patrol);font-weight:700;padding:8px 10px;letter-spacing:.04em}
+.floor-row:hover{background:rgba(199,125,255,.13)}
+.floor-arrow{display:inline-block;width:18px;color:var(--text-dim)}
+.floor-count{font-size:.66rem;color:var(--text-dim);font-weight:400;margin-left:8px}
+.floor-cell{color:var(--text-dim);font-size:.7rem;text-align:left}
 .cell{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.7rem;color:#022;font-weight:700;transition:transform .1s}
 .cell:hover{transform:scale(1.15)}
 .cell.ok{background:var(--green)}
@@ -106,6 +123,18 @@ td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
     <input type="date" id="datePick" onchange="load()">
     <button class="mini" onclick="shiftDate(1)">▶</button>
     <button class="mini" onclick="goToday()">今天</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="tool-field"><label for="floorFilter">樓層</label><select id="floorFilter" onchange="renderCurrent()"><option value="">全部樓層</option></select></div>
+    <div class="tool-field"><label for="shiftFilter">班別</label><select id="shiftFilter" onchange="renderCurrent()"><option value="">全部班別</option></select></div>
+    <div class="tool-field"><label for="statusFilter">打卡狀態</label><select id="statusFilter" onchange="renderCurrent()"><option value="">全部狀態</option><option value="ok">已打卡</option><option value="pending">待打卡</option><option value="overdue">逾期未打卡</option></select></div>
+    <div class="toolbar-sep"></div>
+    <div class="tool-field"><label for="exportFrom">匯出起日</label><input type="date" id="exportFrom"></div>
+    <div class="tool-field"><label for="exportTo">匯出迄日</label><input type="date" id="exportTo"></div>
+    <button class="mini" id="exportDayBtn" onclick="exportCurrentDay()">匯出當日 XLSX</button>
+    <button class="mini primary" id="exportRangeBtn" onclick="exportRange()">匯出日期區間 XLSX</button>
+    <span class="export-status" id="exportStatus"></span>
   </div>
 
   <div class="stats-row">
@@ -157,6 +186,41 @@ function shiftDate(delta){
 }
 
 let lastResult=null;
+let floorKeys=[];
+const expandedFloors=new Set();
+
+function canonicalFloor(value){
+  const floor=String(value||'未分類').trim().toUpperCase();
+  if(floor==='B1F'||floor==='B1')return 'B1';
+  if(floor==='1F'||floor==='1')return '1F';
+  if(floor==='RF'||floor==='R'||floor==='頂樓')return '頂樓';
+  return floor;
+}
+function floorOrder(value){
+  const floor=canonicalFloor(value);
+  if(floor==='B1')return -100;
+  if(floor==='頂樓')return 1000;
+  const m=floor.match(/^(\d+)F?$/);
+  return m?Number(m[1]):500;
+}
+function currentFilters(){
+  return {
+    floor:document.getElementById('floorFilter').value,
+    shift:document.getElementById('shiftFilter').value,
+    status:document.getElementById('statusFilter').value
+  };
+}
+function fillSelect(id,items,placeholder){
+  const el=document.getElementById(id),current=el.value;
+  el.innerHTML=`<option value="">${placeholder}</option>`+items.map(item=>`<option value="${esc(item.value)}">${esc(item.label)}</option>`).join('');
+  if(items.some(item=>item.value===current))el.value=current;
+}
+function syncFilters(result){
+  const floors=[...new Set(result.markers.map(m=>canonicalFloor(m.floor_id)))].sort((a,b)=>floorOrder(a)-floorOrder(b)||a.localeCompare(b,'zh-Hant'));
+  fillSelect('floorFilter',floors.map(f=>({value:f,label:f})),'全部樓層');
+  fillSelect('shiftFilter',result.shifts.map(s=>({value:s.shift_id,label:`${s.name} ${fmtHM(s.start_time)}–${fmtHM(s.end_time)}`})),'全部班別');
+  if(!expandedFloors.size&&floors.length)expandedFloors.add(floors.includes('B1')?'B1':floors[0]);
+}
 
 async function load(){
   const dateStr=document.getElementById('datePick').value;
@@ -165,7 +229,16 @@ async function load(){
   try{ result=await PatrolStatus.computeMatrix(db,dateStr); }
   catch(e){ document.getElementById('grid').innerHTML='<div class="empty">讀取失敗：'+esc(translateError(e.message))+'</div>'; return; }
   lastResult=result;
+  syncFilters(result);
   render(result);
+}
+
+function renderCurrent(){if(lastResult)render(lastResult);}
+function toggleFloorAt(index){
+  const floor=floorKeys[index];
+  if(!floor)return;
+  if(expandedFloors.has(floor))expandedFloors.delete(floor);else expandedFloors.add(floor);
+  renderCurrent();
 }
 
 function render(result){
@@ -174,23 +247,159 @@ function render(result){
   if(!shifts.length){grid.innerHTML='<div class="empty">尚未設定任何班別範本。請至「班別排程管理」新增範本班別後再回來查看。</div>';document.getElementById('s-ok').textContent='0';document.getElementById('s-pending').textContent='0';document.getElementById('s-overdue').textContent='0';return;}
   if(!markers.length){grid.innerHTML='<div class="empty">目前沒有巡邏點資料。請至「整合標記系統」平面圖新增巡邏點標示。</div>';return;}
 
+  const filters=currentFilters();
+  const selectedShifts=filters.shift?shifts.filter(s=>s.shift_id===filters.shift):shifts;
+  const floorMarkers=filters.floor?markers.filter(m=>canonicalFloor(m.floor_id)===filters.floor):markers;
   let ok=0,pending=0,overdue=0;
-  matrix.forEach(v=>{if(v==='ok')ok++;else if(v==='pending')pending++;else overdue++;});
+  floorMarkers.forEach(m=>selectedShifts.forEach(s=>{const v=matrix.get(s.shift_id+'|'+m.marker_id)||'pending';if(v==='ok')ok++;else if(v==='pending')pending++;else overdue++;}));
   document.getElementById('s-ok').textContent=ok;
   document.getElementById('s-pending').textContent=pending;
   document.getElementById('s-overdue').textContent=overdue;
 
   const STATE_LABEL={ok:'✓',pending:'…',overdue:'✕'};
+  const visibleMarkers=floorMarkers.filter(m=>!filters.status||selectedShifts.some(s=>(matrix.get(s.shift_id+'|'+m.marker_id)||'pending')===filters.status));
+  const groups=new Map();
+  visibleMarkers.forEach(m=>{const floor=canonicalFloor(m.floor_id);if(!groups.has(floor))groups.set(floor,[]);groups.get(floor).push(m);});
+  floorKeys=[...groups.keys()].sort((a,b)=>floorOrder(a)-floorOrder(b)||a.localeCompare(b,'zh-Hant'));
+  if(filters.floor)expandedFloors.add(filters.floor);
+  if(!visibleMarkers.length){grid.innerHTML='<div class="empty">目前篩選條件下沒有符合的巡檢資料。</div>';return;}
   grid.innerHTML=`<table>
-    <tr><th class="pointcol">巡檢點</th>${shifts.map(s=>`<th>${esc(s.name)}<br>${fmtHM(s.start_time)}–${fmtHM(s.end_time)}</th>`).join('')}</tr>
-    ${markers.map(m=>`<tr>
-      <td class="pointcol"><span class="fl">${esc(m.floor_id)}</span>${esc(m.label)}</td>
-      ${shifts.map(s=>{
-        const state=matrix.get(s.shift_id+'|'+m.marker_id)||'pending';
-        return `<td><span class="cell ${state}" onclick="showDetail('${s.shift_id}','${m.marker_id}')">${STATE_LABEL[state]}</span></td>`;
-      }).join('')}
-    </tr>`).join('')}
+    <tr><th class="floorcol">樓層</th><th class="pointcol">巡檢點</th>${selectedShifts.map(s=>`<th>${esc(s.name)}<br>${fmtHM(s.start_time)}–${fmtHM(s.end_time)}</th>`).join('')}</tr>
+    ${floorKeys.map((floor,index)=>{
+      const group=groups.get(floor),open=expandedFloors.has(floor);
+      return `<tr class="floor-row" onclick="toggleFloorAt(${index})"><td colspan="${selectedShifts.length+2}"><span class="floor-arrow">${open?'▼':'▶'}</span>${esc(floor)}<span class="floor-count">${group.length} 個巡檢點</span></td></tr>`+
+        (open?group.map(m=>`<tr><td class="floor-cell">${esc(floor)}</td><td class="pointcol">${esc(m.label)}</td>${selectedShifts.map(s=>{const state=matrix.get(s.shift_id+'|'+m.marker_id)||'pending';return `<td><span class="cell ${state}" title="${PatrolStatus.LABELS[state]}" onclick="showDetail('${s.shift_id}','${m.marker_id}')">${STATE_LABEL[state]}</span></td>`;}).join('')}</tr>`).join(''):'');
+    }).join('')}
   </table>`;
+}
+
+function exportCurrentDay(){
+  const date=document.getElementById('datePick').value;
+  document.getElementById('exportFrom').value=date;
+  document.getElementById('exportTo').value=date;
+  exportReport(date,date);
+}
+function exportRange(){exportReport(document.getElementById('exportFrom').value,document.getElementById('exportTo').value);}
+function eachDate(from,to){
+  const dates=[],cursor=new Date(from+'T00:00:00'),end=new Date(to+'T00:00:00');
+  while(cursor<=end){dates.push(PatrolStatus.dateStrOf(cursor));cursor.setDate(cursor.getDate()+1);}
+  return dates;
+}
+function fmtLocalDateTime(value){
+  const d=value||new Date(),p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function styleReportSheet(ws,rowCount){
+  const fontName='Microsoft JhengHei';
+  const borderColor={rgb:'B8C7D9'};
+  const thinBorder={
+    top:{style:'thin',color:borderColor},bottom:{style:'thin',color:borderColor},
+    left:{style:'thin',color:borderColor},right:{style:'thin',color:borderColor}
+  };
+  const ensureCell=(r,c)=>{
+    const address=XLSX.utils.encode_cell({r,c});
+    if(!ws[address])ws[address]={t:'s',v:''};
+    return ws[address];
+  };
+  for(let c=0;c<6;c++){
+    ensureCell(0,c).s={
+      font:{name:fontName,sz:18,bold:true,color:{rgb:'FFFFFF'}},
+      fill:{patternType:'solid',fgColor:{rgb:'17365D'}},
+      alignment:{horizontal:'center',vertical:'center'}
+    };
+    ensureCell(1,c).s={
+      font:{name:fontName,sz:10,color:{rgb:'1F4E78'}},
+      fill:{patternType:'solid',fgColor:{rgb:'D9EAF7'}},
+      alignment:{horizontal:'left',vertical:'center'}
+    };
+    ensureCell(2,c).s={
+      font:{name:fontName,sz:9,color:{rgb:'5B6573'}},
+      fill:{patternType:'solid',fgColor:{rgb:'EEF3F8'}},
+      alignment:{horizontal:'left',vertical:'center'}
+    };
+    ensureCell(4,c).s={
+      font:{name:fontName,sz:11,bold:true,color:{rgb:'FFFFFF'}},
+      fill:{patternType:'solid',fgColor:{rgb:'1F4E78'}},
+      alignment:{horizontal:'center',vertical:'center',wrapText:true},border:thinBorder
+    };
+  }
+  const statusStyle={
+    '已打卡':{fill:'E2F0D9',font:'00875A'},
+    '待打卡':{fill:'FFF2CC',font:'9C6500'},
+    '逾期未打卡':{fill:'FCE4D6',font:'C00000'}
+  };
+  for(let r=5;r<rowCount;r++){
+    for(let c=0;c<6;c++){
+      const cell=ensureCell(r,c),stripe=r%2?'FFFFFF':'F7FAFC';
+      cell.s={
+        font:{name:fontName,sz:10,color:{rgb:'243447'}},
+        fill:{patternType:'solid',fgColor:{rgb:stripe}},border:thinBorder,
+        alignment:{horizontal:c===2?'left':'center',vertical:'center',wrapText:c===2}
+      };
+      if(c===1){cell.s.font={name:fontName,sz:10,bold:true,color:{rgb:'1F4E78'}};cell.s.fill={patternType:'solid',fgColor:{rgb:'DDEBF7'}};}
+      if(c===5&&statusStyle[cell.v]){
+        const state=statusStyle[cell.v];
+        cell.s.font={name:fontName,sz:10,bold:true,color:{rgb:state.font}};
+        cell.s.fill={patternType:'solid',fgColor:{rgb:state.fill}};
+      }
+    }
+  }
+  ws['!cols']=[{wch:13},{wch:9},{wch:34},{wch:15},{wch:17},{wch:15}];
+  ws['!rows']=[{hpt:31},{hpt:22},{hpt:20},{hpt:8},{hpt:25},...Array.from({length:Math.max(0,rowCount-5)},()=>({hpt:21}))];
+  ws['!margins']={left:.3,right:.3,top:.5,bottom:.5,header:.2,footer:.2};
+}
+async function exportReport(from,to){
+  const status=document.getElementById('exportStatus');
+  if(!from||!to){status.textContent='請選擇完整的起訖日期。';return;}
+  if(from>to){status.textContent='起日不可晚於迄日。';return;}
+  const dates=eachDate(from,to);
+  if(dates.length>366){status.textContent='單次匯出最多 366 天。';return;}
+  if(typeof XLSX==='undefined'){status.textContent='XLSX 元件尚未載入，請重新整理後再試。';return;}
+  const buttons=[document.getElementById('exportDayBtn'),document.getElementById('exportRangeBtn')];
+  buttons.forEach(b=>b.disabled=true);
+  const filters=currentFilters(),rows=[];
+  const selectedShiftName=filters.shift&&lastResult?(lastResult.shifts.find(s=>s.shift_id===filters.shift)||{}).name:'';
+  try{
+    for(let i=0;i<dates.length;i++){
+      status.textContent=`正在整理 ${dates[i]}（${i+1}/${dates.length}）…`;
+      const result=dates[i]===document.getElementById('datePick').value&&lastResult?lastResult:await PatrolStatus.computeMatrix(db,dates[i]);
+      const shifts=filters.shift?result.shifts.filter(s=>s.shift_id===filters.shift||s.name===selectedShiftName):result.shifts;
+      const markers=filters.floor?result.markers.filter(m=>canonicalFloor(m.floor_id)===filters.floor):result.markers;
+      markers.forEach(m=>shifts.forEach(s=>{
+        const state=result.matrix.get(s.shift_id+'|'+m.marker_id)||'pending';
+        if(!filters.status||state===filters.status)rows.push([dates[i],canonicalFloor(m.floor_id),m.label,s.name,`${fmtHM(s.start_time)}–${fmtHM(s.end_time)}`,PatrolStatus.LABELS[state]]);
+      }));
+    }
+    const title=`臺北農產公司 第一市場巡檢表 ${from}~${to}`;
+    const floorLabel=filters.floor||'全部樓層';
+    const shiftLabel=selectedShiftName||'全部班別';
+    const stateLabel=PatrolStatus.LABELS[filters.status]||'全部狀態';
+    const data=[
+      [title],
+      [`篩選條件｜樓層：${floorLabel}　班別：${shiftLabel}　打卡狀態：${stateLabel}`],
+      [`匯出時間：${fmtLocalDateTime()}　　資料筆數：${rows.length} 筆`],
+      [],
+      ['日期','樓層','巡檢點','班別','巡檢時段','打卡狀態'],
+      ...rows
+    ];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    ws['!merges']=[
+      {s:{r:0,c:0},e:{r:0,c:5}},
+      {s:{r:1,c:0},e:{r:1,c:5}},
+      {s:{r:2,c:0},e:{r:2,c:5}}
+    ];
+    ws['!autofilter']={ref:`A5:F${Math.max(5,data.length)}`};
+    styleReportSheet(ws,data.length);
+    const wb=XLSX.utils.book_new();
+    wb.Props={
+      Title:title,Subject:'第一市場駐衛警巡檢報表',Author:'臺北農產運銷股份有限公司',
+      Company:'臺北農產運銷股份有限公司',CreatedDate:new Date()
+    };
+    XLSX.utils.book_append_sheet(wb,ws,'巡檢報表');
+    XLSX.writeFile(wb,`第一市場巡檢表_${from}_${to}.xlsx`);
+    status.textContent=`匯出完成，共 ${rows.length} 筆；已套用目前篩選條件。`;
+  }catch(e){status.textContent='匯出失敗：'+translateError(e.message);}
+  finally{buttons.forEach(b=>b.disabled=false);}
 }
 
 function closeModal(){document.getElementById('m-detail').classList.remove('show');}
@@ -221,6 +430,8 @@ async function showDetail(shiftId,markerId){
 document.getElementById('m-detail').addEventListener('click',e=>{if(e.target.id==='m-detail')closeModal();});
 
 document.getElementById('datePick').value=todayStr();
+document.getElementById('exportFrom').value=todayStr();
+document.getElementById('exportTo').value=todayStr();
 load();
 setInterval(load,60000);
 </script>
