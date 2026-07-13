@@ -58,7 +58,7 @@
 **報修派工管理系統（P1–P6，企業級 14 模組規劃的已完成部分）**
 - `workorder.html` — 報修系統（新增報修、派工、案件流程）
 - `dashboard.html` — 戰情儀表板　`analytics.html` — 統計分析
-- `equipment.html` — 設備履歷　`rbac.html` — 權限管理 RBAC
+- `equipment.html` — 設備建置與生命週期（XLSX 匯入匯出、保養、履歷、合約、文件、成本、中央監控介接）　`rbac.html` — 權限管理 RBAC
 - `notices.html` — 通知中心　`api.html` — 整合 API 文件
 - `maintenance.html` — 舊維修管理（已被 `workorder.html` 取代，導覽一律指向報修系統）
 
@@ -87,9 +87,10 @@
 6. `floor_spaces.sql` — **區域位置表**（各樓層平面空間名稱）
 7. `plan_markers.sql` — **整合標記**（外鍵參照 equipment / floor_spaces / repair_requests，故須在 6 之後）
 8. `material_master.sql` — 材料與備品主檔
-9. `patrol_shifts.sql` / `checkin_logs.sql` — 駐衛警班別與簽到紀錄
-10. `rls_hardening.sql` / `rls_hardening_login_fix.sql` — 正式環境權限
-11. `permanent_data_protection.sql` — **最後執行**；禁止實體刪除/清空並建立人員異動快照
+9. `equipment_lifecycle.sql` — 設備生命週期、保養、履歷、合約、文件、成本與中央監控介接
+10. `patrol_shifts.sql` / `checkin_logs.sql` — 駐衛警班別與簽到紀錄
+11. `rls_hardening.sql` / `rls_hardening_login_fix.sql` — 正式環境權限
+12. `permanent_data_protection.sql` — **最後執行**；禁止實體刪除/清空並建立人員異動快照
 
 輔助 / 修補：`dept_rebuild.sql`、`org_update.sql`、`repair_request_timeout_fix.sql`。
 `dept_rebuild.sql` 現為安全增量同步，不會清空人員部門或刪除既有部門。
