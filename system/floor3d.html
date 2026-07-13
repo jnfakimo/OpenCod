@@ -26,6 +26,8 @@
 :root[data-theme="light"] #mkToggle{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
 :root[data-theme="light"] #panel{background:rgba(255,255,255,.95);border-color:#e2e8f0;color:#1e293b}
 :root[data-theme="light"] #panelToggle{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #c3d{background:#fff}
+:root[data-theme="light"] #planThumb img{filter:grayscale(1) brightness(.7) contrast(500%)}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
 #topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200;overflow-x:auto;overflow-y:hidden}
@@ -204,6 +206,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="model-theme.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="patrolstatus.js"></script>
 <script>
@@ -234,8 +237,8 @@ let scene,camera,renderer;
 prog(10,'建立場景…');
 function init(){
   scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x020b18);
-  scene.fog=new THREE.FogExp2(0x020b18,0.0009);
+  scene.background=new THREE.Color(ModelTheme.isLight()?0xffffff:0x020b18);
+  scene.fog=new THREE.FogExp2(ModelTheme.isLight()?0xffffff:0x020b18,0.0009);
   const W=innerWidth,H=innerHeight-50;
   camera=new THREE.PerspectiveCamera(42,W/H,0.5,6000);
   renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
@@ -245,6 +248,7 @@ function init(){
   scene.add(new THREE.AmbientLight(0xffffff,1.0));
   addEventListener('resize',()=>{camera.aspect=innerWidth/(innerHeight-50);camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight-50);});
   renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
+  ModelTheme.watch(()=>ModelTheme.apply3D(scene,FLOORS));
 }
 
 // ── neon edge frame for each floor (so empty plates still read) ──
@@ -270,6 +274,8 @@ function buildFloors(){
       const m=new THREE.Mesh(geo,mat);
       m.rotation.x=-Math.PI/2;          // lay flat
       m.userData.fl=fl; fl.mesh=m; scene.add(m);
+      ModelTheme.registerFloor(THREE,fl,tex,renderer);
+      ModelTheme.apply3D(scene,[fl]);
       done++; prog(40+done*28,'載入樓層貼圖…');
       if(done===FLOORS.length){ layoutFloors(); finishLoad(); }
     }, undefined, ()=>{ done++; if(done===FLOORS.length){layoutFloors();finishLoad();} });
