@@ -39,6 +39,19 @@ h1{font-family:var(--font-head);font-size:1.2rem;color:var(--text-hi);letter-spa
 .hist-row{display:flex;justify-content:space-between;font-size:.76rem;color:var(--text);
   padding:6px 0;border-top:1px solid rgba(12,40,64,.6)}
 .hist-row .u{color:var(--text-dim)}
+.hist-empty,.hist-error{padding:12px 0;border-top:1px solid rgba(12,40,64,.6);
+  color:var(--text-dim);font-size:.76rem;text-align:center}
+.hist-error{color:var(--red)}
+.hist-pages{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}
+.hist-page-btn{min-width:72px;padding:8px 10px;border:1px solid var(--border);border-radius:4px;
+  background:var(--surface);color:var(--text-hi);font:inherit;cursor:pointer}
+.hist-page-btn:not(:disabled):hover{border-color:var(--patrol);color:var(--patrol)}
+.hist-page-btn:disabled{opacity:.4;cursor:not-allowed}
+.hist-page-info{min-width:72px;text-align:center;color:var(--text-dim);font-size:.72rem}
+@media(max-width:480px){
+  .hist-row{font-size:.72rem;gap:10px}.hist-row span:last-child{white-space:nowrap}
+  .hist-pages{gap:8px}.hist-page-btn{min-width:68px;min-height:40px}
+}
 
 </style>
 <link rel="stylesheet" href="light-mode-fix.css">
@@ -140,13 +153,44 @@ function showState(icon,iconClass,title,sub,backHref,backLabel){
     <a class="btn" href="${esc(backHref)}">◀ ${esc(backLabel)}</a>
     <div class="hist" id="hist"></div>`;
 
-  const {data:recent}=await db.from('checkin_logs').select('user_name,checkin_at')
-    .eq('target_type',targetType).eq('target_id',targetId).order('checkin_at',{ascending:false}).limit(5);
-  if(recent&&recent.length){
-    document.getElementById('hist').innerHTML=
-      `<div class="hist-t">此${esc(pointLabel)}最近簽到記錄</div>`+
-      recent.map(r=>`<div class="hist-row"><span class="u">${esc(r.user_name||'')}</span><span>${esc(fmt(r.checkin_at))}</span></div>`).join('');
+  const HISTORY_PAGE_SIZE=10;
+  async function loadHistory(page=1){
+    const hist=document.getElementById('hist');
+    if(!hist) return;
+    hist.innerHTML=`<div class="hist-t">此${esc(pointLabel)}最近簽到記錄</div><div class="hist-empty">載入中…</div>`;
+
+    const from=(page-1)*HISTORY_PAGE_SIZE;
+    const to=from+HISTORY_PAGE_SIZE-1;
+    const {data:recent,error:historyErr,count}=await db.from('checkin_logs')
+      .select('user_name,checkin_at',{count:'exact'})
+      .eq('target_type',targetType).eq('target_id',targetId)
+      .order('checkin_at',{ascending:false}).range(from,to);
+
+    if(historyErr){
+      hist.innerHTML=`<div class="hist-t">此${esc(pointLabel)}最近簽到記錄</div><div class="hist-error">記錄載入失敗，請稍後再試</div>`;
+      return;
+    }
+
+    const total=Number(count)||0;
+    const totalPages=Math.max(1,Math.ceil(total/HISTORY_PAGE_SIZE));
+    if(page>totalPages){ loadHistory(totalPages); return; }
+
+    const rows=(recent||[]).map(r=>
+      `<div class="hist-row"><span class="u">${esc(r.user_name||'')}</span><span>${esc(fmt(r.checkin_at))}</span></div>`
+    ).join('');
+    const empty=rows?'':'<div class="hist-empty">尚無簽到記錄</div>';
+    const pager=totalPages>1?`
+      <div class="hist-pages">
+        <button type="button" class="hist-page-btn" data-page="${page-1}" ${page<=1?'disabled':''}>上一頁</button>
+        <span class="hist-page-info">${page} / ${totalPages} 頁</span>
+        <button type="button" class="hist-page-btn" data-page="${page+1}" ${page>=totalPages?'disabled':''}>下一頁</button>
+      </div>`:'';
+    hist.innerHTML=`<div class="hist-t">此${esc(pointLabel)}最近簽到記錄（共 ${total} 筆）</div>${rows}${empty}${pager}`;
+    hist.querySelectorAll('.hist-page-btn:not(:disabled)').forEach(btn=>{
+      btn.addEventListener('click',()=>loadHistory(Number(btn.dataset.page)));
+    });
   }
+  loadHistory();
 })();
 </script>
 </body>
