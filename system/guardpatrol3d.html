@@ -75,6 +75,13 @@ body.mode-flat #c3d,body.mode-flat #panel,body.mode-flat #panelToggle,body.mode-
 .status-filter-title{color:var(--patrol);font-weight:700;margin-bottom:2px}
 .status-filter label{color:var(--text);line-height:1.9}
 .status-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;box-shadow:0 0 5px currentColor}
+.filter-menu{border:1px solid var(--border);border-radius:4px;margin-top:7px;overflow:hidden}
+.filter-menu summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;color:var(--patrol);font-weight:700;cursor:pointer;list-style:none;background:rgba(199,125,255,.06);user-select:none}
+.filter-menu summary::-webkit-details-marker{display:none}
+.filter-menu summary::after{content:'▾';font-size:10px;transition:transform .2s}
+.filter-menu[open] summary::after{transform:rotate(180deg)}
+.filter-options{padding:5px 8px 7px;border-top:1px solid var(--border)}
+.filter-options label{display:flex!important}
 .ctrl-val{color:var(--text);font-family:monospace}
 #panelToggle{display:none;position:fixed;left:14px;top:62px;z-index:155;align-items:center;gap:6px;padding:8px 12px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--patrol);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(199,125,255,.12);cursor:pointer}
 #panelToggle:hover{border-color:var(--patrol)}
@@ -177,19 +184,23 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <input type="range" id="yPan" min="-160" max="160" value="0" step="2" oninput="setYPan(this.value)">
   <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"> 顯示標記名稱</label>
   <div class="h-r" style="color:var(--text2)">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
-  <div class="status-filter">
-    <div class="status-filter-title">◆ 標記類型</div>
-    <label><input type="checkbox" checked onchange="toggleMarkKind('equipment',this.checked)"><i class="status-dot" style="color:#00d4ff;background:#00d4ff"></i> 設備</label>
-    <label><input type="checkbox" checked onchange="toggleMarkKind('space',this.checked)"><i class="status-dot" style="color:#00ff9d;background:#00ff9d"></i> 空間</label>
-    <label><input type="checkbox" checked onchange="toggleMarkKind('patrol',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 巡邏點</label>
-    <label><input type="checkbox" checked onchange="toggleMarkKind('repair',this.checked)"><i class="status-dot" style="color:#ff5470;background:#ff5470"></i> 報修點</label>
-  </div>
-  <div class="status-filter">
-    <div class="status-filter-title">◆ 打卡狀態</div>
-    <label><input type="checkbox" checked onchange="togglePatrolStatus('ok',this.checked)"><i class="status-dot" style="color:var(--green);background:var(--green)"></i> 已打</label>
-    <label><input type="checkbox" checked onchange="togglePatrolStatus('pending',this.checked)"><i class="status-dot" style="color:var(--patrol);background:var(--patrol)"></i> 待打卡</label>
-    <label><input type="checkbox" checked onchange="togglePatrolStatus('overdue',this.checked)"><i class="status-dot" style="color:var(--red);background:var(--red)"></i> 逾期未打卡</label>
-  </div>
+  <details class="filter-menu">
+    <summary>◆ 標記類型</summary>
+    <div class="filter-options">
+      <label><input type="checkbox" checked onchange="toggleMarkKind('equipment',this.checked)"><i class="status-dot" style="color:#00d4ff;background:#00d4ff"></i> 設備</label>
+      <label><input type="checkbox" checked onchange="toggleMarkKind('space',this.checked)"><i class="status-dot" style="color:#00ff9d;background:#00ff9d"></i> 空間</label>
+      <label><input type="checkbox" checked onchange="toggleMarkKind('patrol',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 巡邏點</label>
+      <label><input type="checkbox" checked onchange="toggleMarkKind('repair',this.checked)"><i class="status-dot" style="color:#ff5470;background:#ff5470"></i> 報修點</label>
+    </div>
+  </details>
+  <details class="filter-menu">
+    <summary>◆ 打卡狀態</summary>
+    <div class="filter-options">
+      <label><input type="checkbox" checked onchange="togglePatrolStatus('ok',this.checked)"><i class="status-dot" style="color:var(--green);background:var(--green)"></i> 已打</label>
+      <label><input type="checkbox" checked onchange="togglePatrolStatus('pending',this.checked)"><i class="status-dot" style="color:var(--patrol);background:var(--patrol)"></i> 待打卡</label>
+      <label><input type="checkbox" checked onchange="togglePatrolStatus('overdue',this.checked)"><i class="status-dot" style="color:var(--red);background:var(--red)"></i> 逾期未打卡</label>
+    </div>
+  </details>
   <div class="btnrow">
     <button class="mini" onclick="resetView()">⊡ 重置</button>
     <button class="mini" onclick="topView()">⊤ 俯視</button>
