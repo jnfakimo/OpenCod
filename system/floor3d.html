@@ -39,6 +39,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 .tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
 #c3d{position:fixed;inset:50px 0 0 0}
 #c3d canvas{display:block;touch-action:none}
+#focusNotice{position:fixed;left:50%;top:62px;z-index:170;transform:translateX(-50%);display:none;align-items:center;gap:10px;max-width:min(720px,calc(100vw - 28px));padding:9px 12px;background:rgba(0,0,0,.94);border:1px solid var(--cyan);border-radius:6px;box-shadow:0 0 24px rgba(0,212,255,.22);font-size:11px;color:#fff}
+#focusNotice.show{display:flex}#focusNotice strong{color:#fff;white-space:nowrap}#focusNotice span{color:#bfefff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#focusNotice button{margin-left:auto;border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:3px;padding:3px 7px;cursor:pointer}
+:root[data-theme="light"] #focusNotice{background:rgba(0,0,0,.9);color:#fff}
 
 #floorsToggle{position:fixed;right:14px;top:62px;z-index:150;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
 #floorsToggle:hover{border-color:var(--cyan)}
@@ -109,6 +112,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
   #hud{display:none}
   #bottomRightRow{position:static;display:block}
   #hint{position:fixed;left:10px;right:10px;bottom:10px;text-align:center;background:rgba(2,11,24,.72);border:1px solid rgba(10,58,90,.45);border-radius:4px;padding:5px 8px}
+  #focusNotice{top:62px;max-width:calc(100vw - 20px);width:calc(100vw - 20px)}
+  #focusNotice strong{max-width:30vw;overflow:hidden;text-overflow:ellipsis}
 }
 @media(max-width:480px){
   #topbar{gap:8px;padding:0 10px}
@@ -144,6 +149,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 </div>
 
 <div id="c3d"></div>
+<div id="focusNotice" role="status"><strong id="focusTitle">3D 點位</strong><span id="focusCoordinate"></span><button onclick="clearFocusNotice()" aria-label="關閉定位提示">✕</button></div>
 <button id="panelToggle" onclick="togglePanel(true)" aria-controls="panel" aria-expanded="false">⬡ 立體控制</button>
 
 <button id="floorsToggle" onclick="toggleFloorsMenu()">▤ 樓層顯示 <span class="cv">▾</span></button>
@@ -213,7 +219,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
-(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
+const focusParams=new URLSearchParams(location.search),requestedMarkerId=focusParams.get('marker'),requestedEquipmentId=focusParams.get('equipment');
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){const redirect='floor3d.html'+location.search;location.href='login.html?redirect='+encodeURIComponent(redirect);}})();
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 
 // ── World dimensions (from shared DXF frame, mm → metres) ──
@@ -299,11 +306,12 @@ let markerObjs=[];                               // {group,fl,kind,label}
 let showLabels3D=false;
 async function loadMarkers(){
   try{
-    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,kind,label').eq('status','active');
+    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,kind,label,equipment_id').eq('status','active');
     if(error) return;
     (data||[]).forEach(addMarker3D);
     document.getElementById('mkCount').textContent=markerObjs.length;
     layoutMarkers();
+    focusRequestedMarker();
   }catch(e){}
 }
 let patrolStatusMap=new Map();
@@ -366,7 +374,7 @@ function addMarker3D(m){
   g.add(stem); g.add(head); g.add(lab);
   g.position.set(x,0,z);
   scene.add(g);
-  markerObjs.push({group:g,fl,kind:m.kind,label:lab,markerId:m.marker_id,head,stem});
+  markerObjs.push({group:g,fl,kind:m.kind,label:lab,labelText:m.label,markerId:m.marker_id,equipmentId:m.equipment_id||null,sourceX:Number(m.x),sourceY:Number(m.y),head,stem});
 }
 function layoutMarkers(){
   markerObjs.forEach(mk=>{
@@ -384,6 +392,31 @@ function toggleMarkLabels(on){
   showLabels3D=on;
   markerObjs.forEach(mk=>{ if(mk.label) mk.label.visible=on; });
   ['mk-labels'].forEach(id=>{const el=document.getElementById(id);if(el&&el.checked!==on)el.checked=on;});
+}
+function clearFocusNotice(){document.getElementById('focusNotice').classList.remove('show');}
+function showFocusNotice(title,detail){document.getElementById('focusTitle').textContent=title;document.getElementById('focusCoordinate').textContent=detail;document.getElementById('focusNotice').classList.add('show');}
+function focusRequestedMarker(){
+  if(!requestedMarkerId&&!requestedEquipmentId)return;
+  const mk=markerObjs.find(x=>requestedMarkerId&&x.markerId===requestedMarkerId)||markerObjs.find(x=>requestedEquipmentId&&x.equipmentId===requestedEquipmentId);
+  if(!mk){showFocusNotice('尚未設定 3D 點位',requestedEquipmentId?'此設備尚未在平面標記系統綁定座標。':'找不到指定的 3D 標記。');return;}
+  FLOORS.forEach(fl=>{
+    fl.visible=fl===mk.fl;
+    if(fl.mesh)fl.mesh.visible=fl.visible;
+    if(fl.frame)fl.frame.visible=fl.visible;
+    const btn=document.getElementById('t-'+fl.id);
+    if(btn){btn.classList.toggle('on',fl.visible);btn.classList.toggle('off',!fl.visible);}
+  });
+  kindVis[mk.kind]=true;
+  const kindBox=document.getElementById('mk-'+mk.kind);if(kindBox)kindBox.checked=true;
+  markerObjs.forEach(x=>{x.group.visible=x===mk;if(x.label)x.label.visible=x===mk;});
+  showLabels3D=true;
+  const labelBox=document.getElementById('mk-labels');if(labelBox)labelBox.checked=true;
+  mk.head.scale.setScalar(2.2);mk.label.userData.screenHeightPx=30;
+  orb.tx=mk.group.position.x;orb.tz=mk.group.position.z;yOffset=mk.group.position.y-midY();orb.ty=viewY();orb.r=78;orb.phi=.76;orb.theta=-.62;
+  syncXPanUI();syncYPanUI();updateHud();
+  const img=document.getElementById('planThumbImg');if(img)img.src=mk.fl.tex;
+  const px=Number.isFinite(mk.sourceX)?mk.sourceX.toFixed(4):'—',py=Number.isFinite(mk.sourceY)?mk.sourceY.toFixed(4):'—';
+  showFocusNotice(`已定位：${mk.labelText||'設備點位'}`,`${mk.fl.id}｜平面 X ${px}、Y ${py}｜3D X ${mk.group.position.x.toFixed(1)} m、Z ${mk.group.position.z.toFixed(1)} m`);
 }
 function toggleFloorsMenu(){
   const f=document.getElementById('floors'), b=document.getElementById('floorsToggle');
