@@ -28,7 +28,7 @@
 :root[data-theme="light"] #panel{background:rgba(255,255,255,.95);border-color:#e2e8f0;color:#1e293b}
 :root[data-theme="light"] #panelToggle{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
 :root[data-theme="light"] #c3d{background:#fff}
-:root[data-theme="light"] #planThumb img{filter:grayscale(1) brightness(.7) contrast(500%)}
+:root[data-theme="light"] #planThumb img{filter:grayscale(1) brightness(.55) contrast(1000%)}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
 #topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200;overflow-x:auto;overflow-y:hidden}
@@ -63,7 +63,7 @@ body.mode-flat #c3d,body.mode-flat #panel,body.mode-flat #panelToggle,body.mode-
 .fbtn.on .dot{background:var(--patrol);box-shadow:0 0 6px var(--patrol)}
 .fbtn.off{color:var(--text2)}
 
-#panel{position:fixed;left:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:11px 13px;font-size:11px;line-height:1.9;min-width:165px;max-width:min(280px,calc(100vw - 28px));box-shadow:0 0 22px rgba(199,125,255,.12)}
+#panel{position:fixed;left:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:11px 13px;font-size:11px;line-height:1.9;min-width:165px;max-width:min(280px,calc(100vw - 28px));max-height:calc(100vh - 76px);overflow-y:auto;box-shadow:0 0 22px rgba(199,125,255,.12)}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px}
 #panel .p-t{color:var(--patrol);font-weight:700;font-size:12px}
 .panel-close{display:inline-flex;background:none;border:1px solid var(--border);color:var(--text2);border-radius:3px;padding:3px 8px;font-size:10px;cursor:pointer}
@@ -175,13 +175,14 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <input type="range" id="xPan" min="-220" max="220" value="0" step="2" oninput="setXPan(this.value)">
   <label>Y 軸平移（上下）</label>
   <input type="range" id="yPan" min="-160" max="160" value="0" step="2" oninput="setYPan(this.value)">
-  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"> 顯示巡檢點名稱</label>
-  <div class="h-r" style="color:var(--text2)">巡檢點總數：<span style="color:var(--text)" id="mkCount">0</span></div>
+  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"> 顯示標記名稱</label>
+  <div class="h-r" style="color:var(--text2)">標記總數：<span style="color:var(--text)" id="mkCount">0</span></div>
   <div class="status-filter">
-    <div class="status-filter-title">◆ 巡檢點狀態</div>
-    <label><input type="checkbox" checked onchange="togglePatrolStatus('ok',this.checked)"><i class="status-dot" style="color:var(--green);background:var(--green)"></i> 已打卡</label>
-    <label><input type="checkbox" checked onchange="togglePatrolStatus('pending',this.checked)"><i class="status-dot" style="color:var(--patrol);background:var(--patrol)"></i> 待打卡</label>
-    <label><input type="checkbox" checked onchange="togglePatrolStatus('overdue',this.checked)"><i class="status-dot" style="color:var(--red);background:var(--red)"></i> 逾期未打卡</label>
+    <div class="status-filter-title">◆ 標記類型</div>
+    <label><input type="checkbox" checked onchange="toggleMarkKind('equipment',this.checked)"><i class="status-dot" style="color:#00d4ff;background:#00d4ff"></i> 設備</label>
+    <label><input type="checkbox" checked onchange="toggleMarkKind('space',this.checked)"><i class="status-dot" style="color:#00ff9d;background:#00ff9d"></i> 空間</label>
+    <label><input type="checkbox" checked onchange="toggleMarkKind('patrol',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 巡邏點</label>
+    <label><input type="checkbox" checked onchange="toggleMarkKind('repair',this.checked)"><i class="status-dot" style="color:#ff5470;background:#ff5470"></i> 報修點</label>
   </div>
   <div class="btnrow">
     <button class="mini" onclick="resetView()">⊡ 重置</button>
@@ -195,10 +196,11 @@ body.controls-hidden #panelToggle{display:inline-flex}
 <div id="bottomRightRow">
   <div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
   <div id="legend">
-    <div class="h-t">◆ 巡檢點狀態</div>
-    <div class="lg-row"><i style="background:var(--green)"></i>已打卡</div>
-    <div class="lg-row"><i style="background:var(--patrol)"></i>待打卡</div>
-    <div class="lg-row"><i style="background:var(--red)"></i>逾期未打卡</div>
+    <div class="h-t">◆ 標記類型</div>
+    <div class="lg-row"><i style="background:#00d4ff"></i>設備</div>
+    <div class="lg-row"><i style="background:#00ff9d"></i>空間</div>
+    <div class="lg-row"><i style="background:#c77dff"></i>巡邏點</div>
+    <div class="lg-row"><i style="background:#ff5470"></i>報修點</div>
   </div>
 </div>
 
@@ -299,21 +301,21 @@ function layoutFloors(){
   layoutMarkers();
 }
 
-// ── 巡邏點 → 3D 拋轉（僅巡邏點，配合班別即時上色）──────────────
+// ── 整合標記 → 3D 拋轉（巡邏點另套班別即時上色）──────────────
 const MARK_H=6;                                  // 標記懸浮高度 (m)
 const PATROL_BASE=0xc77dff;
-let markerObjs=[];                               // {group,fl,label,markerId,name,head,stem}
-let showLabels3D=false;                          // 顯示巡檢點名稱
+const MARK_COL={equipment:0x00d4ff,space:0x00ff9d,patrol:PATROL_BASE,repair:0xff5470,note:0xffb300};
+const kindVis={equipment:true,space:true,patrol:true,repair:true,note:true};
+let markerObjs=[];                               // {group,fl,kind,label,markerId,name,head,stem}
+let showLabels3D=false;                          // 顯示標記名稱
 let showShiftTime3D=false;                       // 顯示巡邏點時間（班別時段＋打卡人員）
-const patrolStatusVisible={ok:true,pending:true,overdue:true};
 async function loadMarkers(){
   try{
-    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,label').eq('status','active').eq('kind','patrol');
+    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,kind,label').eq('status','active');
     if(error) return;
     (data||[]).forEach(addMarker3D);
     document.getElementById('mkCount').textContent=markerObjs.length;
     layoutMarkers();
-    refreshPatrolStatus();
   }catch(e){}
 }
 let patrolStatusMap=new Map();
@@ -338,6 +340,7 @@ async function refreshPatrolStatus(){
     }
   }catch(e){ /* patrol_shifts 尚未建表時，靜默略過，標記維持原色 */ }
   markerObjs.forEach(mk=>{
+    if(mk.kind!=='patrol') return;
     const state=patrolStatusMap.get(mk.markerId);
     const hex=state?parseInt(PatrolStatus.COLORS[state].slice(1),16):PATROL_BASE;
     mk.head.material.color.setHex(hex);
@@ -389,7 +392,7 @@ function rebuildMarkerLabel(mk){
 }
 function addMarker3D(m){
   const fl=FLOORS.find(f=>f.id===m.floor_id); if(!fl)return;
-  const col=PATROL_BASE;
+  const col=MARK_COL[m.kind]||MARK_COL.note;
   // 2D viewport 座標 → 3D 平面座標（與樓層貼圖共用同一 DXF frame）
   const x=(m.x-0.5)*FRAME_W;
   const z=m.y*FRAME_W - FRAME_H/2;
@@ -402,7 +405,7 @@ function addMarker3D(m){
   g.add(stem); g.add(head);
   g.position.set(x,0,z);
   scene.add(g);
-  const mk={group:g,fl,label:null,markerId:m.marker_id,name:m.label,head,stem};
+  const mk={group:g,fl,kind:m.kind||'note',label:null,markerId:m.marker_id,name:m.label,head,stem};
   markerObjs.push(mk);
   rebuildMarkerLabel(mk);
 }
@@ -412,11 +415,10 @@ function layoutMarkers(){
     syncMarkerVisibility(mk);
   });
 }
-function markerPatrolState(mk){return patrolStatusMap.get(mk.markerId)||'pending';}
-function syncMarkerVisibility(mk){mk.group.visible=mk.fl.visible&&patrolStatusVisible[markerPatrolState(mk)]!==false;}
-function togglePatrolStatus(state,on){
-  patrolStatusVisible[state]=on;
-  markerObjs.forEach(syncMarkerVisibility);
+function syncMarkerVisibility(mk){mk.group.visible=mk.fl.visible&&kindVis[mk.kind]!==false;}
+function toggleMarkKind(kind,on){
+  kindVis[kind]=on;
+  markerObjs.forEach(mk=>{if(mk.kind===kind)syncMarkerVisibility(mk);});
 }
 function toggleMarkLabels(on){
   showLabels3D=on;
@@ -447,7 +449,6 @@ function finishLoad(){
   setTimeout(()=>{const l=document.getElementById('loading');l.style.transition='opacity .4s';l.style.opacity='0';setTimeout(()=>l.style.display='none',400);},150);
   resetView(); animate();
   loadMarkers();
-  setInterval(refreshPatrolStatus,60000);
   setInterval(checkModelUpdates,60000);
   const img=document.getElementById('planThumbImg');
   if(img) img.src=FLOORS[0].tex;
