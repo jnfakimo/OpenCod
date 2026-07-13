@@ -15,6 +15,10 @@ img, canvas, video, svg { max-width: 100%; }
 @media (max-width: 768px) {
   :root { --mobile-gutter: 12px; }
 
+  /* Explicitly optional desktop controls. Pages use this for exports,
+     administration links, duplicated navigation and nonessential hints. */
+  .mobile-hide { display: none !important; }
+
   body {
     min-width: 0 !important;
     width: 100% !important;

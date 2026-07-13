@@ -96,6 +96,23 @@ td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
 .modal-body{padding:16px 18px;font-size:.82rem;line-height:1.8}
 .hist-row{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid rgba(12,40,64,.5);font-size:.78rem}
 .hist-row:first-child{border-top:none}
+@media(max-width:768px){
+  .content{padding-top:10px!important}
+  .hint,.legend{display:none}
+  .datebar{margin-bottom:10px;gap:6px}
+  .datebar input[type=date]{flex:1;min-width:0;height:42px}
+  .datebar .mini{min-width:42px;height:42px;padding:6px 9px}
+  .toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end;gap:8px;padding:9px;margin-bottom:10px}
+  .toolbar .tool-field{min-width:0;width:100%}
+  .toolbar .tool-field select{width:100%;height:42px}
+  .filter-floor{order:1}.filter-status{order:2}.filter-shift{order:3;grid-column:1/-1}
+  .stats-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px}
+  .stat-card{min-width:0;padding:8px 6px;text-align:center}
+  .stat-card .n{font-size:1.25rem}.stat-card .l{font-size:.62rem;letter-spacing:0}
+  .grid-wrap{border-radius:3px}
+  th{padding:8px 7px}td{padding:7px 6px}
+  .floor-row td{padding:9px 8px}
+}
 </style>
 <link rel="stylesheet" href="light-mode-fix.css">
 <link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
@@ -108,9 +125,9 @@ td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
   </div>
   <div class="nav-space"></div>
   <a href="guardpatrol3d.html"><button class="nav-back">3D駐警巡檢雲台</button></a>
-  <a href="patrolshifts.html"><button class="nav-back">班別排程管理</button></a>
-  <a href="patrollist.html"><button class="nav-back">巡邏點清單</button></a>
-  <a href="admin.html#modelhub"><button class="nav-back">後台</button></a>
+  <a href="patrolshifts.html" class="mobile-hide"><button class="nav-back">班別排程管理</button></a>
+  <a href="patrollist.html" class="mobile-hide"><button class="nav-back">巡邏點清單</button></a>
+  <a href="admin.html#modelhub" class="mobile-hide"><button class="nav-back">後台</button></a>
 </nav>
 
 <div class="content">
@@ -126,15 +143,15 @@ td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
   </div>
 
   <div class="toolbar">
-    <div class="tool-field"><label for="floorFilter">樓層</label><select id="floorFilter" onchange="renderCurrent()"><option value="">全部樓層</option></select></div>
-    <div class="tool-field"><label for="shiftFilter">班別</label><select id="shiftFilter" onchange="renderCurrent()"><option value="">全部班別</option></select></div>
-    <div class="tool-field"><label for="statusFilter">打卡狀態</label><select id="statusFilter" onchange="renderCurrent()"><option value="">全部狀態</option><option value="ok">已打卡</option><option value="pending">待打卡</option><option value="overdue">逾期未打卡</option></select></div>
-    <div class="toolbar-sep"></div>
-    <div class="tool-field"><label for="exportFrom">匯出起日</label><input type="date" id="exportFrom"></div>
-    <div class="tool-field"><label for="exportTo">匯出迄日</label><input type="date" id="exportTo"></div>
-    <button class="mini" id="exportDayBtn" onclick="exportCurrentDay()">匯出當日 XLSX</button>
-    <button class="mini primary" id="exportRangeBtn" onclick="exportRange()">匯出日期區間 XLSX</button>
-    <span class="export-status" id="exportStatus"></span>
+    <div class="tool-field filter-floor"><label for="floorFilter">樓層</label><select id="floorFilter" onchange="renderCurrent()"><option value="">全部樓層</option></select></div>
+    <div class="tool-field filter-shift"><label for="shiftFilter">班別</label><select id="shiftFilter" onchange="renderCurrent()"><option value="">全部班別</option></select></div>
+    <div class="tool-field filter-status"><label for="statusFilter">打卡狀態</label><select id="statusFilter" onchange="renderCurrent()"><option value="">全部狀態</option><option value="ok">已打卡</option><option value="pending">待打卡</option><option value="overdue">逾期未打卡</option></select></div>
+    <div class="toolbar-sep mobile-hide"></div>
+    <div class="tool-field mobile-hide"><label for="exportFrom">匯出起日</label><input type="date" id="exportFrom"></div>
+    <div class="tool-field mobile-hide"><label for="exportTo">匯出迄日</label><input type="date" id="exportTo"></div>
+    <button class="mini mobile-hide" id="exportDayBtn" onclick="exportCurrentDay()">匯出當日 XLSX</button>
+    <button class="mini primary mobile-hide" id="exportRangeBtn" onclick="exportRange()">匯出日期區間 XLSX</button>
+    <span class="export-status mobile-hide" id="exportStatus"></span>
   </div>
 
   <div class="stats-row">

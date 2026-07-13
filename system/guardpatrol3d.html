@@ -153,10 +153,10 @@ body.controls-hidden #panelToggle{display:inline-flex}
     <button id="view3dBtn" class="view-btn active" type="button" onclick="switchPatrolView('3d')">3D 駐警巡檢</button>
     <button id="viewFlatBtn" class="view-btn" type="button" onclick="switchPatrolView('flat')">平面駐警巡檢</button>
   </div>
-  <button id="modelUpdateBtn" class="tb-back" type="button" style="display:none" onclick="manualRefreshCurrentModel()">↻ 更新目前模型</button>
+  <button id="modelUpdateBtn" class="tb-back mobile-hide" type="button" style="display:none" onclick="manualRefreshCurrentModel()">↻ 更新目前模型</button>
   <a href="guardpatrol.html" class="tb-back">巡檢稽核總覽</a>
-  <a href="patrolshifts.html" class="tb-back">班別排程管理</a>
-  <a href="admin.html" class="tb-back">後台</a>
+  <a href="patrolshifts.html" class="tb-back mobile-hide">班別排程管理</a>
+  <a href="admin.html" class="tb-back mobile-hide">後台</a>
 </div>
 
 <div id="c3d"></div>
@@ -201,7 +201,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 
 <div id="planThumb"><img id="planThumbImg" alt="樓層平面縮圖"></div>
 
-<div id="bottomRightRow">
+<div id="bottomRightRow" class="mobile-hide">
   <div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
   <div id="legend">
     <div class="h-t">◆ 打卡狀態</div>

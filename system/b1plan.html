@@ -101,7 +101,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 #mkpanel .filter-menu[open] summary::after{transform:rotate(180deg)}
 #mkpanel .filter-options{padding:5px 8px 7px;border-top:1px solid var(--border)}
 
-@media(max-width:600px){ .tb-title{display:none} .tbtn{width:36px;height:36px;font-size:15px} #floors select{min-width:120px;font-size:12px} #mkpanel,#mkToggle{font-size:10px} #bottomRightRow{display:none} #osdNav{bottom:14px!important;width:130px!important;height:100px!important} }
+@media(max-width:600px){ .tb-title{display:none} .tbtn{width:42px;height:42px;font-size:17px} #floors select{min-width:120px;font-size:12px} #mkpanel,#mkToggle{font-size:11px} #bottomRightRow,#osdNav{display:none!important} #tools{right:10px;top:164px;gap:8px} }
 
 </style>
 <link rel="stylesheet" href="light-mode-fix.css?v=20260713-4">
@@ -121,8 +121,8 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
   <div class="tb-title" id="tbTitle">樓層平面圖</div>
   <div class="tb-space"></div>
   <a href="floor3d.html" class="tb-back">3D模型圖</a>
-  <a href="b1plan.html" class="tb-back">平面模型圖</a>
-  <a href="admin.html#modelhub" class="tb-back">後台</a>
+  <a href="b1plan.html" class="tb-back mobile-hide">平面模型圖</a>
+  <a href="admin.html#modelhub" class="tb-back mobile-hide">後台</a>
 </div>
 
 <div id="osd"></div>
@@ -140,10 +140,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 <div id="tools">
   <div class="tbtn" id="t-zin"  title="放大">＋</div>
   <div class="tbtn" id="t-zout" title="縮小">－</div>
-  <div class="tbtn" id="t-rl"   title="逆時針旋轉 15°">↺</div>
-  <div class="tbtn" id="t-rr"   title="順時針旋轉 15°">↻</div>
+  <div class="tbtn mobile-hide" id="t-rl"   title="逆時針旋轉 15°">↺</div>
+  <div class="tbtn mobile-hide" id="t-rr"   title="順時針旋轉 15°">↻</div>
   <div class="tbtn" id="t-home" title="重置視角">⊡</div>
-  <div class="tbtn" id="t-fs"   title="全螢幕">⛶</div>
+  <div class="tbtn mobile-hide" id="t-fs"   title="全螢幕">⛶</div>
 </div>
 
 <!-- 標記顯示選單（左側，預設隱藏，與 3D 立體樓層一致）-->
