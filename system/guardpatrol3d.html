@@ -36,10 +36,18 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 .tb-space{flex:1 0 auto}
 .tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s;white-space:nowrap;flex:0 0 auto}
 .tb-back:hover{border-color:var(--patrol);color:var(--patrol)}
+.view-switch{display:inline-flex;border:1px solid var(--border);border-radius:4px;overflow:hidden;flex:0 0 auto}
+.view-btn{border:0;border-right:1px solid var(--border);background:transparent;color:var(--text2);padding:5px 10px;font:inherit;font-size:11px;cursor:pointer;white-space:nowrap}
+.view-btn:last-child{border-right:0}.view-btn:hover{color:var(--patrol);background:rgba(199,125,255,.08)}
+.view-btn.active{color:var(--bg);background:var(--patrol);font-weight:700}
 #modelUpdateBtn{color:var(--amber);border-color:var(--amber);background:rgba(255,179,0,.08);cursor:pointer;font-family:inherit;box-shadow:0 0 10px rgba(255,179,0,.2)}
 #modelUpdateBtn:hover{background:rgba(255,179,0,.16)}
 #c3d{position:fixed;inset:50px 0 0 0}
 #c3d canvas{display:block;touch-action:none}
+#flatView{position:fixed;inset:50px 0 0;background:var(--bg);z-index:140;display:none}
+#flatFrame{display:block;width:100%;height:100%;border:0;background:var(--bg)}
+body.mode-flat #flatView{display:block}
+body.mode-flat #c3d,body.mode-flat #panel,body.mode-flat #panelToggle,body.mode-flat #floorsToggle,body.mode-flat #floors,body.mode-flat #planThumb,body.mode-flat #bottomRightRow{display:none!important}
 
 #floorsToggle{position:fixed;right:14px;top:62px;z-index:150;display:inline-flex;align-items:center;gap:6px;padding:9px 14px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;color:var(--patrol);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(199,125,255,.12);cursor:pointer}
 #floorsToggle:hover{border-color:var(--patrol)}
@@ -104,6 +112,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
   #topbar{gap:8px;padding:0 10px}
   .tb-logo{max-width:38vw}
   .tb-back{font-size:10px;padding:5px 8px}
+  .view-btn{font-size:10px;padding:5px 8px}
   #panel{top:96px}
   #panelToggle{left:10px;top:62px}
   #floorsToggle{top:96px}
@@ -127,13 +136,18 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <div class="tb-sep"></div>
   <div class="tb-title">3D駐警巡檢雲台</div>
   <div class="tb-space"></div>
-  <button id="modelUpdateBtn" class="tb-back" style="display:none" onclick="applyModelUpdates()">🔄 模型有新版本，點此更新</button>
+  <div class="view-switch" role="group" aria-label="巡檢模型切換">
+    <button id="view3dBtn" class="view-btn active" type="button" onclick="switchPatrolView('3d')">3D 駐警巡檢</button>
+    <button id="viewFlatBtn" class="view-btn" type="button" onclick="switchPatrolView('flat')">平面駐警巡檢</button>
+  </div>
+  <button id="modelUpdateBtn" class="tb-back" type="button" style="display:none" onclick="manualRefreshCurrentModel()">↻ 更新目前模型</button>
   <a href="guardpatrol.html" class="tb-back">巡檢稽核總覽</a>
   <a href="patrolshifts.html" class="tb-back">班別排程管理</a>
   <a href="admin.html" class="tb-back">後台</a>
 </div>
 
 <div id="c3d"></div>
+<div id="flatView" aria-hidden="true"><iframe id="flatFrame" title="平面駐警巡檢模型圖" loading="lazy"></iframe></div>
 <button id="panelToggle" onclick="togglePanel(true)" aria-controls="panel" aria-expanded="false">⬡ 立體控制</button>
 
 <button id="floorsToggle" onclick="toggleFloorsMenu()">▤ 樓層顯示 <span class="cv">▾</span></button>
@@ -184,7 +198,18 @@ body.controls-hidden #panelToggle{display:inline-flex}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
-(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol3d.html');}})();
+let currentPatrolView='3d', canManageModels=false;
+async function initModelAccess(){
+  const {data:{session}}=await db.auth.getSession();
+  if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol3d.html');return;}
+  try{
+    const {data:profile}=await db.from('users').select('role,rbac_role,permissions,status').eq('auth_id',session.user.id).maybeSingle();
+    const permissions=Array.isArray(profile?.permissions)?profile.permissions:[];
+    canManageModels=profile?.status!=='inactive'&&(profile?.role==='admin'||profile?.rbac_role==='sysadmin'||permissions.includes('admin'));
+  }catch(e){canManageModels=false;}
+  updateModelUpdateBtn();
+}
+initModelAccess();
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 
 // ── World dimensions (from shared DXF frame, mm → metres) ──
@@ -516,6 +541,37 @@ async function applyCustomModels(){
 
 // ── 3D 模型更新偵測：定期比對 floor_models，有新版本時亮起頂欄按鈕，點擊才套用 ──
 let pendingModelUpdates=new Map();                 // floor_id -> floor_models row（尚未套用的新版本）
+function flatModelUrl(){return `b1plan.html?embed=1&patrol=1&modelv=${Date.now()}`;}
+function loadFlatModel(force=false){
+  const frame=document.getElementById('flatFrame');
+  if(force||!frame.getAttribute('src')) frame.src=flatModelUrl();
+}
+function switchPatrolView(view){
+  currentPatrolView=view==='flat'?'flat':'3d';
+  const flat=currentPatrolView==='flat';
+  document.body.classList.toggle('mode-flat',flat);
+  document.getElementById('view3dBtn').classList.toggle('active',!flat);
+  document.getElementById('viewFlatBtn').classList.toggle('active',flat);
+  document.getElementById('flatView').setAttribute('aria-hidden',String(!flat));
+  if(flat) loadFlatModel(false);
+  updateModelUpdateBtn();
+}
+async function manualRefreshCurrentModel(){
+  if(!canManageModels) return;
+  const btn=document.getElementById('modelUpdateBtn');
+  btn.disabled=true;btn.textContent='更新中…';
+  if(currentPatrolView==='flat'){
+    loadFlatModel(true);
+  }else{
+    await checkModelUpdates();
+    if(pendingModelUpdates.size) await applyModelUpdates();
+    else{
+      location.replace(`${location.pathname}?modelv=${Date.now()}`);
+      return;
+    }
+  }
+  btn.disabled=false;updateModelUpdateBtn();
+}
 async function checkModelUpdates(){
   try{
     const {data}=await db.from('floor_models').select('*');
@@ -530,11 +586,14 @@ async function checkModelUpdates(){
 }
 function updateModelUpdateBtn(){
   const btn=document.getElementById('modelUpdateBtn'); if(!btn) return;
-  if(pendingModelUpdates.size){
-    btn.style.display='inline-flex';
+  btn.style.display=canManageModels?'inline-flex':'none';
+  if(!canManageModels) return;
+  if(currentPatrolView==='flat'){
+    btn.textContent='↻ 更新平面模型';
+  }else if(pendingModelUpdates.size){
     btn.textContent=`🔄 模型有新版本（${pendingModelUpdates.size}）點此更新`;
   }else{
-    btn.style.display='none';
+    btn.textContent='↻ 更新 3D 模型';
   }
 }
 // 使用者點擊頂欄按鈕後才真正換貼圖，避免巡檢中畫面無預警跳動

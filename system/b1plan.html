@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script>if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-mode');</script>
 <script src="theme.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -35,6 +36,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 .tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
 
 #osd{position:fixed;inset:50px 0 0 0;background:#04101f}
+.embed-mode #topbar{display:none}
+.embed-mode #osd{inset:0}
+.embed-mode #floors,.embed-mode #mkToggle,.embed-mode #mkpanel{transform:translateY(-50px)}
 
 /* Floor switch (right) — 樓層下拉式選單 */
 #floors{position:fixed;right:14px;top:62px;z-index:150}
@@ -161,7 +165,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
-(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
+const PAGE_PARAMS=new URLSearchParams(location.search);
+const MODEL_VERSION=PAGE_PARAMS.get('modelv')||'';
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol3d.html');}})();
+function versionedModelUrl(url){
+  if(!MODEL_VERSION||!url) return url;
+  const join=url.includes('?')?'&':'?';
+  return `${url}${join}modelv=${encodeURIComponent(MODEL_VERSION)}`;
+}
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 prog(15,'建立檢視器…');
 
@@ -194,11 +205,11 @@ async function buildSources(){
     if(data&&data.length){
       data.forEach(m=>{ const fl=FLOORS.find(f=>f.id===m.floor_id);
         if(fl&&m.image_path){ const t=encodeURIComponent(m.updated_at||'');
-          fl.src={type:'image', url:`${SUPA_URL}/storage/v1/object/public/floorplans/${m.image_path}?t=${t}`}; } });
+          fl.src={type:'image', url:versionedModelUrl(`${SUPA_URL}/storage/v1/object/public/floorplans/${m.image_path}?t=${t}`)}; } });
     }
   }catch(e){}
   FLOORS.forEach(fl=>{
-    viewer.addTiledImage({ tileSource: fl.src||fl.dzi, x:0, y:0, width:1, opacity:(fl.id==='B1'?1:0),
+    viewer.addTiledImage({ tileSource: fl.src||versionedModelUrl(fl.dzi), x:0, y:0, width:1, opacity:(fl.id==='B1'?1:0),
       success:e=>{ fl.idx=viewer.world.getIndexOfItem(e.item); onLoad(); },
       error:()=>{ onLoad(); } });
   });
