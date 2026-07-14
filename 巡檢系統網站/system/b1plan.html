@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script>if(new URLSearchParams(location.search).get('embed')==='1')document.documentElement.classList.add('embed-mode');</script>
+<script src="theme.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>臺北農產 第一果菜市場 — 樓層平面圖</title>
+<style>
+:root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0}
+:root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] #topbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] #osd{background:#f8fafc;color:#1e293b}
+:root[data-theme="light"] #floors select{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+:root[data-theme="light"] #floors option{background:#ffffff;color:#1e293b}
+:root[data-theme="light"] .tbtn{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] .tbtn:hover{background:#e2e8f0}
+:root[data-theme="light"] #hud{background:rgba(255,255,255,.92);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #hint{background:rgba(255,255,255,.92);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #mkToggle{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #mkpanel{background:rgba(255,255,255,.95);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #osd,:root[data-theme="light"] #osdNav{background:#fff!important}
+:root[data-theme="light"] #osd canvas,:root[data-theme="light"] #osdNav canvas{filter:grayscale(1) brightness(.55) contrast(1000%)}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
+
+#topbar{position:fixed;top:0;left:0;right:0;height:50px;background:rgba(2,11,24,.97);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 14px;gap:10px;z-index:200;overflow-x:auto;overflow-y:hidden}
+.tb-logo{font-size:13px;font-weight:700;color:var(--cyan);white-space:nowrap}
+.tb-sep{width:1px;height:24px;background:var(--border)}
+.tb-title{font-size:11px;color:var(--text2);white-space:nowrap;flex:0 0 auto}
+.tb-space{flex:1 0 auto}
+.tb-back{color:var(--text2);text-decoration:none;display:inline-flex;align-items:center;padding:4px 10px;border:1px solid var(--border);border-radius:3px;font-size:11px;transition:all .2s;white-space:nowrap;flex:0 0 auto}
+.tb-back:hover{border-color:var(--cyan);color:var(--cyan)}
+
+#osd{position:fixed;inset:50px 0 0 0;background:#04101f}
+.embed-mode #topbar{display:none}
+.embed-mode #osd{inset:0}
+.embed-mode #floors,.embed-mode #mkToggle,.embed-mode #mkpanel{transform:translateY(-50px)}
+
+/* Floor switch (right) — 樓層下拉式選單 */
+#floors{position:fixed;right:14px;top:62px;z-index:150}
+#floors select{background:rgba(4,20,40,.98);color:var(--cyan);border:1px solid var(--border);border-radius:6px;padding:10px 30px 10px 14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;outline:none;min-width:150px;box-shadow:0 0 18px rgba(0,212,255,.12);
+  appearance:none;-webkit-appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--cyan) 50%),linear-gradient(135deg,var(--cyan) 50%,transparent 50%);
+  background-position:calc(100% - 16px) center,calc(100% - 11px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+#floors select:hover,#floors select:focus{border-color:var(--cyan)}
+#floors option{background:#04101f;color:var(--text)}
+
+/* Tool dock */
+#tools{position:fixed;right:14px;top:210px;display:flex;flex-direction:column;gap:6px;z-index:150}
+.tbtn{width:40px;height:40px;background:rgba(4,20,40,.95);border:1px solid var(--border);color:var(--cyan2);border-radius:5px;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
+.tbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.1)}
+.tbtn:active{background:rgba(0,212,255,.22)}
+
+/* Bottom-right row: mouse-control hint + HUD, side by side (hint on the left, HUD on the right) */
+#bottomRightRow{position:fixed;right:14px;bottom:14px;z-index:150;display:flex;align-items:flex-end;gap:8px}
+#hud{background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:9px 13px;font-size:11px;line-height:1.7;min-width:160px}
+#hud .h-t{color:var(--cyan);font-weight:700;font-size:12px;margin-bottom:3px}
+#hud .h-r{color:var(--text2)}
+#hud .h-r span{color:var(--text)}
+
+#hint{background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:9px 13px;font-size:10px;color:var(--text2);text-align:right;line-height:1.8;pointer-events:none;white-space:nowrap}
+
+/* Navigator (mini-map) — bottom-left, enlarged 1.3x to match the marker-system page */
+#osdNav{position:fixed!important;top:auto!important;right:auto!important;left:14px!important;bottom:14px!important;width:169px!important;height:130px!important;z-index:150}
+
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:12px}
+.ld-t{font-size:13px;color:var(--cyan);letter-spacing:.1em}
+.ld-bar{width:200px;height:2px;background:var(--border);border-radius:2px;overflow:hidden}
+.ld-fill{height:100%;background:var(--cyan);width:0%;transition:width .25s}
+.ld-m{font-size:11px;color:var(--text2)}
+
+/* 整合標記（唯讀顯示，與整合標記系統 / 3D 同步）*/
+.pin{position:relative;transform:translate(-50%,-50%);pointer-events:auto;cursor:default}
+.pin .pdot{width:8px;height:8px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto}
+.pin .plab{position:absolute;left:50%;top:-3px;transform:translate(-50%,-100%);background:#000;border:1px solid rgba(255,255,255,.42);color:#fff;font-size:12px!important;font-weight:600;line-height:1.35;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;box-shadow:0 2px 7px rgba(0,0,0,.48)}
+.pin:hover .plab,.pin.show-lab .plab{opacity:1}
+#mkToggle{position:fixed;left:14px;top:62px;z-index:151;display:inline-flex;align-items:center;gap:6px;padding:8px 12px;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:5px;color:var(--cyan);font-size:12px;font-weight:700;box-shadow:0 0 18px rgba(0,212,255,.12);cursor:pointer}
+#mkToggle:hover{border-color:var(--cyan)}
+#mkpanel{position:fixed;left:14px;top:62px;z-index:152;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:11px 13px;font-size:11px;line-height:1.9;min-width:165px;max-width:min(280px,calc(100vw - 28px));max-height:calc(100vh - 76px);overflow-y:auto;display:none;box-shadow:0 0 22px rgba(0,212,255,.12)}
+#mkpanel .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px}
+#mkpanel .p-t{color:var(--cyan);font-weight:700;font-size:12px}
+#mkpanel .panel-close{display:inline-flex;background:none;border:1px solid var(--border);color:var(--text2);border-radius:3px;padding:3px 8px;font-size:10px;cursor:pointer}
+#mkpanel .panel-close:hover{border-color:var(--cyan);color:var(--cyan)}
+#mkpanel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
+#mkpanel label span{text-shadow:0 0 3px rgba(255,255,255,.6)}
+#mkpanel input{accent-color:var(--cyan)}
+#mkpanel .status-filter{border-top:1px solid var(--border);margin-top:6px;padding-top:7px}
+#mkpanel .status-filter-title{color:var(--cyan);font-weight:700;margin-bottom:2px}
+#mkpanel .status-filter label{color:var(--text)}
+#mkpanel .status-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;box-shadow:0 0 5px currentColor}
+#mkpanel .filter-menu{border:1px solid var(--border);border-radius:4px;margin-top:7px;overflow:hidden}
+#mkpanel .filter-menu summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;color:var(--cyan);font-weight:700;cursor:pointer;list-style:none;background:rgba(0,212,255,.06);user-select:none}
+#mkpanel .filter-menu summary::-webkit-details-marker{display:none}
+#mkpanel .filter-menu summary::after{content:'▾';font-size:10px;transition:transform .2s}
+#mkpanel .filter-menu[open] summary::after{transform:rotate(180deg)}
+#mkpanel .filter-options{padding:5px 8px 7px;border-top:1px solid var(--border)}
+
+@media(max-width:600px){ .tb-title{display:none} .tbtn{width:42px;height:42px;font-size:17px} #floors select{min-width:120px;font-size:12px} #mkpanel,#mkToggle{font-size:11px} #bottomRightRow,#osdNav{display:none!important} #tools{right:10px;top:164px;gap:8px} }
+
+</style>
+<link rel="stylesheet" href="light-mode-fix.css?v=20260713-4">
+<link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
+</head>
+<body>
+
+<div id="loading">
+  <div class="ld-t">載入樓層平面圖…</div>
+  <div class="ld-bar"><div class="ld-fill" id="ldfill"></div></div>
+  <div class="ld-m" id="ldmsg">初始化…</div>
+</div>
+
+<div id="topbar">
+  <div class="tb-logo">臺北農產 第一果菜市場</div>
+  <div class="tb-sep"></div>
+  <div class="tb-title" id="tbTitle">樓層平面圖</div>
+  <div class="tb-space"></div>
+  <a href="floor3d.html" class="tb-back">3D模型圖</a>
+  <a href="b1plan.html" class="tb-back mobile-hide">平面模型圖</a>
+  <a href="admin.html#modelhub" class="tb-back mobile-hide">後台</a>
+</div>
+
+<div id="osd"></div>
+<div id="osdNav"></div>
+
+<div id="floors">
+  <select id="floorSel" onchange="showFloor(this.value)">
+    <option value="3F">3F 三樓</option>
+    <option value="2F">2F 二樓</option>
+    <option value="1F">1F 一樓</option>
+    <option value="B1" selected>B1 地下一層</option>
+  </select>
+</div>
+
+<div id="tools">
+  <div class="tbtn" id="t-zin"  title="放大">＋</div>
+  <div class="tbtn" id="t-zout" title="縮小">－</div>
+  <div class="tbtn mobile-hide" id="t-rl"   title="逆時針旋轉 15°">↺</div>
+  <div class="tbtn mobile-hide" id="t-rr"   title="順時針旋轉 15°"><span class="ic ic-refresh"></span></div>
+  <div class="tbtn" id="t-home" title="重置視角">⊡</div>
+  <div class="tbtn mobile-hide" id="t-fs"   title="全螢幕">⛶</div>
+</div>
+
+<!-- 標記顯示選單（左側，預設隱藏，與 3D 立體樓層一致）-->
+<button id="mkToggle" onclick="toggleMkPanel(true)"><span class="ic ic-checkmark"></span> 打卡狀態</button>
+<div id="mkpanel">
+  <div class="panel-head"><div class="p-t"><span class="ic ic-checkmark"></span> 打卡狀態</div><button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button></div>
+  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" onchange="toggleMkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 巡邏點名稱</label>
+  <div style="color:var(--text2);margin-top:3px">巡邏點數：<span style="color:var(--text)" id="mkNum">—</span></div>
+  <details class="filter-menu">
+    <summary><span class="ic ic-checkmark"></span> 打卡狀態</summary>
+    <div class="filter-options">
+      <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('ok',this.checked)"><i class="status-dot" style="color:#00ff9d;background:#00ff9d"></i> 已打</label>
+      <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('pending',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 待打卡</label>
+      <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('overdue',this.checked)"><i class="status-dot" style="color:#ff5470;background:#ff5470"></i> 逾期未打卡</label>
+    </div>
+  </details>
+</div>
+
+<div id="bottomRightRow">
+  <div id="hint">拖曳 平移 &nbsp;|&nbsp; 滾輪 局部縮放 &nbsp;|&nbsp; ↺<span class="ic ic-refresh"></span> 旋轉 &nbsp;|&nbsp; 樓層上下對位</div>
+  <div id="hud">
+    <div class="h-t" id="hudFloor"><span class="ic ic-3d"></span> B1 地下一層</div>
+    <div class="h-r">縮放：<span id="h-zoom">100%</span></div>
+    <div class="h-r">旋轉：<span id="h-rot">0°</span></div>
+    <div class="h-r">樓高：<span>B1↔1F 450 cm</span></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="patrolstatus.js"></script>
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+const PAGE_PARAMS=new URLSearchParams(location.search);
+const MODEL_VERSION=PAGE_PARAMS.get('modelv')||'';
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol3d.html');}})();
+function versionedModelUrl(url){
+  if(!MODEL_VERSION||!url) return url;
+  const join=url.includes('?')?'&':'?';
+  return `${url}${join}modelv=${encodeURIComponent(MODEL_VERSION)}`;
+}
+function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
+prog(15,'建立檢視器…');
+
+// B1/1F/2F/3F are rendered on the SAME world frame & pixel grid → perfectly aligned/stackable.
+const viewer = OpenSeadragon({
+  id:'osd', prefixUrl:'',
+  showNavigationControl:false,
+  showNavigator:true, navigatorId:'osdNav', navigatorPosition:'BOTTOM_LEFT', navigatorHeight:130, navigatorWidth:169,
+  navigatorAutoFade:false, navigatorBackground:'#041428', navigatorBorderColor:'#0a3a5a', navigatorDisplayRegionColor:'#00d4ff',
+  backgroundColor:'#04101f', degrees:0, minZoomLevel:0.2, maxZoomPixelRatio:4, zoomPerScroll:1.3,
+  animationTime:0.5, springStiffness:7,
+  // ── free panning (drag to move; no edge constraints so the plan can be moved freely) ──
+  panHorizontal:true, panVertical:true, constrainDuringPan:false, visibilityRatio:0, flickEnabled:true, flickMomentum:0.4,
+  gestureSettingsMouse:{ clickToZoom:false, dblClickToZoom:true, dragToPan:true }, gestureSettingsTouch:{ pinchRotate:true, dragToPan:true }
+});
+
+let rot=0, loaded=0, curFloor='B1';
+// all four floors share the same world frame & pixel grid (aligned)
+const FLOORS=[
+  {id:'B1', label:'B1 地下一層', dzi:'plans/b1.dzi', idx:null},
+  {id:'1F', label:'1F 一樓',     dzi:'plans/f1.dzi', idx:null},
+  {id:'2F', label:'2F 二樓',     dzi:'plans/f2.dzi', idx:null},
+  {id:'3F', label:'3F 三樓',     dzi:'plans/f3.dzi', idx:null},
+];
+
+// use updated models from Storage if available; else the static DZI tiles
+async function buildSources(){
+  try{
+    const {data}=await db.from('floor_models').select('*');
+    if(data&&data.length){
+      data.forEach(m=>{ const fl=FLOORS.find(f=>f.id===m.floor_id);
+        if(fl&&m.image_path){ const t=encodeURIComponent(m.updated_at||'');
+          fl.src={type:'image', url:versionedModelUrl(`${SUPA_URL}/storage/v1/object/public/floorplans/${m.image_path}?t=${t}`)}; } });
+    }
+  }catch(e){}
+  FLOORS.forEach(fl=>{
+    viewer.addTiledImage({ tileSource: fl.src||versionedModelUrl(fl.dzi), x:0, y:0, width:1, opacity:(fl.id==='B1'?1:0),
+      success:e=>{ fl.idx=viewer.world.getIndexOfItem(e.item); onLoad(); },
+      error:()=>{ onLoad(); } });
+  });
+}
+buildSources();
+
+function onLoad(){
+  loaded++; prog(20+loaded*20,'載入磚圖…');
+  if(loaded<FLOORS.length) return;
+  prog(100,'完成');
+  setTimeout(()=>{ const l=document.getElementById('loading'); l.style.transition='opacity .4s'; l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); },150);
+  showFloor('B1'); updHud(); loadPlanMarkers();
+  setInterval(refreshPatrolStatus,30000);
+}
+
+function item(i){ return i==null?null:viewer.world.getItemAt(i); }
+function showFloor(f){
+  curFloor=f;
+  FLOORS.forEach(fl=>{ const it=item(fl.idx); if(it) it.setOpacity(fl.id===f?1:0); });
+  const sel=document.getElementById('floorSel'); if(sel && sel.value!==f) sel.value=f;
+  const cur=FLOORS.find(fl=>fl.id===f);
+  document.getElementById('hudFloor').innerHTML='<span class="ic ic-3d"></span> '+cur.label;
+  document.getElementById('tbTitle').textContent=cur.label+' 平面圖';
+  drawPlanMarkers();
+}
+
+// ── 整合標記（唯讀，與整合標記系統 / 3D 同步）──────────────
+const MK_COL={equipment:'#00d4ff',space:'#00ff9d',patrol:'#c77dff',repair:'#ff5470',note:'#ffb300'};
+const KV={equipment:true,space:true,patrol:true,repair:true,note:true};
+const PLAN_PATROL_STATUS_VISIBLE={ok:true,pending:true,overdue:true};
+let planMarkers=[], showLab=false;
+function escB(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+let patrolStatusMap=new Map();
+async function loadPlanMarkers(){
+  try{
+    const {data,error}=await db.from('plan_markers').select('marker_id,floor_id,x,y,kind,label').eq('status','active').eq('kind','patrol');
+    if(!error) planMarkers=data||[];
+  }catch(e){}
+  drawPlanMarkers();
+  refreshPatrolStatus();
+}
+async function refreshPatrolStatus(){
+  try{ const r=await PatrolStatus.compute(db); patrolStatusMap=r.map; }
+  catch(e){ /* patrol_shifts 尚未建表時，靜默略過，圖釘維持原色 */ }
+  drawPlanMarkers();
+}
+function markerColor(m){
+  if(m.kind==='patrol') return PatrolStatus.COLORS[patrolStatusMap.get(m.marker_id)||'pending'];
+  return MK_COL[m.kind]||'#ffb300';
+}
+function drawPlanMarkers(){
+  if(!viewer.viewport) return;
+  viewer.clearOverlays();
+  const list=planMarkers.filter(m=>m.floor_id===curFloor && KV[m.kind]!==false && (m.kind!=='patrol'||PLAN_PATROL_STATUS_VISIBLE[patrolStatusMap.get(m.marker_id)||'pending']!==false));
+  list.forEach(m=>{
+    const el=document.createElement('div'); el.className='pin'+(showLab?' show-lab':'');
+    const col=markerColor(m);
+    el.innerHTML=`<div class="pdot" style="background:${col}"></div><div class="plab">${escB(m.label)}</div>`;
+    viewer.addOverlay({element:el, location:new OpenSeadragon.Point(m.x,m.y), placement:OpenSeadragon.Placement.CENTER, checkResize:false});
+  });
+  const n=document.getElementById('mkNum'); if(n) n.textContent=list.length+' 個';
+}
+function toggleMkKind(k,on){ KV[k]=on; drawPlanMarkers(); }
+function togglePlanPatrolStatus(state,on){PLAN_PATROL_STATUS_VISIBLE[state]=on;drawPlanMarkers();}
+function toggleMkLabels(on){ showLab=on; drawPlanMarkers(); }
+let mkPinned=false;
+function toggleMkPanel(open){
+  document.getElementById('mkpanel').style.display=open?'block':'none';
+  document.getElementById('mkToggle').style.display=open?'none':'inline-flex';
+  if(!open){ mkPinned=false; syncMkPin(); }
+}
+function toggleMkPin(){ mkPinned=!mkPinned; if(mkPinned) toggleMkPanel(true); syncMkPin(); }
+function syncMkPin(){ const b=document.getElementById('mkPinBtn'); if(b){ b.classList.toggle('on',mkPinned); b.textContent=mkPinned?'📌 已釘住':'📌 釘住'; } }
+// 左鍵點圖面空白處 → 收合標記選單（已釘住則保留）
+viewer.addHandler('canvas-click',ev=>{ if(ev.quick && !mkPinned) toggleMkPanel(false); });
+
+function updHud(){
+  if(!viewer.viewport) return;
+  const z=Math.round(viewer.viewport.getZoom(true)/viewer.viewport.getHomeZoom()*100);
+  document.getElementById('h-zoom').textContent=z+'%';
+  document.getElementById('h-rot').textContent=(((rot%360)+360)%360)+'°';
+}
+function setRot(d){ rot=d; viewer.viewport.setRotation(((rot%360)+360)%360); updHud(); }
+
+viewer.addHandler('zoom',updHud); viewer.addHandler('animation',updHud);
+document.getElementById('t-zin').onclick =()=>{viewer.viewport.zoomBy(1.4);viewer.viewport.applyConstraints();};
+document.getElementById('t-zout').onclick=()=>{viewer.viewport.zoomBy(0.71);viewer.viewport.applyConstraints();};
+document.getElementById('t-rl').onclick  =()=>setRot(rot-15);
+document.getElementById('t-rr').onclick  =()=>setRot(rot+15);
+document.getElementById('t-home').onclick=()=>{viewer.viewport.goHome();setRot(0);};
+document.getElementById('t-fs').onclick   =()=>viewer.setFullScreen(!viewer.isFullPage());
+window.addEventListener('keydown',e=>{
+  if(e.key==='+'||e.key==='='){viewer.viewport.zoomBy(1.4);viewer.viewport.applyConstraints();}
+  else if(e.key==='-'){viewer.viewport.zoomBy(0.71);viewer.viewport.applyConstraints();}
+  else if(e.key==='['){setRot(rot-15);} else if(e.key===']'){setRot(rot+15);}
+  else if(e.key==='0'){viewer.viewport.goHome();setRot(0);}
+  else if(e.key==='1'){showFloor('1F');} else if(e.key==='2'){showFloor('2F');}
+  else if(e.key==='3'){showFloor('3F');} else if(e.key==='b'||e.key==='B'){showFloor('B1');}
+});
+</script>
+</body>
+</html>

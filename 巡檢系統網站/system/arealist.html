@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>區域位置表 — 臺北農產巡檢系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
+  --cyan:#00d4ff;--cyan-glow:0 0 14px rgba(0,212,255,.5);--blue:#1a7fff;--green:#00ff9d;
+  --amber:#ffb300;--red:#ff3b3b;--text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;
+  --font-head:'Rajdhani',sans-serif}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-glow:none;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] .modal-bg{background:rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);
+  background-image:linear-gradient(rgba(0,212,255,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.015) 1px,transparent 1px);
+  background-size:40px 40px;color:var(--text);min-height:100vh;padding-bottom:40px}
+a{color:inherit;text-decoration:none}
+
+.navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);
+  padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;overflow-x:auto;overflow-y:hidden}
+.navbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,var(--cyan),var(--blue) 40%,transparent);opacity:.5}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;
+  color:var(--cyan);letter-spacing:.06em;text-shadow:var(--cyan-glow)}
+.nav-sub{font-size:.7rem;color:var(--text-dim)}
+.nav-space{flex:1 0 auto}.navbar a{flex:0 0 auto}
+.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);
+  padding:5px 10px;border-radius:2px;cursor:pointer;background:none;
+  transition:all .2s;font-family:var(--font-head);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.nav-back:hover{border-color:var(--cyan);color:var(--cyan)}
+
+.content{padding:14px 16px;max-width:1100px;margin:0 auto}
+
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.toolbar select,.toolbar input{background:var(--surface);border:1px solid var(--border);
+  color:var(--text);padding:7px 10px;border-radius:2px;font-size:.78rem;
+  font-family:'Noto Sans TC',sans-serif;outline:none;transition:border-color .2s}
+.toolbar select:focus,.toolbar input:focus{border-color:var(--cyan)}
+.t-space{flex:1}
+.btn{padding:7px 14px;border-radius:2px;cursor:pointer;font-size:.75rem;
+  font-family:var(--font-head);letter-spacing:.04em;text-transform:uppercase;transition:all .2s;
+  border:1px solid var(--border);background:none;color:var(--text-dim)}
+.btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-add{background:rgba(0,212,255,.1);border:1px solid var(--cyan);color:var(--cyan)}
+.btn-add:hover{background:rgba(0,212,255,.2)}
+.btn-green{border-color:rgba(0,255,157,.4);color:var(--green)}
+.btn-green:hover{border-color:var(--green);background:rgba(0,255,157,.1)}
+.btn-blue{border-color:var(--blue);color:#6fb4ff}
+.btn-blue:hover{border-color:var(--blue);color:#a9d4ff;background:rgba(26,127,255,.15)}
+
+.stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;
+  padding:10px 16px;min-width:120px}
+.stat-card .n{font-family:var(--font-head);font-size:1.5rem;font-weight:700;color:var(--cyan)}
+.stat-card .l{font-size:.68rem;color:var(--text-dim);letter-spacing:.05em;margin-top:2px}
+
+.floor-block{background:var(--panel);border:1px solid var(--border);border-radius:3px;
+  margin-bottom:12px;overflow:hidden}
+.floor-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;
+  background:linear-gradient(90deg,rgba(0,212,255,.06),transparent);border-bottom:1px solid var(--border)}
+.floor-head .caret{color:var(--cyan);font-size:.8rem;width:14px;transition:transform .2s}
+.floor-head.collapsed .caret{transform:rotate(-90deg)}
+.floor-head .fname{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--text-hi);letter-spacing:.05em}
+.floor-head .fcount{font-size:.7rem;color:var(--text-dim);background:var(--surface);
+  border:1px solid var(--border);border-radius:10px;padding:1px 9px}
+.floor-body{padding:8px 10px}
+.floor-head.collapsed + .floor-body{display:none}
+
+.space-row{display:flex;align-items:center;gap:10px;padding:8px 8px;border-radius:2px;
+  border:1px solid transparent;transition:all .15s}
+.space-row:hover{background:var(--surface);border-color:var(--border)}
+.space-row .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:var(--cyan-glow);flex:none}
+.space-row .sname{flex:1;font-size:.85rem;color:var(--text)}
+.space-head{display:flex;align-items:center;gap:10px;padding:6px 8px;color:var(--text-dim);font-size:.68rem;border-bottom:1px solid rgba(12,40,64,.55);margin-bottom:4px}
+.space-head .h-name{flex:1;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.space-head .h-use,.space-row .use-col{width:132px;flex:none;text-align:center}
+.space-head .h-use{display:flex;flex-direction:column;align-items:center;gap:4px}
+.space-head .h-act{width:190px;flex:none}
+.name-filter{width:220px;max-width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
+.name-filter:focus{border-color:var(--cyan)}
+.use-filter{width:126px;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
+.use-filter:focus{border-color:var(--cyan)}
+.use-pill{display:inline-flex;align-items:center;justify-content:center;min-width:58px;border:1px solid var(--border);border-radius:10px;padding:2px 8px;font-size:.66rem;color:var(--text-dim);background:rgba(58,106,138,.1)}
+.use-pill.used{border-color:rgba(0,255,157,.55);color:var(--green);background:rgba(0,255,157,.12)}
+.space-row .acts{display:flex;gap:6px;opacity:0;transition:opacity .15s}
+.space-row:hover .acts{opacity:1}
+.mini{font-size:.68rem;padding:3px 9px;border:1px solid var(--border);border-radius:2px;
+  cursor:pointer;background:none;color:var(--text-dim);transition:all .2s}
+.mini:hover{border-color:var(--cyan);color:var(--cyan)}
+.mini.del:hover{border-color:var(--red);color:var(--red)}
+.pager{display:flex;align-items:center;justify-content:flex-end;gap:8px;
+  padding:10px 8px 4px;border-top:1px solid rgba(12,40,64,.55);
+  color:var(--text-dim);font-size:.7rem}
+.pager .page-info{margin-right:auto}
+.page-btn{font-size:.68rem;padding:4px 10px;border:1px solid var(--border);border-radius:2px;
+  cursor:pointer;background:var(--surface);color:var(--text);transition:all .2s}
+.page-btn:hover:not(:disabled){border-color:var(--cyan);color:var(--cyan)}
+.page-btn:disabled{opacity:.35;cursor:not-allowed}
+
+.empty{text-align:center;padding:60px 20px;color:var(--text-dim);font-size:.85rem}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(1,6,14,.82);z-index:200;
+  align-items:flex-start;justify-content:center;overflow:auto;padding:60px 16px}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border-hi);border-radius:4px;
+  width:100%;max-width:440px;box-shadow:0 0 40px rgba(0,212,255,.15)}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.modal-head .mt{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--cyan);letter-spacing:.05em}
+.modal-head .x{margin-left:auto;cursor:pointer;color:var(--text-dim);font-size:1.1rem}
+.modal-head .x:hover{color:var(--red)}
+.modal-body{padding:18px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:.72rem;color:var(--text-dim);margin-bottom:5px;letter-spacing:.04em}
+.field input,.field select{width:100%;background:var(--surface);border:1px solid var(--border);
+  color:var(--text);padding:9px 11px;border-radius:2px;font-size:.85rem;outline:none;
+  font-family:'Noto Sans TC',sans-serif}
+.field input:focus,.field select:focus{border-color:var(--cyan)}
+.btn-primary{width:100%;background:rgba(0,212,255,.12);border:1px solid var(--cyan);color:var(--cyan);
+  padding:11px;border-radius:2px;cursor:pointer;font-size:.85rem;font-family:var(--font-head);
+  letter-spacing:.06em;text-transform:uppercase;transition:all .2s}
+.btn-primary:hover{background:rgba(0,212,255,.22)}
+.msg{font-size:.75rem;margin-top:8px;min-height:16px}
+.msg.err{color:var(--red)}.msg.ok{color:var(--green)}
+
+.hint{font-size:.72rem;color:var(--text-dim);margin-bottom:12px;line-height:1.6;
+  background:var(--surface);border:1px solid var(--border);border-left:2px solid var(--cyan);
+  border-radius:2px;padding:9px 12px}
+
+.qr-modal{width:100%;max-width:280px;text-align:center}
+.qr-modal-body{padding:22px}
+.qr-modal #qrCanvas{margin:10px auto;display:flex;justify-content:center;background:#fff;padding:8px;border-radius:4px;width:fit-content}
+.qr-modal .qname{font-family:var(--font-head);font-size:1rem;color:var(--text-hi);margin-bottom:2px}
+.qr-modal .qfloor{font-size:.72rem;color:var(--text-dim);margin-bottom:6px}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--panel);border:1px solid var(--cyan);color:var(--text-hi);padding:11px 20px;
+  border-radius:3px;font-size:.8rem;z-index:300;transition:transform .3s;box-shadow:0 0 24px rgba(0,212,255,.25)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{border-color:var(--red)}
+
+@media(max-width:640px){.content{padding:12px}.toolbar{gap:6px}
+  .pager{justify-content:flex-start;flex-wrap:wrap}
+  .pager .page-info{width:100%;margin-right:0}
+}
+
+</style>
+<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
+</head>
+<body>
+<nav class="navbar">
+  <div>
+    <div class="nav-title"><span class="ic ic-handover"></span> 區域位置表</div>
+    <div class="nav-sub">各樓層平面空間名稱 · 臺北農產 第一果菜市場</div>
+  </div>
+  <div class="nav-space"></div>
+  <a href="modeler.html"><button class="nav-back">3D建模系統</button></a>
+  <a href="arealist.html"><button class="nav-back">區域位置表</button></a>
+  <a href="b1_integrated_marker_system.html"><button class="nav-back">整合標記系統</button></a>
+  <a href="admin.html#modelhub"><button class="nav-back">後台</button></a>
+</nav>
+
+<div class="content">
+
+  <div class="hint">
+    每一列為單一「平面空間名稱」，以「樓層」區隔管理。可整筆匯入 / 匯出（XLSX）。
+    匯入檔案欄位：<b>樓層</b>、<b>空間名稱</b>（首列為標題）。
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="n" id="s-floors">0</div><div class="l">樓層數</div></div>
+    <div class="stat-card"><div class="n" id="s-spaces">0</div><div class="l">空間總數</div></div>
+  </div>
+
+  <div class="toolbar">
+    <select id="flt-floor" onchange="resetPaging();render()"><option value="">全部樓層</option></select>
+    <select id="flt-use" onchange="syncUseFilter(this.value)">
+      <option value="">全部使用狀態</option>
+      <option value="used">已使用</option>
+      <option value="unused">未使用</option>
+    </select>
+    <input id="flt-search" placeholder="搜尋空間名稱…" oninput="syncNameFilter(this.value)" style="width:180px">
+    <div class="t-space"></div>
+    <button class="btn btn-add" onclick="openAdd()">＋ 新增空間</button>
+    <button class="btn btn-blue" onclick="document.getElementById('importFile').click()">⭳ 匯入XLSX</button>
+    <button class="btn btn-green" onclick="exportData('xlsx')">⭱ 匯出XLSX</button>
+    <button class="btn" onclick="downloadTemplate()"><span class="ic ic-template"></span> 範本</button>
+    <button class="btn" style="border-color:var(--red);color:var(--red)" onclick="clearAll()"><span class="ic ic-notification"></span> 全部停用</button>
+    <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="onImportFile(event)">
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<!-- Add/Edit modal -->
+<div class="modal-bg" id="m-edit">
+  <div class="modal">
+    <div class="modal-head"><span class="mt" id="editTitle">新增空間</span><span class="x" onclick="closeModal('m-edit')">✕</span></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>樓層</label>
+        <input id="f-floor" list="floorList" placeholder="例：B1 / 1F / 2F / 3F">
+        <datalist id="floorList">
+          <option>B2</option><option>B1</option><option>1F</option><option>2F</option>
+          <option>3F</option><option>4F</option><option>5F</option><option>RF</option>
+        </datalist>
+      </div>
+      <div class="field">
+        <label>空間名稱</label>
+        <input id="f-name" placeholder="例：配電室 / 蔬菜零批場 A區">
+      </div>
+      <div class="msg" id="editMsg"></div>
+      <button class="btn-primary" onclick="saveSpace()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR modal -->
+<div class="modal-bg" id="m-qr">
+  <div class="modal qr-modal">
+    <div class="modal-head"><span class="mt">空間 QR code</span><span class="x" onclick="closeModal('m-qr')">✕</span></div>
+    <div class="qr-modal-body">
+      <div class="qname" id="qrName"></div>
+      <div class="qfloor" id="qrFloor"></div>
+      <div id="qrCanvas"></div>
+      <button class="btn-primary" onclick="window.print()">🖶 列印</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
+const MARKET='market1';
+
+let rows=[];                 // floor_spaces records
+let usedSpaces=new Map();    // space_id -> marked floor ids
+let spaceMarker=new Map();   // space_id -> marker_id（用於「定位」跳轉）
+let lastCheckin=new Map();   // space_id -> checkin_at（最近一次）
+const CHECKIN_BASE=location.origin+location.pathname.replace(/arealist\.html$/,'patrolcheckin.html');
+let editId=null;
+const collapsed=new Set();
+let collapsedReady=false;
+const PAGE_SIZE=10;
+const floorPages=new Map();
+
+// ── 樓層排序 ───────────────────────────────────────────────
+function floorOrder(f){
+  const s=String(f||'').trim().toUpperCase();
+  const b=s.match(/^B(\d+)$/);   if(b) return 100-parseInt(b[1],10); // B2=98,B1=99
+  if(s==='RF'||s==='R')          return 900;
+  const n=s.match(/^(\d+)F?$/);  if(n) return 100+parseInt(n[1],10);  // 1F=101,2F=102
+  return 500;
+}
+function normFloor(f){ return String(f||'').trim().toUpperCase().replace(/\s+/g,''); }
+function fmtTime(t){
+  const d=new Date(t);
+  const p=n=>String(n).padStart(2,'0');
+  return `${d.getMonth()+1}/${d.getDate()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// ── Toast ──────────────────────────────────────────────────
+function toast(m,err){const t=document.getElementById('toast');t.textContent=m;
+  t.className='toast show'+(err?' err':'');setTimeout(()=>t.className='toast',2200);}
+
+// ── Load ───────────────────────────────────────────────────
+async function load(){
+  const [spaceRes,markRes,ckRes]=await Promise.all([
+    db.from('floor_spaces').select('*').eq('market_id',MARKET).eq('status','active').order('floor_order').order('sort_order').order('space_name'),
+    db.from('plan_markers').select('marker_id,space_id,floor_id,status').not('space_id','is',null).eq('status','active'),
+    db.from('checkin_logs').select('target_id,checkin_at').eq('target_type','space').order('checkin_at',{ascending:false}).limit(1000)
+  ]);
+  const {data,error}=spaceRes;
+  if(error){toast('讀取失敗：'+translateError(error.message),true);
+    document.getElementById('list').innerHTML='<div class="empty">無法讀取資料。請先於 Supabase 執行 sql/floor_spaces.sql 建表。</div>';
+    return;}
+  rows=data||[];
+  usedSpaces=new Map();
+  spaceMarker=new Map();
+  if(!markRes.error){
+    (markRes.data||[]).filter(m=>!m.status||m.status==='active').forEach(m=>{
+      if(!m.space_id)return;
+      if(!usedSpaces.has(m.space_id))usedSpaces.set(m.space_id,new Set());
+      if(m.floor_id)usedSpaces.get(m.space_id).add(m.floor_id);
+      if(!spaceMarker.has(m.space_id))spaceMarker.set(m.space_id,m.marker_id);
+    });
+  }
+  lastCheckin=new Map();
+  (ckRes?.data||[]).forEach(r=>{ if(!lastCheckin.has(r.target_id)) lastCheckin.set(r.target_id,r.checkin_at); });
+  buildFloorFilter();
+  const floors=floorsSorted();
+  [...collapsed].forEach(f=>{if(!floors.includes(f))collapsed.delete(f);});
+  if(!collapsedReady){
+    floors.forEach(f=>collapsed.add(f));
+    collapsedReady=true;
+  }
+  render();
+}
+
+function floorsSorted(){
+  const set=[...new Set(rows.map(r=>r.floor))];
+  return set.sort((a,b)=>floorOrder(a)-floorOrder(b));
+}
+
+function buildFloorFilter(){
+  const sel=document.getElementById('flt-floor');const cur=sel.value;
+  sel.innerHTML='<option value="">全部樓層</option>'+
+    floorsSorted().map(f=>`<option value="${esc(f)}">${esc(f)}</option>`).join('');
+  sel.value=cur;
+}
+
+// ── Render ─────────────────────────────────────────────────
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function isSpaceUsed(id){return usedSpaces.has(id);}
+function spaceUseText(id){return isSpaceUsed(id)?'使用':'未使用';}
+function useFilterOptions(value){
+  return `<option value="" ${value===''?'selected':''}>全部使用狀態</option>
+    <option value="used" ${value==='used'?'selected':''}>已使用</option>
+    <option value="unused" ${value==='unused'?'selected':''}>未使用</option>`;
+}
+function resetPaging(){floorPages.clear();}
+function syncUseFilter(value){
+  const v=value||'';
+  const top=document.getElementById('flt-use');
+  if(top)top.value=v;
+  document.querySelectorAll('.use-filter').forEach(el=>{el.value=v;});
+  resetPaging();
+  render();
+}
+function syncNameFilter(value){
+  const v=value||'';
+  const fromHeader=document.activeElement?.classList?.contains('name-filter');
+  const top=document.getElementById('flt-search');
+  if(top)top.value=v;
+  document.querySelectorAll('.name-filter').forEach(el=>{el.value=v;});
+  resetPaging();
+  render();
+  if(fromHeader&&top){
+    setTimeout(()=>{top.focus();top.setSelectionRange(v.length,v.length);},0);
+  }
+}
+
+function setFloorPage(f,page){
+  floorPages.set(String(f),Math.max(1,Number(page)||1));
+  render();
+}
+
+function render(){
+  const fFloor=document.getElementById('flt-floor').value;
+  const fUse=document.getElementById('flt-use').value;
+  const q=document.getElementById('flt-search').value.trim().toLowerCase();
+  const filterActive=Boolean(fFloor||fUse||q);
+  let list=rows.slice();
+  if(fFloor) list=list.filter(r=>r.floor===fFloor);
+  if(fUse==='used') list=list.filter(r=>isSpaceUsed(r.space_id));
+  if(fUse==='unused') list=list.filter(r=>!isSpaceUsed(r.space_id));
+  if(q)      list=list.filter(r=>(r.space_name||'').toLowerCase().includes(q));
+
+  document.getElementById('s-floors').textContent=new Set(rows.map(r=>r.floor)).size;
+  document.getElementById('s-spaces').textContent=rows.length;
+
+  const box=document.getElementById('list');
+  if(!list.length){box.innerHTML='<div class="empty">尚無資料，請「新增空間」或「匯入」。</div>';return;}
+
+  const byFloor={};
+  list.forEach(r=>{(byFloor[r.floor]=byFloor[r.floor]||[]).push(r);});
+  const floors=Object.keys(byFloor).sort((a,b)=>floorOrder(a)-floorOrder(b));
+
+  box.innerHTML=floors.map(f=>{
+    const items=byFloor[f].sort((a,b)=>(a.sort_order-b.sort_order)||a.space_name.localeCompare(b.space_name,'zh-Hant'));
+    const totalPages=Math.max(1,Math.ceil(items.length/PAGE_SIZE));
+    const page=Math.min(Math.max(Number(floorPages.get(String(f)))||1,1),totalPages);
+    floorPages.set(String(f),page);
+    const start=(page-1)*PAGE_SIZE;
+    const pageItems=items.slice(start,start+PAGE_SIZE);
+    const from=items.length?start+1:0;
+    const to=Math.min(start+PAGE_SIZE,items.length);
+    const isC=!filterActive&&collapsed.has(f);
+    return `<div class="floor-block">
+      <div class="floor-head${isC?' collapsed':''}" onclick="toggleFloor('${esc(f)}')">
+        <span class="caret">▼</span>
+        <span class="fname">${esc(f)}</span>
+        <span class="fcount">${items.length} 個空間</span>
+      </div>
+      <div class="floor-body">
+        <div class="space-head">
+          <span class="h-name"><span>空間名稱</span><input class="name-filter" value="${esc(document.getElementById('flt-search').value)}" placeholder="篩選空間名稱…" oninput="syncNameFilter(this.value)"></span>
+          <span class="h-use"><span>空間是否使用</span><select class="use-filter" onchange="syncUseFilter(this.value)">${useFilterOptions(fUse)}</select></span>
+          <span class="h-act"></span>
+        </div>
+        ${pageItems.map(r=>{const lc=lastCheckin.get(r.space_id);return `<div class="space-row">
+          <span class="dot"></span>
+          <span class="sname">${esc(r.space_name)}${lc?` <small style="color:var(--text-dim);font-size:.68rem">· 上次簽到 ${esc(fmtTime(lc))}</small>`:''}</span>
+          <span class="use-col"><span class="use-pill ${isSpaceUsed(r.space_id)?'used':''}">${spaceUseText(r.space_id)}</span></span>
+          <span class="acts">
+            <button class="mini" onclick="openQr('${r.space_id}')">QR</button>
+            <button class="mini" onclick="locateSpace('${r.space_id}')">定位</button>
+            <button class="mini" onclick="openEdit('${r.space_id}')">編輯</button>
+            <button class="mini del" onclick="delSpace('${r.space_id}')">停用</button>
+          </span>
+        </div>`;}).join('')}
+        <div class="pager">
+          <span class="page-info">每頁 10 筆，目前 ${from}-${to} 筆，共 ${items.length} 筆，第 ${page}/${totalPages} 頁</span>
+          <button class="page-btn" onclick="setFloorPage('${esc(f)}',${page-1})" ${page<=1?'disabled':''}>上一頁</button>
+          <button class="page-btn" onclick="setFloorPage('${esc(f)}',${page+1})" ${page>=totalPages?'disabled':''}>下一頁</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleFloor(f){collapsed.has(f)?collapsed.delete(f):collapsed.add(f);render();}
+
+// ── Add / Edit ─────────────────────────────────────────────
+function openAdd(){editId=null;document.getElementById('editTitle').textContent='新增空間';
+  document.getElementById('f-floor').value=document.getElementById('flt-floor').value||'';
+  document.getElementById('f-name').value='';document.getElementById('editMsg').textContent='';
+  document.getElementById('m-edit').classList.add('show');}
+
+function openEdit(id){const r=rows.find(x=>x.space_id===id);if(!r)return;editId=id;
+  document.getElementById('editTitle').textContent='編輯空間';
+  document.getElementById('f-floor').value=r.floor;
+  document.getElementById('f-name').value=r.space_name;
+  document.getElementById('editMsg').textContent='';
+  document.getElementById('m-edit').classList.add('show');}
+
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+
+// ── QR / 定位 ──────────────────────────────────────────────
+function openQr(spaceId){
+  const r=rows.find(x=>x.space_id===spaceId);if(!r)return;
+  document.getElementById('qrName').textContent=r.space_name;
+  document.getElementById('qrFloor').textContent=r.floor;
+  const url=CHECKIN_BASE+'?space='+encodeURIComponent(spaceId);
+  const box=document.getElementById('qrCanvas');
+  box.innerHTML='';
+  new QRCode(box,{text:url,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
+  document.getElementById('m-qr').classList.add('show');
+}
+function locateSpace(spaceId){
+  const markerId=spaceMarker.get(spaceId);
+  if(!markerId){alert('此空間尚未於平面圖標記，請先至「整合標記系統」新增標記後再定位。');return;}
+  location.href='b1_integrated_marker_system.html?marker='+encodeURIComponent(markerId);
+}
+
+async function saveSpace(){
+  const floor=normFloor(document.getElementById('f-floor').value);
+  const name=document.getElementById('f-name').value.trim();
+  const msg=document.getElementById('editMsg');
+  if(!floor){msg.textContent='請輸入樓層';msg.className='msg err';return;}
+  if(!name){msg.textContent='請輸入空間名稱';msg.className='msg err';return;}
+  const payload={market_id:MARKET,floor,floor_order:floorOrder(floor),space_name:name};
+  let error;
+  if(editId){({error}=await db.from('floor_spaces').update(payload).eq('space_id',editId));}
+  else{({error}=await db.from('floor_spaces').insert(payload));}
+  if(error){msg.textContent=(error.code==='23505'?'該樓層已有相同空間名稱':'儲存失敗：'+translateError(error.message));msg.className='msg err';return;}
+  closeModal('m-edit');toast(editId?'已更新':'已新增');await load();
+}
+
+// 查詢某空間是否已於整合標記系統被標記 → 回傳被標記的樓層陣列（防呆用）
+async function markedFloorsOf(spaceId){
+  const {data,error}=await db.from('plan_markers').select('floor_id').eq('space_id',spaceId).eq('status','active');
+  if(error) return [];                       // 標記表不存在或查詢失敗 → 視為未被標記
+  return [...new Set((data||[]).map(x=>x.floor_id))];
+}
+
+async function delSpace(id){
+  const r=rows.find(x=>x.space_id===id);if(!r)return;
+  // 防呆：已被整合標記系統標記者不可停用
+  const mf=await markedFloorsOf(id);
+  if(mf.length){
+    alert(`無法停用「${r.floor} · ${r.space_name}」\n\n此空間已於「整合標記系統」使用中（樓層：${mf.join('、')}）。\n請先停用該標記後再操作。`);
+    return;
+  }
+  if(!confirm(`確定停用「${r.floor} · ${r.space_name}」？歷史資料會永久保留。`))return;
+  const {error}=await db.from('floor_spaces').update({status:'inactive'}).eq('space_id',id);
+  if(error){toast('停用失敗：'+translateError(error.message),true);return;}
+  toast('已停用，歷史資料仍保留');await load();
+}
+
+// ── Deactivate all（歷史資料永久保留）─────────────────────
+async function clearAll(){
+  if(!rows.length){toast('目前沒有資料');return;}
+  // 找出被整合標記系統引用的空間及其樓層
+  const {data:mk}=await db.from('plan_markers').select('space_id,floor_id').not('space_id','is',null).eq('status','active');
+  const refFloors={};
+  (mk||[]).forEach(x=>{(refFloors[x.space_id]=refFloors[x.space_id]||new Set()).add(x.floor_id);});
+  const refIds=Object.keys(refFloors);
+  const delRows=rows.filter(r=>!refIds.includes(r.space_id));
+  const keepRows=rows.filter(r=>refIds.includes(r.space_id));
+  if(!delRows.length){
+    alert('所有空間都已於「整合標記系統」使用中，無法停用。\n請先停用相關標記後再操作。');
+    return;
+  }
+  let msg=`將停用 ${delRows.length} 筆空間，歷史資料仍會永久保留。`;
+  if(keepRows.length){
+    const sample=keepRows.slice(0,8).map(r=>`・${r.floor} · ${r.space_name}（${[...refFloors[r.space_id]].join('、')}）`).join('\n');
+    msg+=`\n\n以下 ${keepRows.length} 筆因已被整合標記系統標記，將被保留：\n${sample}${keepRows.length>8?'\n…等':''}`;
+  }
+  if(!confirm(msg.replace('清除','停用')+'\n\n確定停用？所有歷史資料仍會保留。'))return;
+  const {error}=await db.from('floor_spaces').update({status:'inactive'}).in('space_id',delRows.map(r=>r.space_id));
+  if(error){toast('停用失敗：'+translateError(error.message),true);return;}
+  toast(`已停用 ${delRows.length} 筆`+(keepRows.length?`，保留啟用 ${keepRows.length} 筆（已被標記）`:''));
+  await load();
+}
+
+// ── Export ─────────────────────────────────────────────────
+function exportRows(){
+  return floorsSorted().flatMap(f=>rows.filter(r=>r.floor===f)
+    .sort((a,b)=>(a.sort_order-b.sort_order)||a.space_name.localeCompare(b.space_name,'zh-Hant'))
+    .map(r=>[r.floor,r.space_name,spaceUseText(r.space_id)]));
+}
+function exportData(fmt){
+  const aoa=[['樓層','空間名稱','空間是否使用'],...exportRows()];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'區域位置表');
+  const stamp=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,`區域位置表_${stamp}.${fmt}`,{bookType:fmt});
+  toast('已匯出 '+fmt.toUpperCase());
+}
+function downloadTemplate(){
+  const aoa=[['樓層','空間名稱'],['B1','配電室'],['1F','蔬菜零批場 A區'],['2F','辦公室']];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'區域位置表');
+  XLSX.writeFile(wb,'區域位置表_匯入範本.xlsx');
+}
+
+// ── Import ─────────────────────────────────────────────────
+function onImportFile(ev){
+  const file=ev.target.files[0];ev.target.value='';if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const aoa=XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false});
+      await importAoa(aoa);
+    }catch(err){toast('匯入失敗：'+translateError(err.message),true);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function importAoa(aoa){
+  if(!aoa||!aoa.length){toast('檔案無資料',true);return;}
+  // 判斷是否有標題列（首列含「樓層」/「空間」字樣）
+  const head=aoa[0].map(c=>String(c||'').trim().replace(/^\ufeff/,''));
+  let floorCol=head.findIndex(h=>/樓層|floor/i.test(h));
+  let nameCol =head.findIndex(h=>/空間|名稱|space|name/i.test(h));
+  let start=1;
+  if(floorCol<0||nameCol<0){floorCol=0;nameCol=1;start=0;} // 無標題：預設第1欄樓層、第2欄空間名稱
+  const seen=new Set(), parsed=[], fileDup=[];
+  let invalidCount=0;
+  for(let i=start;i<aoa.length;i++){
+    const row=aoa[i]||[];
+    const floor=normFloor(row[floorCol]);
+    const name=normSpaceName(row[nameCol]);
+    if(!floor||!name){invalidCount++;continue;}
+    const key=importKey(floor,name);
+    const item={line:i+1,floor,name,key,market_id:MARKET,floor_order:floorOrder(floor),space_name:name};
+    if(seen.has(key)){fileDup.push(item);continue;}
+    seen.add(key);
+    parsed.push(item);
+  }
+  if(!parsed.length){toast('未讀取到有效資料列',true);return;}
+  const {data:latest,error:latestErr}=await db.from('floor_spaces')
+    .select('floor,space_name')
+    .eq('market_id',MARKET);
+  if(latestErr){toast('匯入前檢查失敗：'+translateError(latestErr.message),true);return;}
+
+  const existing=new Set((latest||[]).map(r=>importKey(r.floor,r.space_name)));
+  const existed=[], payload=[];
+  parsed.forEach(item=>{
+    if(existing.has(item.key)) existed.push(item);
+    else payload.push({
+      market_id:item.market_id,
+      floor:item.floor,
+      floor_order:item.floor_order,
+      space_name:item.space_name
+    });
+  });
+
+  const summary=[
+    '匯入前檢查結果',
+    '',
+    `檔案有效資料：${parsed.length+fileDup.length} 筆`,
+    `檢查後不重複資料：${parsed.length} 筆`,
+    `資料庫已存在（同樓層＋同空間名稱，不匯入）：${existed.length} 筆`,
+    `檔案內重複（不匯入）：${fileDup.length} 筆`,
+    `欄位空白或無效（不匯入）：${invalidCount} 筆`,
+    `本次可新增：${payload.length} 筆`
+  ];
+  if(existed.length) summary.push('', '已存在範例：', importSample(existed));
+  if(fileDup.length) summary.push('', '檔案內重複範例：', importSample(fileDup));
+  if(!payload.length){
+    alert(summary.concat('', '沒有可新增資料，已停止匯入。').join('\n'));
+    toast('沒有可新增資料，已停止匯入',true);
+    return;
+  }
+  summary.push('', `確認沒有問題後，才會匯入 ${payload.length} 筆新資料。`, '是否繼續？');
+  if(!confirm(summary.join('\n'))){toast('已取消匯入');return;}
+
+  // 批量寫入（已預先排除重複，用 insert 即可）
+  const chunkSize=50;let inserted=0;let lastErr=null;
+  for(let i=0;i<payload.length;i+=chunkSize){
+    const chunk=payload.slice(i,i+chunkSize);
+    const {error}=await db.from('floor_spaces').insert(chunk);
+    if(error){lastErr=error;break;}
+    inserted+=chunk.length;
+  }
+  if(lastErr){toast(`匯入失敗（已匯入 ${inserted} 筆後中斷）：${translateError(lastErr.message)}`,true);return;}
+  toast(`已匯入 ${payload.length} 筆，略過重複 ${existed.length+fileDup.length} 筆`);await load();
+}
+
+function normSpaceName(v){return String(v==null?'':v).trim().replace(/\s+/g,' ');}
+function importKey(floor,name){return normFloor(floor)+'||'+normSpaceName(name).toLocaleLowerCase('zh-TW');}
+function importSample(list){
+  const sample=list.slice(0,8).map(x=>`第 ${x.line} 列：${x.floor} / ${x.name}`).join('\n');
+  return sample+(list.length>8?`\n…等 ${list.length} 筆`:'');
+}
+
+// close modal on backdrop
+document.getElementById('m-edit').addEventListener('click',e=>{if(e.target.id==='m-edit')closeModal('m-edit');});
+document.getElementById('m-qr').addEventListener('click',e=>{if(e.target.id==='m-qr')closeModal('m-qr');});
+
+load();
+</script>
+</body>
+</html>

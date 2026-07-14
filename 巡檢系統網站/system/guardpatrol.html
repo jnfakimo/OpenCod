@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>駐衛警巡檢系統 — 臺北農產巡檢系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+<script src="patrolstatus.js"></script>
+<style>
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
+  --cyan:#00d4ff;--patrol:#c77dff;--green:#00ff9d;--red:#ff5470;
+  --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;
+  --font-head:'Rajdhani',sans-serif}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;
+  --cyan:#0284c7;--patrol:#9333ea;--green:#059669;--red:#dc2626;
+  --text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
+a{color:inherit;text-decoration:none}
+
+.navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);
+  padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;overflow-x:auto;overflow-y:hidden}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--patrol);letter-spacing:.06em}
+.nav-sub{font-size:.7rem;color:var(--text-dim)}
+.nav-space{flex:1 0 auto}.navbar a{flex:0 0 auto}
+.nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;
+  transition:all .2s;font-family:var(--font-head);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+.nav-back:hover{border-color:var(--patrol);color:var(--patrol)}
+
+.content{padding:14px 16px;max-width:1100px;margin:0 auto}
+.hint{font-size:.72rem;color:var(--text-dim);margin-bottom:14px;line-height:1.6;background:var(--surface);
+  border:1px solid var(--border);border-left:2px solid var(--patrol);border-radius:2px;padding:9px 12px}
+
+.datebar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.datebar input[type=date]{background:var(--surface);border:1px solid var(--border);color:var(--text);
+  padding:7px 10px;border-radius:2px;font-size:.85rem;outline:none}
+.datebar input[type=date]:focus{border-color:var(--patrol)}
+.mini{font-size:.68rem;padding:5px 11px;border:1px solid var(--border);border-radius:2px;cursor:pointer;background:none;color:var(--text-dim);transition:all .2s}
+.mini:hover{border-color:var(--patrol);color:var(--patrol)}
+.mini.primary{border-color:var(--patrol);color:var(--patrol)}
+.mini:disabled{opacity:.5;cursor:not-allowed}
+.toolbar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:3px}
+.tool-field{display:flex;flex-direction:column;gap:4px;min-width:130px}
+.tool-field label{font-size:.64rem;color:var(--text-dim);letter-spacing:.05em}
+.tool-field select,.tool-field input{height:32px;background:var(--panel);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:2px;font-size:.75rem;outline:none}
+.tool-field select:focus,.tool-field input:focus{border-color:var(--patrol)}
+.toolbar-sep{width:1px;height:38px;background:var(--border);margin:0 2px}
+.export-status{font-size:.68rem;color:var(--text-dim);min-height:1em}
+
+.stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:2px;padding:10px 16px;min-width:110px}
+.stat-card .n{font-family:var(--font-head);font-size:1.5rem;font-weight:700}
+.stat-card.ok .n{color:var(--green)}
+.stat-card.pending .n{color:var(--patrol)}
+.stat-card.overdue .n{color:var(--red)}
+.stat-card .l{font-size:.68rem;color:var(--text-dim);letter-spacing:.05em;margin-top:2px}
+
+.legend{display:flex;gap:16px;font-size:.72rem;color:var(--text-dim);margin-bottom:12px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+.grid-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--border);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:.8rem}
+th{text-align:left;color:var(--text-dim);font-size:.68rem;letter-spacing:.05em;padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+th.floorcol{width:72px}
+th.pointcol{position:sticky;left:0;z-index:2;background:var(--panel)}
+td{padding:6px 8px;border-bottom:1px solid rgba(12,40,64,.4);text-align:center}
+td.pointcol{text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--panel);font-size:.78rem}
+td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
+.floor-row{cursor:pointer;background:rgba(199,125,255,.07)}
+.floor-row td{text-align:left;color:var(--patrol);font-weight:700;padding:8px 10px;letter-spacing:.04em}
+.floor-row:hover{background:rgba(199,125,255,.13)}
+.floor-arrow{display:inline-block;width:18px;color:var(--text-dim)}
+.floor-count{font-size:.66rem;color:var(--text-dim);font-weight:400;margin-left:8px}
+.floor-cell{color:var(--text-dim);font-size:.7rem;text-align:left}
+.cell{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.7rem;color:#022;font-weight:700;transition:transform .1s}
+.cell:hover{transform:scale(1.15)}
+.cell.ok{background:var(--green)}
+.cell.pending{background:var(--patrol);color:#fff}
+.cell.overdue{background:var(--red);color:#fff}
+.empty{text-align:center;padding:40px 20px;color:var(--text-dim);font-size:.85rem}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(1,6,14,.82);z-index:200;align-items:center;justify-content:center;padding:16px}
+.modal-bg.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border-hi);border-radius:4px;width:100%;max-width:340px}
+.modal-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.modal-head .mt{font-family:var(--font-head);font-size:.95rem;font-weight:700;color:var(--patrol)}
+.modal-head .x{margin-left:auto;cursor:pointer;color:var(--text-dim);font-size:1.1rem}
+.modal-body{padding:16px 18px;font-size:.82rem;line-height:1.8}
+.hist-row{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid rgba(12,40,64,.5);font-size:.78rem}
+.hist-row:first-child{border-top:none}
+@media(max-width:768px){
+  .content{padding-top:10px!important}
+  .hint,.legend{display:none}
+  .datebar{margin-bottom:10px;gap:6px}
+  .datebar input[type=date]{flex:1;min-width:0;height:42px}
+  .datebar .mini{min-width:42px;height:42px;padding:6px 9px}
+  .toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:end;gap:8px;padding:9px;margin-bottom:10px}
+  .toolbar .tool-field{min-width:0;width:100%}
+  .toolbar .tool-field select{width:100%;height:42px}
+  .filter-floor{order:1}.filter-status{order:2}.filter-shift{order:3;grid-column:1/-1}
+  .stats-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-bottom:10px}
+  .stat-card{min-width:0;padding:8px 6px;text-align:center}
+  .stat-card .n{font-size:1.25rem}.stat-card .l{font-size:.62rem;letter-spacing:0}
+  .grid-wrap{border-radius:3px}
+  th{padding:8px 7px}td{padding:7px 6px}
+  .floor-row td{padding:9px 8px}
+}
+</style>
+<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
+</head>
+<body>
+<nav class="navbar">
+  <div>
+    <div class="nav-title"><span class="ic ic-handover"></span> 駐衛警巡檢系統</div>
+    <div class="nav-sub">巡檢稽核總覽 · 臺北農產 第一果菜市場</div>
+  </div>
+  <div class="nav-space"></div>
+  <a href="guardpatrol3d.html"><button class="nav-back">3D駐警巡檢雲台</button></a>
+  <a href="patrolshifts.html" class="mobile-hide"><button class="nav-back">班別排程管理</button></a>
+  <a href="patrollist.html" class="mobile-hide"><button class="nav-back">巡邏點清單</button></a>
+  <a href="admin.html#modelhub" class="mobile-hide"><button class="nav-back">後台</button></a>
+</nav>
+
+<div class="content">
+  <div class="hint">
+    依「班別排程管理」設定的當天班別，對照巡邏點 QR 簽到記錄，即時算出每個巡檢點在每個班別的稽核狀態。點選圓點可查看簽到明細。
+  </div>
+
+  <div class="datebar">
+    <button class="mini" onclick="shiftDate(-1)">◀</button>
+    <input type="date" id="datePick" onchange="load()">
+    <button class="mini" onclick="shiftDate(1)">▶</button>
+    <button class="mini" onclick="goToday()">今天</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="tool-field filter-floor"><label for="floorFilter">樓層</label><select id="floorFilter" onchange="renderCurrent()"><option value="">全部樓層</option></select></div>
+    <div class="tool-field filter-shift"><label for="shiftFilter">班別</label><select id="shiftFilter" onchange="renderCurrent()"><option value="">全部班別</option></select></div>
+    <div class="tool-field filter-status"><label for="statusFilter">打卡狀態</label><select id="statusFilter" onchange="renderCurrent()"><option value="">全部狀態</option><option value="ok">已打卡</option><option value="pending">待打卡</option><option value="overdue">逾期未打卡</option></select></div>
+    <div class="toolbar-sep mobile-hide"></div>
+    <div class="tool-field mobile-hide"><label for="exportFrom">匯出起日</label><input type="date" id="exportFrom"></div>
+    <div class="tool-field mobile-hide"><label for="exportTo">匯出迄日</label><input type="date" id="exportTo"></div>
+    <button class="mini mobile-hide" id="exportDayBtn" onclick="exportCurrentDay()">匯出當日 XLSX</button>
+    <button class="mini primary mobile-hide" id="exportRangeBtn" onclick="exportRange()">匯出日期區間 XLSX</button>
+    <span class="export-status mobile-hide" id="exportStatus"></span>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card ok"><div class="n" id="s-ok">0</div><div class="l">已打卡</div></div>
+    <div class="stat-card pending"><div class="n" id="s-pending">0</div><div class="l">待打卡</div></div>
+    <div class="stat-card overdue"><div class="n" id="s-overdue">0</div><div class="l">逾期未打卡</div></div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--green)"></i>已打卡</span>
+    <span><i style="background:var(--patrol)"></i>待打卡（班別進行中）</span>
+    <span><i style="background:var(--red)"></i>逾期未打卡</span>
+  </div>
+
+  <div class="grid-wrap"><div id="grid"></div></div>
+</div>
+
+<div class="modal-bg" id="m-detail">
+  <div class="modal">
+    <div class="modal-head"><span class="mt" id="dtTitle"></span><span class="x" onclick="closeModal()">✕</span></div>
+    <div class="modal-body" id="dtBody"></div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol.html');}})();
+function translateError(msg){
+  if(!msg) return '未知錯誤';
+  if((msg.includes('relation') && msg.includes('does not exist'))||msg.includes('schema cache')||msg.includes('Could not find the table')) return '資料表不存在，請先於 Supabase SQL Editor 執行 system/sql/patrol_shifts.sql';
+  if(msg.includes('permission denied')||msg.includes('violates row-level security')) return '無操作權限';
+  if(msg.includes('Failed to fetch')||msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員（原始訊息：'+msg+'）';
+}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function fmtHM(t){return String(t||'').slice(0,5);}
+function fmtDT(t){const d=new Date(t);const p=n=>String(n).padStart(2,'0');return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;}
+
+function todayStr(){return PatrolStatus.dateStrOf(new Date());}
+function goToday(){document.getElementById('datePick').value=todayStr();load();}
+function shiftDate(delta){
+  const el=document.getElementById('datePick');
+  const d=new Date(el.value+'T00:00:00');
+  d.setDate(d.getDate()+delta);
+  el.value=PatrolStatus.dateStrOf(d);
+  load();
+}
+
+let lastResult=null;
+let floorKeys=[];
+const expandedFloors=new Set();
+
+function canonicalFloor(value){
+  const floor=String(value||'未分類').trim().toUpperCase();
+  if(floor==='B1F'||floor==='B1')return 'B1';
+  if(floor==='1F'||floor==='1')return '1F';
+  if(floor==='RF'||floor==='R'||floor==='頂樓')return '頂樓';
+  return floor;
+}
+function floorOrder(value){
+  const floor=canonicalFloor(value);
+  if(floor==='B1')return -100;
+  if(floor==='頂樓')return 1000;
+  const m=floor.match(/^(\d+)F?$/);
+  return m?Number(m[1]):500;
+}
+function currentFilters(){
+  return {
+    floor:document.getElementById('floorFilter').value,
+    shift:document.getElementById('shiftFilter').value,
+    status:document.getElementById('statusFilter').value
+  };
+}
+function fillSelect(id,items,placeholder){
+  const el=document.getElementById(id),current=el.value;
+  el.innerHTML=`<option value="">${placeholder}</option>`+items.map(item=>`<option value="${esc(item.value)}">${esc(item.label)}</option>`).join('');
+  if(items.some(item=>item.value===current))el.value=current;
+}
+function syncFilters(result){
+  const floors=[...new Set(result.markers.map(m=>canonicalFloor(m.floor_id)))].sort((a,b)=>floorOrder(a)-floorOrder(b)||a.localeCompare(b,'zh-Hant'));
+  fillSelect('floorFilter',floors.map(f=>({value:f,label:f})),'全部樓層');
+  fillSelect('shiftFilter',result.shifts.map(s=>({value:s.shift_id,label:`${s.name} ${fmtHM(s.start_time)}–${fmtHM(s.end_time)}`})),'全部班別');
+  if(!expandedFloors.size&&floors.length)expandedFloors.add(floors.includes('B1')?'B1':floors[0]);
+}
+
+async function load(){
+  const dateStr=document.getElementById('datePick').value;
+  document.getElementById('grid').innerHTML='<div class="empty">載入中…</div>';
+  let result;
+  try{ result=await PatrolStatus.computeMatrix(db,dateStr); }
+  catch(e){ document.getElementById('grid').innerHTML='<div class="empty">讀取失敗：'+esc(translateError(e.message))+'</div>'; return; }
+  lastResult=result;
+  syncFilters(result);
+  render(result);
+}
+
+function renderCurrent(){if(lastResult)render(lastResult);}
+function toggleFloorAt(index){
+  const floor=floorKeys[index];
+  if(!floor)return;
+  if(expandedFloors.has(floor))expandedFloors.delete(floor);else expandedFloors.add(floor);
+  renderCurrent();
+}
+
+function render(result){
+  const {shifts,markers,matrix}=result;
+  const grid=document.getElementById('grid');
+  if(!shifts.length){grid.innerHTML='<div class="empty">尚未設定任何班別範本。請至「班別排程管理」新增範本班別後再回來查看。</div>';document.getElementById('s-ok').textContent='0';document.getElementById('s-pending').textContent='0';document.getElementById('s-overdue').textContent='0';return;}
+  if(!markers.length){grid.innerHTML='<div class="empty">目前沒有巡邏點資料。請至「整合標記系統」平面圖新增巡邏點標示。</div>';return;}
+
+  const filters=currentFilters();
+  const selectedShifts=filters.shift?shifts.filter(s=>s.shift_id===filters.shift):shifts;
+  const floorMarkers=filters.floor?markers.filter(m=>canonicalFloor(m.floor_id)===filters.floor):markers;
+  let ok=0,pending=0,overdue=0;
+  floorMarkers.forEach(m=>selectedShifts.forEach(s=>{const v=matrix.get(s.shift_id+'|'+m.marker_id)||'pending';if(v==='ok')ok++;else if(v==='pending')pending++;else overdue++;}));
+  document.getElementById('s-ok').textContent=ok;
+  document.getElementById('s-pending').textContent=pending;
+  document.getElementById('s-overdue').textContent=overdue;
+
+  const STATE_LABEL={ok:'✓',pending:'…',overdue:'✕'};
+  const visibleMarkers=floorMarkers.filter(m=>!filters.status||selectedShifts.some(s=>(matrix.get(s.shift_id+'|'+m.marker_id)||'pending')===filters.status));
+  const groups=new Map();
+  visibleMarkers.forEach(m=>{const floor=canonicalFloor(m.floor_id);if(!groups.has(floor))groups.set(floor,[]);groups.get(floor).push(m);});
+  floorKeys=[...groups.keys()].sort((a,b)=>floorOrder(a)-floorOrder(b)||a.localeCompare(b,'zh-Hant'));
+  if(filters.floor)expandedFloors.add(filters.floor);
+  if(!visibleMarkers.length){grid.innerHTML='<div class="empty">目前篩選條件下沒有符合的巡檢資料。</div>';return;}
+  grid.innerHTML=`<table>
+    <tr><th class="floorcol">樓層</th><th class="pointcol">巡檢點</th>${selectedShifts.map(s=>`<th>${esc(s.name)}<br>${fmtHM(s.start_time)}–${fmtHM(s.end_time)}</th>`).join('')}</tr>
+    ${floorKeys.map((floor,index)=>{
+      const group=groups.get(floor),open=expandedFloors.has(floor);
+      return `<tr class="floor-row" onclick="toggleFloorAt(${index})"><td colspan="${selectedShifts.length+2}"><span class="floor-arrow">${open?'▼':'▶'}</span>${esc(floor)}<span class="floor-count">${group.length} 個巡檢點</span></td></tr>`+
+        (open?group.map(m=>`<tr><td class="floor-cell">${esc(floor)}</td><td class="pointcol">${esc(m.label)}</td>${selectedShifts.map(s=>{const state=matrix.get(s.shift_id+'|'+m.marker_id)||'pending';return `<td><span class="cell ${state}" title="${PatrolStatus.LABELS[state]}" onclick="showDetail('${s.shift_id}','${m.marker_id}')">${STATE_LABEL[state]}</span></td>`;}).join('')}</tr>`).join(''):'');
+    }).join('')}
+  </table>`;
+}
+
+function exportCurrentDay(){
+  const date=document.getElementById('datePick').value;
+  document.getElementById('exportFrom').value=date;
+  document.getElementById('exportTo').value=date;
+  exportReport(date,date);
+}
+function exportRange(){exportReport(document.getElementById('exportFrom').value,document.getElementById('exportTo').value);}
+function eachDate(from,to){
+  const dates=[],cursor=new Date(from+'T00:00:00'),end=new Date(to+'T00:00:00');
+  while(cursor<=end){dates.push(PatrolStatus.dateStrOf(cursor));cursor.setDate(cursor.getDate()+1);}
+  return dates;
+}
+function fmtLocalDateTime(value){
+  const d=value||new Date(),p=n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+function styleReportSheet(ws,rowCount){
+  const fontName='Microsoft JhengHei';
+  const borderColor={rgb:'B8C7D9'};
+  const thinBorder={
+    top:{style:'thin',color:borderColor},bottom:{style:'thin',color:borderColor},
+    left:{style:'thin',color:borderColor},right:{style:'thin',color:borderColor}
+  };
+  const ensureCell=(r,c)=>{
+    const address=XLSX.utils.encode_cell({r,c});
+    if(!ws[address])ws[address]={t:'s',v:''};
+    return ws[address];
+  };
+  for(let c=0;c<6;c++){
+    ensureCell(0,c).s={
+      font:{name:fontName,sz:18,bold:true,color:{rgb:'FFFFFF'}},
+      fill:{patternType:'solid',fgColor:{rgb:'17365D'}},
+      alignment:{horizontal:'center',vertical:'center'}
+    };
+    ensureCell(1,c).s={
+      font:{name:fontName,sz:10,color:{rgb:'1F4E78'}},
+      fill:{patternType:'solid',fgColor:{rgb:'D9EAF7'}},
+      alignment:{horizontal:'left',vertical:'center'}
+    };
+    ensureCell(2,c).s={
+      font:{name:fontName,sz:9,color:{rgb:'5B6573'}},
+      fill:{patternType:'solid',fgColor:{rgb:'EEF3F8'}},
+      alignment:{horizontal:'left',vertical:'center'}
+    };
+    ensureCell(4,c).s={
+      font:{name:fontName,sz:11,bold:true,color:{rgb:'FFFFFF'}},
+      fill:{patternType:'solid',fgColor:{rgb:'1F4E78'}},
+      alignment:{horizontal:'center',vertical:'center',wrapText:true},border:thinBorder
+    };
+  }
+  const statusStyle={
+    '已打卡':{fill:'E2F0D9',font:'00875A'},
+    '待打卡':{fill:'FFF2CC',font:'9C6500'},
+    '逾期未打卡':{fill:'FCE4D6',font:'C00000'}
+  };
+  for(let r=5;r<rowCount;r++){
+    for(let c=0;c<6;c++){
+      const cell=ensureCell(r,c),stripe=r%2?'FFFFFF':'F7FAFC';
+      cell.s={
+        font:{name:fontName,sz:10,color:{rgb:'243447'}},
+        fill:{patternType:'solid',fgColor:{rgb:stripe}},border:thinBorder,
+        alignment:{horizontal:c===2?'left':'center',vertical:'center',wrapText:c===2}
+      };
+      if(c===1){cell.s.font={name:fontName,sz:10,bold:true,color:{rgb:'1F4E78'}};cell.s.fill={patternType:'solid',fgColor:{rgb:'DDEBF7'}};}
+      if(c===5&&statusStyle[cell.v]){
+        const state=statusStyle[cell.v];
+        cell.s.font={name:fontName,sz:10,bold:true,color:{rgb:state.font}};
+        cell.s.fill={patternType:'solid',fgColor:{rgb:state.fill}};
+      }
+    }
+  }
+  ws['!cols']=[{wch:13},{wch:9},{wch:34},{wch:15},{wch:17},{wch:15}];
+  ws['!rows']=[{hpt:31},{hpt:22},{hpt:20},{hpt:8},{hpt:25},...Array.from({length:Math.max(0,rowCount-5)},()=>({hpt:21}))];
+  ws['!margins']={left:.3,right:.3,top:.5,bottom:.5,header:.2,footer:.2};
+}
+async function exportReport(from,to){
+  const status=document.getElementById('exportStatus');
+  if(!from||!to){status.textContent='請選擇完整的起訖日期。';return;}
+  if(from>to){status.textContent='起日不可晚於迄日。';return;}
+  const dates=eachDate(from,to);
+  if(dates.length>366){status.textContent='單次匯出最多 366 天。';return;}
+  if(typeof XLSX==='undefined'){status.textContent='XLSX 元件尚未載入，請重新整理後再試。';return;}
+  const buttons=[document.getElementById('exportDayBtn'),document.getElementById('exportRangeBtn')];
+  buttons.forEach(b=>b.disabled=true);
+  const filters=currentFilters(),rows=[];
+  const selectedShiftName=filters.shift&&lastResult?(lastResult.shifts.find(s=>s.shift_id===filters.shift)||{}).name:'';
+  try{
+    for(let i=0;i<dates.length;i++){
+      status.textContent=`正在整理 ${dates[i]}（${i+1}/${dates.length}）…`;
+      const result=dates[i]===document.getElementById('datePick').value&&lastResult?lastResult:await PatrolStatus.computeMatrix(db,dates[i]);
+      const shifts=filters.shift?result.shifts.filter(s=>s.shift_id===filters.shift||s.name===selectedShiftName):result.shifts;
+      const markers=filters.floor?result.markers.filter(m=>canonicalFloor(m.floor_id)===filters.floor):result.markers;
+      markers.forEach(m=>shifts.forEach(s=>{
+        const state=result.matrix.get(s.shift_id+'|'+m.marker_id)||'pending';
+        if(!filters.status||state===filters.status)rows.push([dates[i],canonicalFloor(m.floor_id),m.label,s.name,`${fmtHM(s.start_time)}–${fmtHM(s.end_time)}`,PatrolStatus.LABELS[state]]);
+      }));
+    }
+    const title=`臺北農產公司 第一市場巡檢表 ${from}~${to}`;
+    const floorLabel=filters.floor||'全部樓層';
+    const shiftLabel=selectedShiftName||'全部班別';
+    const stateLabel=PatrolStatus.LABELS[filters.status]||'全部狀態';
+    const data=[
+      [title],
+      [`篩選條件｜樓層：${floorLabel}　班別：${shiftLabel}　打卡狀態：${stateLabel}`],
+      [`匯出時間：${fmtLocalDateTime()}　　資料筆數：${rows.length} 筆`],
+      [],
+      ['日期','樓層','巡檢點','班別','巡檢時段','打卡狀態'],
+      ...rows
+    ];
+    const ws=XLSX.utils.aoa_to_sheet(data);
+    ws['!merges']=[
+      {s:{r:0,c:0},e:{r:0,c:5}},
+      {s:{r:1,c:0},e:{r:1,c:5}},
+      {s:{r:2,c:0},e:{r:2,c:5}}
+    ];
+    ws['!autofilter']={ref:`A5:F${Math.max(5,data.length)}`};
+    styleReportSheet(ws,data.length);
+    const wb=XLSX.utils.book_new();
+    wb.Props={
+      Title:title,Subject:'第一市場駐衛警巡檢報表',Author:'臺北農產運銷股份有限公司',
+      Company:'臺北農產運銷股份有限公司',CreatedDate:new Date()
+    };
+    XLSX.utils.book_append_sheet(wb,ws,'巡檢報表');
+    XLSX.writeFile(wb,`第一市場巡檢表_${from}_${to}.xlsx`);
+    status.textContent=`匯出完成，共 ${rows.length} 筆；已套用目前篩選條件。`;
+  }catch(e){status.textContent='匯出失敗：'+translateError(e.message);}
+  finally{buttons.forEach(b=>b.disabled=false);}
+}
+
+function closeModal(){document.getElementById('m-detail').classList.remove('show');}
+
+async function showDetail(shiftId,markerId){
+  const {shifts,markers}=lastResult;
+  const shift=shifts.find(s=>s.shift_id===shiftId);
+  const marker=markers.find(m=>m.marker_id===markerId);
+  if(!shift||!marker)return;
+  document.getElementById('dtTitle').textContent=marker.label+'　·　'+shift.name;
+  document.getElementById('dtBody').innerHTML='載入中…';
+  document.getElementById('m-detail').classList.add('show');
+
+  const {data,error}=await db.from('checkin_logs').select('user_name,checkin_at')
+    .eq('target_type','marker').eq('target_id',markerId)
+    .gte('checkin_at',shift.range.start.toISOString()).lte('checkin_at',shift.range.end.toISOString())
+    .order('checkin_at',{ascending:false});
+  if(error){document.getElementById('dtBody').innerHTML='讀取失敗：'+esc(translateError(error.message));return;}
+  if(!data||!data.length){
+    document.getElementById('dtBody').innerHTML=`<div>樓層：${esc(marker.floor_id)}</div><div>時段：${fmtHM(shift.start_time)}–${fmtHM(shift.end_time)}</div><div style="margin-top:10px;color:var(--text-dim)">此時段尚無簽到記錄。</div>`;
+    return;
+  }
+  document.getElementById('dtBody').innerHTML=
+    `<div>樓層：${esc(marker.floor_id)}</div><div style="margin-bottom:6px">時段：${fmtHM(shift.start_time)}–${fmtHM(shift.end_time)}</div>`+
+    data.map(r=>`<div class="hist-row"><span>${esc(r.user_name||'')}</span><span>${fmtDT(r.checkin_at)}</span></div>`).join('');
+}
+
+document.getElementById('m-detail').addEventListener('click',e=>{if(e.target.id==='m-detail')closeModal();});
+
+document.getElementById('datePick').value=todayStr();
+document.getElementById('exportFrom').value=todayStr();
+document.getElementById('exportTo').value=todayStr();
+load();
+setInterval(load,60000);
+</script>
+</body>
+</html>
