@@ -153,7 +153,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
     <button id="view3dBtn" class="view-btn active" type="button" onclick="switchPatrolView('3d')">3D 駐警巡檢</button>
     <button id="viewFlatBtn" class="view-btn" type="button" onclick="switchPatrolView('flat')">平面駐警巡檢</button>
   </div>
-  <button id="modelUpdateBtn" class="tb-back mobile-hide" type="button" style="display:none" onclick="manualRefreshCurrentModel()">↻ 更新目前模型</button>
+  <button id="modelUpdateBtn" class="tb-back mobile-hide" type="button" style="display:none" onclick="manualRefreshCurrentModel()"><span class="ic ic-refresh"></span> 更新目前模型</button>
   <a href="guardpatrol.html" class="tb-back">巡檢稽核總覽</a>
   <a href="patrolshifts.html" class="tb-back mobile-hide">班別排程管理</a>
   <a href="admin.html" class="tb-back mobile-hide">後台</a>
@@ -161,9 +161,9 @@ body.controls-hidden #panelToggle{display:inline-flex}
 
 <div id="c3d"></div>
 <div id="flatView" aria-hidden="true"><iframe id="flatFrame" title="平面駐警巡檢模型圖" loading="lazy"></iframe></div>
-<button id="panelToggle" onclick="togglePanel(true)" aria-controls="panel" aria-expanded="false">⬡ 立體控制</button>
+<button id="panelToggle" onclick="togglePanel(true)" aria-controls="panel" aria-expanded="false"><span class="ic ic-3d"></span> 立體控制</button>
 
-<button id="floorsToggle" onclick="toggleFloorsMenu()">▤ 樓層顯示 <span class="cv">▾</span></button>
+<button id="floorsToggle" onclick="toggleFloorsMenu()"><span class="ic ic-template"></span> 樓層顯示 <span class="cv">▾</span></button>
 <div id="floors">
   <button class="fbtn on" id="t-3F" onclick="toggleFloor('3F')"><span class="dot"></span>3F 三樓</button>
   <button class="fbtn on" id="t-2F" onclick="toggleFloor('2F')"><span class="dot"></span>2F 二樓</button>
@@ -173,7 +173,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 
 <div id="panel">
   <div class="panel-head">
-    <div class="p-t">⬡ 立體控制</div>
+    <div class="p-t"><span class="ic ic-3d"></span> 立體控制</div>
     <button class="panel-close" onclick="togglePanel(false)">隱藏</button>
   </div>
   <label>樓層間距（視覺）</label>
@@ -185,7 +185,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
   <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" id="mk-labels" onchange="toggleMarkLabels(this.checked)"> 顯示巡邏點名稱</label>
   <div class="h-r" style="color:var(--text2)">巡邏點總數：<span style="color:var(--text)" id="mkCount">0</span></div>
   <details class="filter-menu">
-    <summary>◆ 打卡狀態</summary>
+    <summary><span class="ic ic-checkmark"></span> 打卡狀態</summary>
     <div class="filter-options">
       <label><input type="checkbox" checked onchange="togglePatrolStatus('ok',this.checked)"><i class="status-dot" style="color:var(--green);background:var(--green)"></i> 已打</label>
       <label><input type="checkbox" checked onchange="togglePatrolStatus('pending',this.checked)"><i class="status-dot" style="color:var(--patrol);background:var(--patrol)"></i> 待打卡</label>
@@ -204,7 +204,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 <div id="bottomRightRow" class="mobile-hide">
   <div id="hint">左鍵拖曳：水平 / 垂直移動 &nbsp;|&nbsp; 右鍵拖曳：旋轉環繞 &nbsp;|&nbsp; 滾輪/雙指：縮放</div>
   <div id="legend">
-    <div class="h-t">◆ 打卡狀態</div>
+    <div class="h-t"><span class="ic ic-checkmark"></span> 打卡狀態</div>
     <div class="lg-row"><i style="background:var(--green)"></i>已打 <span id="statusOkCount">0</span></div>
     <div class="lg-row"><i style="background:var(--patrol)"></i>待打卡 <span id="statusPendingCount">0</span></div>
     <div class="lg-row"><i style="background:var(--red)"></i>逾期未打卡 <span id="statusOverdueCount">0</span></div>
@@ -652,11 +652,11 @@ function updateModelUpdateBtn(){
   btn.style.display=canManageModels?'inline-flex':'none';
   if(!canManageModels) return;
   if(currentPatrolView==='flat'){
-    btn.textContent='↻ 更新平面模型';
+    btn.innerHTML='<span class="ic ic-refresh"></span> 更新平面模型';
   }else if(pendingModelUpdates.size){
     btn.textContent=`🔄 模型有新版本（${pendingModelUpdates.size}）點此更新`;
   }else{
-    btn.textContent='↻ 更新 3D 模型';
+    btn.innerHTML='<span class="ic ic-refresh"></span> 更新 3D 模型';
   }
 }
 // 使用者點擊頂欄按鈕後才真正換貼圖，避免巡檢中畫面無預警跳動

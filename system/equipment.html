@@ -41,12 +41,12 @@
 </head>
 <body>
 <nav class="navbar">
-  <div><div class="nav-title">⬢ 設備建置系統</div><div class="nav-sub">Asset Lifecycle · 第一果菜市場</div></div>
+  <div><div class="nav-title"><span class="ic ic-equipment"></span> 設備建置系統</div><div class="nav-sub">Asset Lifecycle · 第一果菜市場</div></div>
   <div class="nav-space"></div>
-  <a class="mobile-hide" href="dashboard.html"><button class="nav-btn">◫ 戰情儀表板</button></a>
-  <a href="app.html"><button class="nav-btn">◉ 巡檢</button></a>
-  <a href="workorder.html"><button class="nav-btn">◪ 報修</button></a>
-  <a class="mobile-hide" href="materials.html"><button class="nav-btn">◧ 材料</button></a>
+  <a class="mobile-hide" href="dashboard.html"><button class="nav-btn"><span class="ic ic-dashboard"></span> 戰情儀表板</button></a>
+  <a href="app.html"><button class="nav-btn"><span class="ic ic-inspection"></span> 巡檢</button></a>
+  <a href="workorder.html"><button class="nav-btn"><span class="ic ic-dispatch"></span> 報修</button></a>
+  <a class="mobile-hide" href="materials.html"><button class="nav-btn"><span class="ic ic-equipment"></span> 材料</button></a>
   <a href="admin.html"><button class="nav-btn">← 後台</button></a>
 </nav>
 
@@ -82,7 +82,7 @@
     <button class="btn btn-primary" id="addBtn" onclick="addForCurrentTab()">＋ 新增設備</button>
     <button class="btn mobile-hide" onclick="document.getElementById('importFile').click()">⭳ 匯入 XLSX</button>
     <button class="btn btn-green mobile-hide" onclick="exportWorkbook()">⭱ 匯出 XLSX</button>
-    <button class="btn mobile-hide" onclick="downloadTemplate()">▤ 下載範本</button>
+    <button class="btn mobile-hide" onclick="downloadTemplate()"><span class="ic ic-template"></span> 下載範本</button>
     <button class="btn btn-amber mobile-hide" onclick="printAllEquipmentQR()">▦ 列印全部 QR</button>
     <input type="file" id="importFile" accept=".xlsx,.xls" style="display:none" onchange="prepareImport(event)">
   </div>
@@ -213,7 +213,7 @@ function renderAssets(){
   const p=paginate(filteredAssets());
   const rows=p.rows.map(e=>{const plans=state.plans.filter(x=>x.equipment_id===e.equipment_id&&x.status==='active');const due=plans.map(x=>x.next_due_on).filter(Boolean).sort()[0]||e.next_maintenance_on;const linked=state.links.some(x=>x.equipment_id===e.equipment_id&&x.status==='active');const marker=markerForEquipment(e.equipment_id);return `<tr>
     <td class="code">${esc(canonicalFloor(e.floor||e.location)||'—')}</td><td class="code">${esc(e.asset_code||e.qr_code||'—')}</td><td><strong style="color:var(--text-hi)">${esc(e.name)}</strong><div class="muted">${esc(e.location||'')}</div></td><td class="qr-cell"><button class="act qr-btn ${marker?'':'unmapped'}" onclick="openEquipmentQr('${e.equipment_id}')" title="${marker?'掃描後定位 3D 點位':'尚未設定 3D 點位'}">▦ QR</button></td><td>${esc(e.category||'—')}</td><td>${esc(e.department||'—')}</td><td>${esc([e.brand,e.model].filter(Boolean).join(' / ')||'—')}</td><td><span class="pill ${dueClass(due)}">${due?fmtDate(due):'未設定'}</span></td><td>${fmtDate(e.warranty_until)}</td><td>${linked?'<span class="pill ok">已對照</span>':'<span class="pill">未介接</span>'}</td><td>${statusPill(e.status)}</td><td><button class="act" onclick="openRelations('${e.equipment_id}')">關聯</button> <button class="act" onclick="openEquipment('${e.equipment_id}')">編輯</button></td></tr>`;}).join('');
-  document.getElementById('view').innerHTML=`<section class="panel"><div class="panel-head"><strong>設備唯一主檔</strong><span class="hint">QR 掃描後依 equipment_id 讀取最新 3D 座標；調整點位後不必重印</span><span class="spacer"></span><button class="act" onclick="loadAll()">↻ 更新</button></div><div class="table-wrap"><table id="assetTable"><thead><tr><th>樓層</th><th>設備編號</th><th>設備名稱 / 位置</th><th>QR</th><th>類別</th><th>使用部門</th><th>廠牌 / 型號</th><th>下次保養</th><th>保固到期</th><th>監控</th><th>狀態</th><th>操作</th></tr></thead><tbody>${rows||'<tr><td colspan="12" class="empty">尚無設備資料，請新增設備或匯入 XLSX。</td></tr>'}</tbody></table></div>${pagerHtml(p)}</section>`;
+  document.getElementById('view').innerHTML=`<section class="panel"><div class="panel-head"><strong>設備唯一主檔</strong><span class="hint">QR 掃描後依 equipment_id 讀取最新 3D 座標；調整點位後不必重印</span><span class="spacer"></span><button class="act" onclick="loadAll()"><span class="ic ic-refresh"></span> 更新</button></div><div class="table-wrap"><table id="assetTable"><thead><tr><th>樓層</th><th>設備編號</th><th>設備名稱 / 位置</th><th>QR</th><th>類別</th><th>使用部門</th><th>廠牌 / 型號</th><th>下次保養</th><th>保固到期</th><th>監控</th><th>狀態</th><th>操作</th></tr></thead><tbody>${rows||'<tr><td colspan="12" class="empty">尚無設備資料，請新增設備或匯入 XLSX。</td></tr>'}</tbody></table></div>${pagerHtml(p)}</section>`;
 }
 
 function markerForEquipment(equipmentId){return state.markers.filter(m=>m.equipment_id===equipmentId&&m.status!=='inactive').sort((a,b)=>new Date(b.updated_at||b.created_at||0)-new Date(a.updated_at||a.created_at||0))[0]||null;}

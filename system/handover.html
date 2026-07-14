@@ -216,13 +216,13 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div class="topbar">
   <div class="topbar-left">
     <span class="topbar-org"><span data-sysname="org">臺北農產運銷股份有限公司</span> <span data-sysname="site">第一果菜市場</span></span>
-    <span class="topbar-title">◈ 電子交接簿</span>
+    <span class="topbar-title"><span class="ic ic-handover"></span> 電子交接簿</span>
   </div>
   <div class="topbar-right">
-    <a href="dashboard.html">◫ 戰情儀表板</a>
-    <a href="workorder.html">◪ 報修系統</a>
-    <a href="app.html">◉ 巡檢</a>
-    <a href="admin.html">⬡ 後台</a>
+    <a href="dashboard.html"><span class="ic ic-dashboard"></span> 戰情儀表板</a>
+    <a href="workorder.html"><span class="ic ic-dispatch"></span> 報修系統</a>
+    <a href="app.html"><span class="ic ic-inspection"></span> 巡檢</a>
+    <a href="admin.html"><span class="ic ic-equipment"></span> 後台</a>
     <span class="nav-user" id="navUser">載入中…</span>
     <span class="clock" id="topClock">--:--:--</span>
     <button type="button" onclick="goBackPage()">↩ 返回</button>
@@ -231,7 +231,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('new')" id="tab-new">✏ 新增交接</button>
-  <button class="tab-btn" onclick="switchTab('cases')" id="tab-cases">◉ 案件管理</button>
+  <button class="tab-btn" onclick="switchTab('cases')" id="tab-cases"><span class="ic ic-inspection"></span> 案件管理</button>
   <button class="tab-btn" onclick="switchTab('history')" id="tab-history">📋 交接記錄</button>
 </div>
 
@@ -241,7 +241,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="tab-panel active" id="panel-new">
 
     <div class="panel">
-      <div class="panel-head" style="display:flex;align-items:center;justify-content:space-between"><span class="panel-title">⊞ 基本資訊</span><span style="font-size:.72rem;color:var(--text-dim)">填表日期：<b id="hFiled" style="color:var(--cyan);font-family:var(--font-mono)"></b></span></div>
+      <div class="panel-head" style="display:flex;align-items:center;justify-content:space-between"><span class="panel-title"><span class="ic ic-location"></span> 基本資訊</span><span style="font-size:.72rem;color:var(--text-dim)">填表日期：<b id="hFiled" style="color:var(--cyan);font-family:var(--font-mono)"></b></span></div>
       <div class="panel-body">
         <div class="form-grid" style="grid-template-columns:1fr 1fr">
           <div class="field">
@@ -261,7 +261,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
 
     <div class="panel">
-      <div class="panel-head"><span class="panel-title">◉ 值班人員</span></div>
+      <div class="panel-head"><span class="panel-title"><span class="ic ic-inspection"></span> 值班人員</span></div>
       <div class="panel-body">
         <div class="sub-section">
           <div class="sub-label">交接人（離班）</div>
@@ -314,14 +314,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
     <div class="panel">
       <div class="panel-head">
-        <span class="panel-title">◧ 設備運轉概況</span>
-        <button class="btn-secondary btn-sm" onclick="fetchEqStatus()">↻ 重新抓取</button>
+        <span class="panel-title"><span class="ic ic-equipment"></span> 設備運轉概況</span>
+        <button class="btn-secondary btn-sm" onclick="fetchEqStatus()"><span class="ic ic-refresh"></span> 重新抓取</button>
       </div>
       <div class="panel-body">
         <div class="eq-cards">
           <div class="eq-card"><div class="eq-val" id="eqNormal" style="color:var(--green)">—</div><div class="eq-label">✓ 正常台數</div></div>
           <div class="eq-card"><div class="eq-val" id="eqAbnormal" style="color:var(--red)">—</div><div class="eq-label">✗ 異常台數</div></div>
-          <div class="eq-card"><div class="eq-val" id="eqTotal" style="color:var(--text-dim)">—</div><div class="eq-label">◈ 巡檢總數</div></div>
+          <div class="eq-card"><div class="eq-val" id="eqTotal" style="color:var(--text-dim)">—</div><div class="eq-label"><span class="ic ic-handover"></span> 巡檢總數</div></div>
         </div>
         <div id="eqNote" style="margin-top:10px;font-size:.78rem;color:var(--text-dim)">— 選擇班別與日期後自動載入當班巡檢結果 —</div>
       </div>
@@ -329,14 +329,14 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
     <div class="panel">
       <div class="panel-head">
-        <span class="panel-title" style="color:var(--amber)">◪ 每日報修 &amp; 維修狀況</span>
-        <button class="btn-secondary btn-sm" onclick="fetchRepairStatus()">↻ 重新抓取</button>
+        <span class="panel-title" style="color:var(--amber)"><span class="ic ic-dispatch"></span> 每日報修 &amp; 維修狀況</span>
+        <button class="btn-secondary btn-sm" onclick="fetchRepairStatus()"><span class="ic ic-refresh"></span> 重新抓取</button>
       </div>
       <div class="panel-body">
         <div class="eq-cards">
           <div class="eq-card"><div class="eq-val" id="repairToday" style="color:var(--cyan)">—</div><div class="eq-label">＋ 今日報修</div></div>
-          <div class="eq-card"><div class="eq-val" id="repairWaiting" style="color:var(--red)">—</div><div class="eq-label">◎ 待處理</div></div>
-          <div class="eq-card"><div class="eq-val" id="repairProgress" style="color:var(--amber)">—</div><div class="eq-label">◪ 維修中</div></div>
+          <div class="eq-card"><div class="eq-val" id="repairWaiting" style="color:var(--red)">—</div><div class="eq-label"><span class="ic ic-notification"></span> 待處理</div></div>
+          <div class="eq-card"><div class="eq-val" id="repairProgress" style="color:var(--amber)">—</div><div class="eq-label"><span class="ic ic-dispatch"></span> 維修中</div></div>
           <div class="eq-card"><div class="eq-val" id="repairCompleted" style="color:var(--green)">—</div><div class="eq-label">✓ 今日完成</div></div>
         </div>
         <div class="repair-handover-list">
@@ -362,7 +362,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
 
     <div class="panel">
-      <div class="panel-head"><span class="panel-title" style="color:var(--amber)">◎ 待辦事項</span></div>
+      <div class="panel-head"><span class="panel-title" style="color:var(--amber)"><span class="ic ic-notification"></span> 待辦事項</span></div>
       <div class="panel-body">
         <div class="dyn-list" id="pendingList"></div>
         <div class="add-row">
@@ -416,7 +416,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </select>
       <div id="cfDateFrom-dtp" style="min-width:150px" title="起始日期"></div>
       <div id="cfDateTo-dtp" style="min-width:150px" title="結束日期"></div>
-      <button class="btn-secondary btn-sm" onclick="loadCases()">↻ 重整</button>
+      <button class="btn-secondary btn-sm" onclick="loadCases()"><span class="ic ic-refresh"></span> 重整</button>
       <button class="btn-primary" style="width:auto;padding:7px 18px;font-size:.84rem;margin-top:0" onclick="openCaseForm()">＋ 新增案件</button>
     </div>
 
@@ -458,7 +458,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
       </select>
       <div id="fDateFrom-dtp" style="min-width:150px" title="起始日期"></div>
       <div id="fDateTo-dtp" style="min-width:150px" title="結束日期"></div>
-      <button class="btn-secondary btn-sm" onclick="loadHistory()">↻ 重整</button>
+      <button class="btn-secondary btn-sm" onclick="loadHistory()"><span class="ic ic-refresh"></span> 重整</button>
     </div>
     <div class="panel">
       <div style="overflow-x:auto">
@@ -496,7 +496,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <div class="modal-bg" id="caseFormModal">
   <div class="modal modal-wide">
     <div class="modal-head">
-      <span class="modal-title">◉ 新增案件</span>
+      <span class="modal-title"><span class="ic ic-inspection"></span> 新增案件</span>
       <button class="modal-close" onclick="closeCaseForm()">✕</button>
     </div>
     <div class="modal-body">
@@ -627,7 +627,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 <!-- 更改密碼 -->
 <div class="modal-bg" id="changePwModal">
   <div class="modal">
-    <div class="modal-title">◉ 更改密碼</div>
+    <div class="modal-title"><span class="ic ic-inspection"></span> 更改密碼</div>
     <div class="form-grid">
       <div class="field"><label>新密碼</label><input id="new-pw" type="password" placeholder="至少 8 個字元" autocomplete="new-password"></div>
       <div class="field"><label>確認新密碼</label><input id="new-pw2" type="password" placeholder="再輸入一次" autocomplete="new-password"></div>
@@ -1117,7 +1117,7 @@ function renderIssues() {
 function renderPendings() {
   document.getElementById('pendingList').innerHTML = pendings.map((txt,i) => `
     <div class="dyn-item">
-      <div class="dyn-item-text pending">◎ ${escHtml(txt)}</div>
+      <div class="dyn-item-text pending"><span class="ic ic-notification"></span> ${escHtml(txt)}</div>
       <button class="dyn-del" onclick="removePending(${i})">✕</button>
     </div>`).join('');
 }
@@ -1237,7 +1237,7 @@ async function loadHistory() {
   document.getElementById('historyTbody').innerHTML = rows.length ? rows.map(r => {
     const issueLines = r.issues ? r.issues.split('\n').filter(Boolean) : [];
     const pendLines  = r.pending ? r.pending.split('\n').filter(Boolean) : [];
-    const summary = issueLines.length ? `⚠ ${issueLines.length}項異常` : (pendLines.length ? `◎ ${pendLines.length}項待辦` : '—');
+    const summary = issueLines.length ? `<span class="ic ic-notification"></span> ${issueLines.length}項異常` : (pendLines.length ? `<span class="ic ic-notification"></span> ${pendLines.length}項待辦` : '—');
     const stage = handoverStage(r);
     const receiveAction = stage.key === 'pending_accept'
       ? (canReceiveHandover(r)
@@ -1252,7 +1252,7 @@ async function loadHistory() {
       <td style="font-size:.82rem">${r.takeover_user?.name||'—'}</td>
       <td style="text-align:right;font-family:var(--font-mono);color:var(--green)">${r.eq_normal||'—'}</td>
       <td style="text-align:right;font-family:var(--font-mono);color:${r.eq_abnormal?'var(--red)':'var(--text-dim)'}">${r.eq_abnormal||'—'}</td>
-      <td style="font-size:.8rem;color:${r.issues?'var(--red)':'var(--text-dim)'}">${escHtml(summary)}</td>
+      <td style="font-size:.8rem;color:${r.issues?'var(--red)':'var(--text-dim)'}">${summary}</td>
       <td><span class="badge ${stage.cls}">${stage.label}</span></td>
       <td>
         <button class="btn-secondary btn-sm" onclick="openHandoverDetail('${r.record_id}')">查看</button>
@@ -1292,7 +1292,7 @@ async function openHandoverDetail(id) {
       ${issueLines.length ? issueLines.map(l=>`<div class="detail-item issue">${escHtml(l)}</div>`).join('') : '<span class="detail-empty">無異常事項</span>'}
     </div>
     <div class="detail-section">
-      <div class="detail-section-title" style="color:var(--amber)">◎ 待辦事項（${pendingLines.length}項）</div>
+      <div class="detail-section-title" style="color:var(--amber)"><span class="ic ic-notification"></span> 待辦事項（${pendingLines.length}項）</div>
       ${pendingLines.length ? pendingLines.map(l=>`<div class="detail-item pending">${escHtml(l)}</div>`).join('') : '<span class="detail-empty">無待辦事項</span>'}
     </div>
     ${r.notes?`<div class="detail-section"><div class="detail-section-title">備註</div><div style="font-size:.85rem;color:var(--text-hi);white-space:pre-wrap">${escHtml(r.notes)}</div></div>`:''}

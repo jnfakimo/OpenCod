@@ -313,7 +313,7 @@ body{
   letter-spacing:0.06em;text-transform:uppercase;
   display:flex;align-items:center;gap:6px;
 }
-.form-title::before{content:'◈';font-size:0.5rem;opacity:0.8}
+.form-title::before{content:'';display:none}
 
 /* ===== FIELDS ===== */
 .field{margin-bottom:14px}
@@ -463,22 +463,22 @@ body{
 <nav class="navbar">
   <div class="nav-brand">
     <div class="nav-org"><span data-sysname="org">臺北農產運銷股份有限公司</span> <span data-sysname="site">第一果菜市場</span></div>
-    <span class="nav-title">⬡ 巡檢系統</span>
+    <span class="nav-title"><span class="ic ic-inspection"></span> 巡檢系統</span>
   </div>
   <div class="nav-right">
     <span class="nav-user" id="navUser"></span>
-    <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="戰情儀表板">◫ 戰情儀表板</a>
-    <a href="workorder.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="報修派工系統">◪ 報修系統</a>
-    <span style="font-size:.7rem;color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600">◉ 巡檢</span>
-    <a href="admin.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="後台管理系統">⬡ 後台</a>
-    <button class="logout-btn" onclick="logout()">⏻</button>
+    <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="戰情儀表板"><span class="ic ic-dashboard"></span> 戰情儀表板</a>
+    <a href="workorder.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="報修派工系統"><span class="ic ic-dispatch"></span> 報修系統</a>
+    <span style="font-size:.7rem;color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600"><span class="ic ic-inspection"></span> 巡檢</span>
+    <a href="admin.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="後台管理系統"><span class="ic ic-equipment"></span> 後台</a>
+    <button class="logout-btn" onclick="logout()"><span class="ic ic-logout"></span></button>
   </div>
 </nav>
 
 <!-- PAGE: INSPECT LIST -->
 <div class="page active" id="page-inspect">
   <div class="section-header" style="margin-top:4px">
-    <span class="section-title">◈ 設備清單</span>
+    <span class="section-title"><span class="ic ic-handover"></span> 設備清單</span>
     <span class="badge-count" id="pendingCount">載入中…</span>
   </div>
   <!-- 今日巡檢概況 -->
@@ -574,7 +574,7 @@ body{
 <!-- PAGE: REPAIR -->
 <div class="page" id="page-repair">
   <div class="section-header" style="margin-top:4px">
-    <span class="section-title">◪ 報修單</span>
+    <span class="section-title"><span class="ic ic-dispatch"></span> 報修單</span>
   </div>
   <div class="form-card">
     <div class="form-title">建立報修單</div>
@@ -633,13 +633,13 @@ body{
 <!-- BOTTOM TABS -->
 <div class="tabs">
   <div class="tab active" data-tab="inspect">
-    <span class="tab-icon">◈</span>待巡檢
+    <span class="tab-icon"><span class="ic ic-handover"></span></span>待巡檢
   </div>
   <div class="tab" data-tab="scan">
-    <span class="tab-icon">◉</span>掃描
+    <span class="tab-icon"><span class="ic ic-inspection"></span></span>掃描
   </div>
   <div class="tab" data-tab="repair">
-    <span class="tab-icon">◪</span>報修
+    <span class="tab-icon"><span class="ic ic-dispatch"></span></span>報修
   </div>
 </div>
 

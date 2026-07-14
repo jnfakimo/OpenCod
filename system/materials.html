@@ -117,12 +117,12 @@ tr:hover td{background:rgba(0,212,255,.04)}
 </head>
 <body>
 <nav class="navbar">
-  <div><div class="nav-title">◧ 設備材料管理</div><div class="nav-sub">Material Master · 臺北農產 第一果菜市場</div></div>
+  <div><div class="nav-title"><span class="ic ic-equipment"></span> 設備材料管理</div><div class="nav-sub">Material Master · 臺北農產 第一果菜市場</div></div>
   <div class="nav-space"></div>
-  <a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
-  <a class="mobile-hide" href="equipment.html"><button class="nav-back">⬢ 設備建置</button></a>
-  <a href="workorder.html"><button class="nav-back">◪ 報修系統</button></a>
-  <a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
+  <a href="dashboard.html"><button class="nav-back"><span class="ic ic-dashboard"></span> 戰情儀表板</button></a>
+  <a class="mobile-hide" href="equipment.html"><button class="nav-back"><span class="ic ic-equipment"></span> 設備建置</button></a>
+  <a href="workorder.html"><button class="nav-back"><span class="ic ic-dispatch"></span> 報修系統</button></a>
+  <a href="app.html"><button class="nav-back"><span class="ic ic-inspection"></span> 巡檢</button></a>
   <a href="admin.html"><button class="nav-back">← 後台</button></a>
 </nav>
 
@@ -143,7 +143,7 @@ tr:hover td{background:rgba(0,212,255,.04)}
     <button class="btn btn-add" onclick="openAdd()">＋ 新增材料</button>
     <button class="btn btn-blue" onclick="document.getElementById('impFile').click()">⭳ 匯入XLSX</button>
     <button class="btn btn-green" onclick="exportXLSX('xlsx')">⭱ 匯出XLSX</button>
-    <button class="btn" onclick="downloadTemplate()">▤ 範本</button>
+    <button class="btn" onclick="downloadTemplate()"><span class="ic ic-template"></span> 範本</button>
     <input type="file" id="impFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="onImportFile(event)">
   </div>
 

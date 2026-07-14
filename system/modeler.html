@@ -67,7 +67,7 @@ select:focus,input:focus{border-color:var(--cyan)}
 <body>
 <nav class="navbar">
   <div>
-    <div class="nav-title">⬢ 3D建模系統</div>
+    <div class="nav-title"><span class="ic ic-equipment"></span> 3D建模系統</div>
     <div class="nav-sub">上傳 DXF → 更新樓層平面圖 + 3D 立體模型</div>
   </div>
   <div class="nav-space"></div>
@@ -80,7 +80,7 @@ select:focus,input:focus{border-color:var(--cyan)}
 <div class="wrap">
   <!-- 控制面板 -->
   <div class="card">
-    <h3>◈ 上傳設定</h3>
+    <h3><span class="ic ic-handover"></span> 上傳設定</h3>
     <label>選擇樓層</label>
     <select id="floorSel">
       <option value="B1">B1 地下一層</option>
@@ -103,12 +103,12 @@ select:focus,input:focus{border-color:var(--cyan)}
     <button class="btn btn-primary" id="saveBtn" disabled onclick="saveModel()">▲ 更新模型</button>
     <div class="msg" id="msg"></div>
 
-    <h3 style="margin-top:18px">◉ 已建立的樓層模型</h3>
+    <h3 style="margin-top:18px"><span class="ic ic-inspection"></span> 已建立的樓層模型</h3>
     <div class="saved-list" id="savedList"><div class="stat">載入中…</div></div>
 
     <div class="links">
-      <a href="floor3d.html">⬡ 開啟 3D 立體模型</a>
-      <a href="b1plan.html">▣ 開啟平面圖</a>
+      <a href="floor3d.html"><span class="ic ic-3d"></span> 開啟 3D 立體模型</a>
+      <a href="b1plan.html"><span class="ic ic-3d"></span> 開啟平面圖</a>
     </div>
     <div class="hintbox">
       ※ DXF 在瀏覽器即時解析渲染，更新後 3D 模型與平面圖會自動載入新版本。<br>

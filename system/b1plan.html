@@ -141,19 +141,19 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
   <div class="tbtn" id="t-zin"  title="放大">＋</div>
   <div class="tbtn" id="t-zout" title="縮小">－</div>
   <div class="tbtn mobile-hide" id="t-rl"   title="逆時針旋轉 15°">↺</div>
-  <div class="tbtn mobile-hide" id="t-rr"   title="順時針旋轉 15°">↻</div>
+  <div class="tbtn mobile-hide" id="t-rr"   title="順時針旋轉 15°"><span class="ic ic-refresh"></span></div>
   <div class="tbtn" id="t-home" title="重置視角">⊡</div>
   <div class="tbtn mobile-hide" id="t-fs"   title="全螢幕">⛶</div>
 </div>
 
 <!-- 標記顯示選單（左側，預設隱藏，與 3D 立體樓層一致）-->
-<button id="mkToggle" onclick="toggleMkPanel(true)">◆ 打卡狀態</button>
+<button id="mkToggle" onclick="toggleMkPanel(true)"><span class="ic ic-checkmark"></span> 打卡狀態</button>
 <div id="mkpanel">
-  <div class="panel-head"><div class="p-t">◆ 打卡狀態</div><button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button></div>
+  <div class="panel-head"><div class="p-t"><span class="ic ic-checkmark"></span> 打卡狀態</div><button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button></div>
   <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" onchange="toggleMkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 巡邏點名稱</label>
   <div style="color:var(--text2);margin-top:3px">巡邏點數：<span style="color:var(--text)" id="mkNum">—</span></div>
   <details class="filter-menu">
-    <summary>◆ 打卡狀態</summary>
+    <summary><span class="ic ic-checkmark"></span> 打卡狀態</summary>
     <div class="filter-options">
       <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('ok',this.checked)"><i class="status-dot" style="color:#00ff9d;background:#00ff9d"></i> 已打</label>
       <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('pending',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 待打卡</label>
@@ -163,9 +163,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 </div>
 
 <div id="bottomRightRow">
-  <div id="hint">拖曳 平移 &nbsp;|&nbsp; 滾輪 局部縮放 &nbsp;|&nbsp; ↺↻ 旋轉 &nbsp;|&nbsp; 樓層上下對位</div>
+  <div id="hint">拖曳 平移 &nbsp;|&nbsp; 滾輪 局部縮放 &nbsp;|&nbsp; ↺<span class="ic ic-refresh"></span> 旋轉 &nbsp;|&nbsp; 樓層上下對位</div>
   <div id="hud">
-    <div class="h-t" id="hudFloor">▣ B1 地下一層</div>
+    <div class="h-t" id="hudFloor"><span class="ic ic-3d"></span> B1 地下一層</div>
     <div class="h-r">縮放：<span id="h-zoom">100%</span></div>
     <div class="h-r">旋轉：<span id="h-rot">0°</span></div>
     <div class="h-r">樓高：<span>B1↔1F 450 cm</span></div>
@@ -206,10 +206,10 @@ const viewer = OpenSeadragon({
 let rot=0, loaded=0, curFloor='B1';
 // all four floors share the same world frame & pixel grid (aligned)
 const FLOORS=[
-  {id:'B1', label:'▣ B1 地下一層', dzi:'plans/b1.dzi', idx:null},
-  {id:'1F', label:'▣ 1F 一樓',     dzi:'plans/f1.dzi', idx:null},
-  {id:'2F', label:'▣ 2F 二樓',     dzi:'plans/f2.dzi', idx:null},
-  {id:'3F', label:'▣ 3F 三樓',     dzi:'plans/f3.dzi', idx:null},
+  {id:'B1', label:'B1 地下一層', dzi:'plans/b1.dzi', idx:null},
+  {id:'1F', label:'1F 一樓',     dzi:'plans/f1.dzi', idx:null},
+  {id:'2F', label:'2F 二樓',     dzi:'plans/f2.dzi', idx:null},
+  {id:'3F', label:'3F 三樓',     dzi:'plans/f3.dzi', idx:null},
 ];
 
 // use updated models from Storage if available; else the static DZI tiles
@@ -245,8 +245,8 @@ function showFloor(f){
   FLOORS.forEach(fl=>{ const it=item(fl.idx); if(it) it.setOpacity(fl.id===f?1:0); });
   const sel=document.getElementById('floorSel'); if(sel && sel.value!==f) sel.value=f;
   const cur=FLOORS.find(fl=>fl.id===f);
-  document.getElementById('hudFloor').textContent=cur.label;
-  document.getElementById('tbTitle').textContent=cur.label.replace('▣ ','')+' 平面圖';
+  document.getElementById('hudFloor').innerHTML='<span class="ic ic-3d"></span> '+cur.label;
+  document.getElementById('tbTitle').textContent=cur.label+' 平面圖';
   drawPlanMarkers();
 }
 

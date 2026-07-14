@@ -434,3 +434,24 @@
   border-color: #cbd5e1 !important;
   color: #1e293b !important;
 }
+
+/* ===== ICON SYSTEM ===== */
+/* Dark line icons on transparent bg. Invert for dark theme, show as-is for light. */
+.ic{display:inline-block;width:1.1em;height:1.1em;vertical-align:middle;background-size:contain;background-repeat:no-repeat;background-position:center;flex-shrink:0;filter:invert(1);}
+:root[data-theme="light"] .ic{filter:none;}
+.ic-dashboard{background-image:url(icons/nav-dashboard.png);}
+.ic-dispatch{background-image:url(icons/nav-dispatch.png);}
+.ic-inspection{background-image:url(icons/nav-inspection.png);}
+.ic-equipment{background-image:url(icons/nav-equipment.png);}
+.ic-handover{background-image:url(icons/nav-handover.png);}
+.ic-3d{background-image:url(icons/nav-3d.png);}
+.ic-refresh{background-image:url(icons/icon-refresh.png);}
+.ic-logout{background-image:url(icons/icon-logout.png);}
+.ic-notification{background-image:url(icons/icon-notification.png);}
+.ic-template{background-image:url(icons/icon-template.png);}
+.ic-user{background-image:url(icons/icon-user.png);}
+.ic-password{background-image:url(icons/icon-password.png);}
+.ic-checkmark{background-image:url(icons/icon-checkmark.png);}
+.ic-location{background-image:url(icons/icon-location.png);}
+.ic-costs{background-image:url(icons/icon-costs.png);}
+.ic-audit{background-image:url(icons/icon-audit.png);}

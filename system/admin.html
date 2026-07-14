@@ -264,7 +264,7 @@ body{
   text-transform:uppercase;
   display:flex;align-items:center;gap:8px;
 }
-.panel-title::before{content:'◈';font-size:0.6rem;color:var(--cyan);opacity:0.8}
+.panel-title::before{content:'';display:none}
 
 /* ===== TABLE ===== */
 .data-table{width:100%;border-collapse:collapse;font-size:0.83rem}
@@ -640,7 +640,7 @@ body{
     <div class="sidebar-footer">
       <div class="user-info" id="sidebarUser">載入中…</div>
       <button class="logout-btn" style="margin-bottom:6px;background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3);color:var(--cyan)" onclick="openChangePwModal()">🔑 更改密碼</button>
-      <button class="logout-btn" onclick="logout()">⏻ 登出</button>
+      <button class="logout-btn" onclick="logout()"><span class="ic ic-logout"></span> 登出</button>
     </div>
   </aside>
 
@@ -654,7 +654,7 @@ body{
           <h2><span class="section-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span> 戰情儀表板</h2>
           <p>系統狀態 — 上次更新：<span id="lastRefresh" style="color:var(--cyan)">—</span></p>
         </div>
-        <button onclick="loadDashboard()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'">↻ 重新整理</button>
+        <button onclick="loadDashboard()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'"><span class="ic ic-refresh"></span> 重新整理</button>
       </div>
       <div class="stats-grid" id="statsGrid">
         <div class="stat-card"><div class="stat-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></div><div class="stat-val" id="stat-eq">—</div><div class="stat-label">設備總數</div></div>
@@ -743,7 +743,7 @@ body{
       <div class="panel">
         <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center">
           <span>批次匯入帳號（XLSX）</span>
-          <button class="btn btn-sm" style="border:1px solid var(--border);color:var(--text-dim);font-size:.72rem;background:none" onclick="downloadImportTemplate()">▤ 範本</button>
+          <button class="btn btn-sm" style="border:1px solid var(--border);color:var(--text-dim);font-size:.72rem;background:none" onclick="downloadImportTemplate()"><span class="ic ic-template"></span> 範本</button>
         </div>
         <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:12px">支援匯出格式或範本格式（姓名, 帳號, Email, 密碼, 電話, 角色）；XLSX / CSV 皆可讀。帳號/Email已存在則自動跳過。</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -955,7 +955,7 @@ body{
           <h2><span class="section-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span> 位置分析</h2>
           <p>場域下鑽分析 — 場域異常與報修樞紐統計</p>
         </div>
-        <button onclick="loadLocationAnalysis()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'">↻ 重新整理</button>
+        <button onclick="loadLocationAnalysis()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'"><span class="ic ic-refresh"></span> 重新整理</button>
       </div>
 
       <!-- Filter bar -->
@@ -1259,7 +1259,7 @@ body{
 <!-- EDIT USER MODAL -->
 <div class="modal-bg" id="editUserModal">
   <div class="modal">
-    <div class="modal-title">◉ 編輯使用者</div>
+    <div class="modal-title"><span class="ic ic-inspection"></span> 編輯使用者</div>
     <input type="hidden" id="edit-u-id">
     <div class="form-grid">
       <div class="field"><label>姓名</label><input id="edit-u-name" type="text" placeholder="姓名"></div>
@@ -1302,7 +1302,7 @@ body{
 <!-- EDIT EQUIPMENT MODAL -->
 <div class="modal-bg" id="editEqModal">
   <div class="modal">
-    <div class="modal-title">◧ 修改設備資料</div>
+    <div class="modal-title"><span class="ic ic-equipment"></span> 修改設備資料</div>
     <input type="hidden" id="edit-eq-id">
     <div class="form-grid">
       <div class="field"><label>設備名稱</label><input id="edit-eq-name" type="text"></div>
@@ -1349,7 +1349,7 @@ body{
 <!-- 更改密碼 -->
 <div class="modal-bg" id="changePwModal">
   <div class="modal">
-    <div class="modal-title">◉ 更改密碼</div>
+    <div class="modal-title"><span class="ic ic-inspection"></span> 更改密碼</div>
     <div class="form-grid">
       <div class="field"><label>新密碼</label><input id="new-pw" type="password" placeholder="至少 8 個字元" autocomplete="new-password"></div>
       <div class="field"><label>確認新密碼</label><input id="new-pw2" type="password" placeholder="再輸入一次" autocomplete="new-password"></div>
@@ -2743,7 +2743,7 @@ function buildL1Block(d) {
       <div class="dept-l1">
         <div class="dept-row">
           <span onclick="toggleL1('${d.dept_id}')" style="cursor:pointer;color:#00d4ff;width:16px;display:inline-block;text-align:center;user-select:none">${caret}</span>
-          <span class="dept-l1-icon">◈</span>
+          <span class="ic ic-handover dept-l1-icon"></span>
           <span class="dept-label" onclick="toggleL1('${d.dept_id}')" style="cursor:pointer">${escHtml(d.name)}</span>
           ${d.code ? `<span class="dept-code-badge">${escHtml(d.code)}</span>` : ''}
           <div class="dept-acts">
