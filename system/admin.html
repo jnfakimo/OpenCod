@@ -3401,7 +3401,10 @@ function translateError(msg) {
   if (msg.includes('value too long')) return '輸入值過長';
   if (msg.includes('invalid input syntax')) return '輸入格式不正確';
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
-  return '操作失敗，請稍後再試或聯絡系統管理員';
+  // 沒有對應到已知樣式時，把原始錯誤文字一起附上，避免真正的原因被「操作失敗」這種
+  // 空泛訊息吃掉，讓管理者可以直接把這段文字回報給開發者，不用另外打開瀏覽器主控台。
+  console.error('[translateError] 未對應到已知錯誤樣式：', msg);
+  return '操作失敗：' + msg;
 }
 
 function showToast(msg, isErr = false) {
