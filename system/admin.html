@@ -2084,6 +2084,78 @@ function genTempPassword() {
   return 'Tc' + Math.random().toString(36).slice(2,8).toUpperCase() + Math.floor(10 + Math.random() * 90);
 }
 
+function isRegisteredAuthUser(authData, authError) {
+  const message = String(authError?.message || '').toLowerCase();
+  if (message.includes('already registered') || message.includes('already been registered')) return true;
+  // Supabase may deliberately return an empty identities array instead of an
+  // error for an email that is already registered (email-enumeration guard).
+  return !!authData?.user && Array.isArray(authData.user.identities) && authData.user.identities.length === 0;
+}
+
+async function recoverAuthProfile(profile) {
+  const { data, error } = await db.rpc('recover_auth_user_profile', {
+    p_email: profile.email,
+    p_name: profile.name,
+    p_username: profile.username,
+    p_phone: profile.phone,
+    p_dept_id: profile.dept_id || null,
+    p_role: profile.role,
+    p_rbac_role: profile.rbac_role,
+    p_permissions: profile.permissions
+  });
+  if (error) return { data: null, error };
+  return { data: Array.isArray(data) ? data[0] : data, error: null };
+}
+
+async function createAuthBackedProfile(profile, password) {
+  // Never call signUp on the main client: when email confirmation is disabled,
+  // signUp changes that client's session to the newly-created user and the
+  // following admin-only profile insert fails, leaving an orphan Auth account.
+  const authClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+  });
+  const { data: authData, error: authError } = await authClient.auth.signUp({
+    email: profile.email,
+    password
+  });
+
+  if (isRegisteredAuthUser(authData, authError)) {
+    const recovered = await recoverAuthProfile(profile);
+    if (recovered.error) return { error: recovered.error, recovered: false };
+    return {
+      authId: recovered.data?.auth_id,
+      userId: recovered.data?.user_id,
+      recovered: true,
+      error: null
+    };
+  }
+  if (authError) return { error: authError, recovered: false };
+  if (!authData?.user?.id) return { error: new Error('Supabase Auth 未回傳使用者識別碼'), recovered: false };
+
+  const row = { ...profile, auth_id: authData.user.id };
+  const { data: inserted, error: profileError } = await db
+    .from('users')
+    .insert(row)
+    .select('user_id,auth_id')
+    .single();
+  if (!profileError) {
+    return { authId: inserted.auth_id, userId: inserted.user_id, recovered: false, error: null };
+  }
+
+  // Auth creation succeeded but the profile write failed. Retry through the
+  // idempotent recovery RPC so this request does not leave another orphan.
+  const recovered = await recoverAuthProfile(profile);
+  if (!recovered.error) {
+    return {
+      authId: recovered.data?.auth_id || authData.user.id,
+      userId: recovered.data?.user_id,
+      recovered: true,
+      error: null
+    };
+  }
+  return { error: profileError, recoveryError: recovered.error, recovered: false };
+}
+
 async function importUsersXlsx() {
   const file = document.getElementById('csvImportFile').files[0];
   if (!file) { showToast('請選擇檔案（XLSX / CSV）', true); return; }
@@ -2125,44 +2197,19 @@ async function importUsersXlsx() {
     const rbacRole = roleMap[roleRaw] || 'reporter';
     const userRole = legacyRoleForRbac(rbacRole);
     const permissions = defaultPermsForRole(rbacRole);
-    const { data: authData, error: authErr } = await db.auth.signUp({ email, password: pwd });
-
-    // 情況 A：Email 確認開啟 → error 'User already registered'
-    // 情況 B：Email 確認關閉 → 無 error，但 identities = [] 表示 email 已存在
-    const isTaken = authErr?.message === 'User already registered' ||
-      (!authErr && authData?.user && authData.user.identities?.length === 0);
-
-    if (authErr && !isTaken) {
-      log.innerHTML += `<div style="color:var(--red)">第 ${i+2} 行「${name}」：${translateError(authErr.message)}</div>`; failed++; continue;
-    }
-
-    let finalAuthId = authData?.user?.id;
-
-    if (isTaken) {
-      // 檢查 users 表是否已有 profile
-      const { data: existProf } = await db.from('users').select('user_id,name,status').eq('email', email).maybeSingle();
-      if (existProf) {
-        log.innerHTML += `<div style="color:var(--text-dim)">第 ${i+2} 行「${name}」：Email 已有帳號「${existProf.name}」，跳過</div>`; skipped++; continue;
-      }
-      // 孤立帳號 → 嘗試用 RPC 取得 auth_id 後補建 profile
-      const { data: orphanId, error: rpcErr } = await db.rpc('get_auth_user_id_by_email', { p_email: email });
-      if (rpcErr || !orphanId) {
-        log.innerHTML += `<div style="color:var(--amber)">第 ${i+2} 行「${name}」：偵測到孤立帳號，但無法自動取得認證 ID，請至 Supabase 建立 get_auth_user_id_by_email 函式後重試</div>`; failed++; continue;
-      }
-      finalAuthId = orphanId;
-      log.innerHTML += `<div style="color:var(--amber)">第 ${i+2} 行「${name}」：偵測到孤立帳號，自動補建 profile…</div>`;
-    }
-
-    const profile = { auth_id: finalAuthId, name, username, email, phone: phone || null, role: userRole, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser?.user_id };
-    const { error: profErr } = await db.from('users').insert(profile);
-    if (profErr) {
-      log.innerHTML += `<div style="color:var(--red)">第 ${i+2} 行「${name}」：${translateError(profErr.message)}</div>`; failed++; continue;
+    const profile = { name, username, email: email.toLowerCase(), phone: phone || null, role: userRole, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser?.user_id };
+    const created = await createAuthBackedProfile(profile, pwd);
+    if (created.error) {
+      log.innerHTML += `<div style="color:var(--red)">第 ${i+2} 行「${name}」：${translateError(created.error.message)}</div>`; failed++; continue;
     }
     const pwdNote = !password ? `<span style="color:var(--amber)">（臨時密碼：${pwd}）</span>` : '';
-    const repairNote = isTaken ? `<span style="color:var(--amber)">【孤立帳號修復】</span>` : '';
-    log.innerHTML += `<div style="color:var(--green)">✓ 「${name}」（${username}）匯入成功 ${repairNote}${pwdNote}</div>`;
+    const recoverNote = created.recovered ? '<span style="color:var(--amber)">（已修復既有 Email 的帳戶清單）</span>' : '';
+    log.innerHTML += `<div style="color:var(--green)">✓ 「${name}」（${username}）${created.recovered ? '修復成功' : '匯入成功'} ${recoverNote}${pwdNote}</div>`;
+    existingUsernames.add(username.toLowerCase());
+    existingEmails.add(email.toLowerCase());
     success++;
     log.scrollTop = log.scrollHeight;
+  }
   log.innerHTML += `<div style="color:var(--cyan);margin-top:8px;border-top:1px solid var(--border);padding-top:6px">完成：新增 ${success} 筆，已存在跳過 ${skipped} 筆，失敗 ${failed} 筆</div>`;
   log.scrollTop = log.scrollHeight;
   if (success > 0) await loadUsers();
@@ -2171,7 +2218,7 @@ async function importUsersXlsx() {
 async function createUser() {
   const name     = document.getElementById('u-name').value.trim();
   const username = document.getElementById('u-username').value.trim();
-  const email    = document.getElementById('u-email').value.trim();
+  const email    = document.getElementById('u-email').value.trim().toLowerCase();
   const pass     = document.getElementById('u-pass').value;
   const phone    = document.getElementById('u-phone').value.trim();
   const deptId   = getAdminDeptId();
@@ -2182,78 +2229,29 @@ async function createUser() {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Email 格式不正確', true); return; }
   if (!/^[A-Za-z0-9_]+$/.test(username)) { showToast('帳號僅限英文、數字、底線', true); return; }
 
-  const { data: authData, error: authErr } = await db.auth.signUp({ email, password: pass });
-
-  // 情況 A：Email 確認開啟 → authErr = 'User already registered'
-  // 情況 B：Email 確認關閉 → 無 error，但 identities = [] 表示 email 已存在
-  const isEmailTaken =
-    authErr?.message === 'User already registered' ||
-    (!authErr && authData?.user && (authData.user.identities?.length === 0));
-
-  if (authErr && !isEmailTaken) {
-    showToast('建立帳號失敗：' + translateError(authErr.message), true);
-    return;
-  }
-
-  if (isEmailTaken) {
-    const { data: existProf } = await db.from('users').select('user_id,name,status').eq('email', email).maybeSingle();
-    if (existProf) {
-      const statusTxt = existProf.status === 'active' ? '（啟用中）' : '（已停用）';
-      showToast(`此 Email 已有帳號「${existProf.name}」${statusTxt}，請至帳號清單查看`, true);
-    } else {
-      if (confirm(`⚠️ 偵測到孤立帳號
-
-此 Email（${email}）在認證系統已存在，但帳號清單沒有資料。
-
-點「確定」自動修復，建立使用者資料`)) {
-        await forceCreateOrphanProfile({ name, username, email, phone, deptId, rbacRole, role });
-      }
-    }
-    return;
-  }
-
   const permissions = collectPermissionValues('c');
-  const profile = { auth_id: authData.user.id, name, username, email, phone: phone || null, dept_id: deptId, role, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser.user_id };
-  const { error: profErr } = await db.from('users').insert(profile);
-  if (profErr) { showToast('建立使用者資料失敗：' + translateError(profErr.message), true); return; }
+  const { data: duplicateEmail } = await db.from('users').select('user_id').ilike('email', email).limit(1).maybeSingle();
+  if (duplicateEmail) { showToast('此 Email 已存在於帳戶清單，請直接搜尋或清除篩選條件查看', true); return; }
+  const { data: duplicateUsername } = await db.from('users').select('user_id').ilike('username', username).limit(1).maybeSingle();
+  if (duplicateUsername) { showToast('此登入帳號已存在，請使用其他帳號', true); return; }
 
-  await writeAudit('users', authData.user.id, 'insert', null, profile);
-  showToast(`帳號「${name}」已建立`);
+  const profile = { name, username, email, phone: phone || null, dept_id: deptId, role, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser.user_id };
+  const created = await createAuthBackedProfile(profile, pass);
+  if (created.error) {
+    const migrationMissing = created.error.message?.includes('recover_auth_user_profile');
+    showToast(migrationMissing
+      ? '此 Email 已存在於登入系統，但帳戶清單尚未同步；請先套用帳戶修復資料庫更新'
+      : '建立帳號失敗：' + translateError(created.error.message), true);
+    return;
+  }
+
+  await writeAudit('users', created.authId || created.userId, 'insert', null, { ...profile, recovered: created.recovered });
+  showToast(created.recovered
+    ? `帳號「${name}」已修復並顯示於帳戶清單；密碼沿用此 Email 原先註冊的密碼`
+    : `帳號「${name}」已建立`);
   ['u-name','u-username','u-email','u-pass','u-phone'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('u-dept-l1').value = '';
   document.getElementById('u-dept-l2').innerHTML = '<option value="">-- 無下級單位 --</option>';
-  document.getElementById('u-dept-l2').disabled = true;
-  document.getElementById('u-role').value = 'reporter';
-  applyRolePreset('c');
-  await loadUsers();
-}
-
-// ─── 修復孤立帳號：Auth 存在但 users 無 profile ─────────────────────────────────
-async function forceCreateOrphanProfile({ name, username, email, phone, deptId, rbacRole, role }) {
-  // 嘗試透過 RPC 取得孤立 auth user 的 auth_id
-  let authId = null;
-  const { data: rpcId, error: rpcErr } = await db.rpc('get_auth_user_id_by_email', { p_email: email });
-  if (!rpcErr && rpcId) {
-    authId = rpcId;
-  } else {
-    // RPC 不存在：fallback — 用不存在的 uuid 代替，後續須手動對掃
-    showToast('無法自動取得認證 ID，請先建立以下 SQL 函式再重試（見底部說明）', true);
-    return;
-  }
-  const permissions = collectPermissionValues('c');
-  const profile = {
-    auth_id: authId, name, username, email,
-    phone: phone || null, dept_id: deptId,
-    role, rbac_role: rbacRole, permissions,
-    status: 'active', created_by: currentUser.user_id
-  };
-  const { error: profErr } = await db.from('users').insert(profile);
-  if (profErr) { showToast('修復失敗：' + translateError(profErr.message), true); return; }
-  await writeAudit('users', authId, 'insert', null, { ...profile, _note: '孤立帳號修復' });
-  showToast(`✅ 帳號「${name}」修復建立成功！請使用「重設密碼」功能更新密碼`);
-  ['u-name','u-username','u-email','u-pass','u-phone'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('u-dept-l1').value = '';
-  document.getElementById('u-dept-l2').innerHTML = '<option value="">—— 無下級單位 ——</option>';
   document.getElementById('u-dept-l2').disabled = true;
   document.getElementById('u-role').value = 'reporter';
   applyRolePreset('c');

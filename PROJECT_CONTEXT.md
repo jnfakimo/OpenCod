@@ -90,7 +90,8 @@
 9. `equipment_lifecycle.sql` — 設備生命週期、保養、履歷、合約、文件、成本與中央監控介接
 10. `patrol_shifts.sql` / `checkin_logs.sql` — 駐衛警班別與簽到紀錄
 11. `rls_hardening.sql` / `rls_hardening_login_fix.sql` — 正式環境權限
-12. `permanent_data_protection.sql` — **最後執行**；禁止實體刪除/清空並建立人員異動快照
+12. `auth_profile_recovery.sql` — 修復 Auth 已註冊但 `users` 清單缺資料的帳戶同步
+13. `permanent_data_protection.sql` — **最後執行**；禁止實體刪除/清空並建立人員異動快照
 
 輔助 / 修補：`dept_rebuild.sql`、`org_update.sql`、`repair_request_timeout_fix.sql`。
 `dept_rebuild.sql` 現為安全增量同步，不會清空人員部門或刪除既有部門。
