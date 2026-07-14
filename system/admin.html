@@ -1301,6 +1301,29 @@ body{
   </div>
 </div>
 
+<!-- RESET PASSWORD MODAL -->
+<div class="modal-bg" id="resetPwModal">
+  <div class="modal">
+    <div class="modal-title">🔑 重設密碼</div>
+    <p id="resetPwTarget" style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px"></p>
+    <div class="form-grid">
+      <div class="field" style="grid-column:1/-1">
+        <label>新密碼（至少 6 碼）</label>
+        <input id="reset-new-pw" type="password" placeholder="輸入新密碼" autocomplete="new-password">
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>確認新密碼</label>
+        <input id="reset-new-pw2" type="password" placeholder="再次輸入新密碼" autocomplete="new-password">
+      </div>
+    </div>
+    <div id="resetPwMsg" style="font-size:.8rem;min-height:1.4em;margin:8px 0;padding:6px;border-radius:2px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" style="background:rgba(12,40,64,0.6);color:var(--text-dim);border:1px solid var(--border)" onclick="closeModal('resetPwModal')">取消</button>
+      <button class="btn btn-primary btn-sm" id="resetPwSaveBtn" onclick="doResetUserPw()">確認重設</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDIT EQUIPMENT MODAL -->
 <div class="modal-bg" id="editEqModal">
   <div class="modal">
@@ -1839,6 +1862,7 @@ function renderUsers(users) {
     <td><span class="badge ${u.status === 'active' ? 'badge-active' : 'badge-inactive'}">${u.status === 'active' ? '啟用' : '停用'}</span></td>
     <td style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-primary btn-sm" onclick="editUser('${u.user_id}')">編輯</button>
+      <button class="btn btn-sm" style="border:1px solid var(--amber);color:var(--amber);background:rgba(255,179,0,.08)" onclick="openResetPwModal('${u.user_id}','${escHtml(u.name)}','${escHtml(u.email||'')}')">🔑 重設密碼</button>
       ${u.status === 'active' && u.user_id !== currentUser.user_id ? `<button class="btn btn-warn btn-sm" onclick="toggleUserStatus('${u.user_id}','inactive')">停用</button>` : ''}
       ${u.status === 'inactive' ? `<button class="btn btn-primary btn-sm" onclick="toggleUserStatus('${u.user_id}','active')">啟用</button>` : ''}
     </td>
@@ -2075,6 +2099,67 @@ async function createUser() {
   document.getElementById('u-role').value = 'reporter';
   applyRolePreset('c');
   await loadUsers();
+}
+
+// ─── 管理員重設使用者密碼 ─────────────────────────────────────────────────────
+let _resetTargetEmail = '';
+
+function openResetPwModal(userId, name, email) {
+  _resetTargetEmail = email;
+  document.getElementById('resetPwTarget').textContent = `對象：${name}（${email}）`;
+  document.getElementById('reset-new-pw').value = '';
+  document.getElementById('reset-new-pw2').value = '';
+  const msg = document.getElementById('resetPwMsg');
+  msg.textContent = ''; msg.style.cssText = '';
+  document.getElementById('resetPwModal').classList.add('show');
+}
+
+async function doResetUserPw() {
+  const pw  = document.getElementById('reset-new-pw').value;
+  const pw2 = document.getElementById('reset-new-pw2').value;
+  const msg = document.getElementById('resetPwMsg');
+  const btn = document.getElementById('resetPwSaveBtn');
+  msg.textContent = ''; msg.style.cssText = '';
+
+  if (pw.length < 6) {
+    msg.textContent = '密碼至少需要 6 個字元'; msg.style.color = 'var(--red)'; return;
+  }
+  if (pw !== pw2) {
+    msg.textContent = '兩次密碼不一致'; msg.style.color = 'var(--red)'; return;
+  }
+  if (!_resetTargetEmail) {
+    msg.textContent = '找不到使用者 Email'; msg.style.color = 'var(--red)'; return;
+  }
+
+  btn.disabled = true; btn.textContent = '處理中…';
+
+  // 步驟一：呼叫 Supabase RPC admin_reset_user_password（需 DB function）
+  const { error: rpcErr } = await db.rpc('admin_reset_user_password', {
+    p_email: _resetTargetEmail,
+    p_new_password: pw
+  });
+
+  if (rpcErr) {
+    // 若 RPC 不存在，改用寄送重設信（fallback）
+    const redirectTo = window.location.origin + '/word-cloud/system/login.html';
+    const { error: mailErr } = await db.auth.resetPasswordForEmail(_resetTargetEmail, { redirectTo });
+    if (mailErr) {
+      msg.textContent = '重設失敗：' + translateError(mailErr.message);
+      msg.style.cssText = 'color:var(--red);background:rgba(255,59,59,.06);border:1px solid rgba(255,59,59,.2);padding:8px;border-radius:2px';
+    } else {
+      msg.textContent = '✅ 已發送密碼重設信至 ' + _resetTargetEmail + '，請通知使用者收信。';
+      msg.style.cssText = 'color:var(--green);background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.2);padding:8px;border-radius:2px';
+      showToast('重設信已寄出');
+      setTimeout(() => closeModal('resetPwModal'), 3000);
+    }
+  } else {
+    msg.textContent = '✅ 密碼已重設完成！';
+    msg.style.cssText = 'color:var(--green);background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.2);padding:8px;border-radius:2px';
+    showToast(`${_resetTargetEmail} 密碼已重設`);
+    setTimeout(() => closeModal('resetPwModal'), 2000);
+  }
+
+  btn.disabled = false; btn.textContent = '確認重設';
 }
 
 async function toggleUserStatus(userId, status) {
