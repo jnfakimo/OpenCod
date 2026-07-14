@@ -244,16 +244,8 @@ a{color:inherit;text-decoration:none}
 .toast.err{background:rgba(255,59,59,.1);color:var(--red);border-color:rgba(255,59,59,.35);
   text-shadow:0 0 8px rgba(255,59,59,.5);box-shadow:0 0 20px rgba(255,59,59,.15)}
 
-/* ===== THEME SWITCHER ===== */
-.theme-toggle{position:fixed;right:24px;bottom:24px;z-index:550;min-height:42px;
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 14px;
-  border:1px solid var(--border-hi);border-radius:22px;background:var(--surface);color:var(--text-hi);
-  box-shadow:0 6px 20px rgba(0,0,0,.28);font-family:'Noto Sans TC',system-ui,sans-serif;
-  font-size:.78rem;font-weight:700;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s}
-.theme-toggle:hover{transform:translateY(-2px);border-color:var(--cyan);box-shadow:0 9px 25px rgba(0,123,184,.22)}
-.theme-toggle:focus-visible{outline:3px solid rgba(0,123,184,.28);outline-offset:3px}
-.theme-toggle-icon{font-size:1rem;line-height:1}
-.toast{bottom:78px}
+/* Keep notices clear of the shared bottom-right theme switch. */
+.toast{bottom:76px}
 
 /* ===== SUCCESS OVERLAY ===== */
 .success-overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:600;
@@ -304,11 +296,11 @@ a{color:inherit;text-decoration:none}
   .d-info{grid-template-columns:1fr}
   .d-info .full{grid-column:1}
   .navbar{gap:6px}
-  .theme-toggle{right:16px;bottom:16px;min-height:46px;padding:10px 15px;font-size:.82rem}
   .toast{right:16px;bottom:76px;max-width:calc(100vw - 32px)}
 }
 </style>
 <script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');}catch(_){document.documentElement.setAttribute('data-theme','tech');}</script>
+<script src="theme.js"></script>
 <link rel="stylesheet" href="light-mode-fix.css">
 </head>
 <body>
@@ -392,39 +384,12 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <div class="toast" id="toast"></div>
-<button class="theme-toggle" id="themeToggle" type="button" onclick="toggleTheme()"
-  aria-label="切換一般版與深色版" aria-pressed="false">
-  <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true">☀</span>
-  <span id="themeToggleText">一般版</span>
-</button>
 
 <script>
 /* ===== SUPABASE ===== */
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
-
-/* ===== DISPLAY THEME ===== */
-const THEME_STORAGE_KEY='siteTheme';
-function isLightTheme(){return document.documentElement.getAttribute('data-theme')==='light';}
-function syncThemeToggle(){
-  const btn=document.getElementById('themeToggle');
-  const icon=document.getElementById('themeToggleIcon');
-  const text=document.getElementById('themeToggleText');
-  if(!btn||!icon||!text)return;
-  const light=isLightTheme();
-  icon.textContent=light?'◐':'☀';
-  text.textContent=light?'深色版':'一般版';
-  btn.setAttribute('aria-pressed',String(light));
-  btn.title=light?'切換為深色版':'切換為一般白底版';
-}
-function setTheme(theme){
-  const light=theme==='light';
-  document.documentElement.setAttribute('data-theme',light?'light':'tech');
-  try{localStorage.setItem(THEME_STORAGE_KEY,light?'light':'tech');}catch(_){/* Keep in-memory setting. */}
-  syncThemeToggle();
-}
-function toggleTheme(){setTheme(isLightTheme()?'dark':'light');}
 
 /* ===== RBAC ===== */
 const RBAC_ROLES={reporter:'一般報修人員',duty:'值班人員',dispatcher:'派工管理員',
@@ -1137,7 +1102,6 @@ document.addEventListener('keydown',e=>{
 });
 
 /* ===== START ===== */
-syncThemeToggle();
 init();
 </script>
 </body>
