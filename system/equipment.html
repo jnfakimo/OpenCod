@@ -9,6 +9,7 @@
 <title>設備建置與生命週期管理 — 臺北農產</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;--cyan:#00d4ff;--blue:#1a7fff;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;--purple:#9b5cff;--text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#527896;--font-head:'Rajdhani','Noto Sans TC',sans-serif}
@@ -81,7 +82,7 @@
     <select id="categoryFilter" onchange="page=1;renderCurrent()"><option value="">全部類別</option></select>
     <button class="btn btn-primary" id="addBtn" onclick="addForCurrentTab()">＋ 新增設備</button>
     <button class="btn mobile-hide" onclick="document.getElementById('importFile').click()">⭳ 匯入 XLSX</button>
-    <button class="btn btn-green mobile-hide" onclick="exportWorkbook()">⭱ 匯出 XLSX</button>
+    <button class="btn btn-green mobile-hide" onclick="exportWorkbook()" title="匯出完整設備主檔與所有關聯紀錄">⭱ 匯出 XLSX</button>
     <button class="btn mobile-hide" onclick="downloadTemplate()"><span class="ic ic-template"></span> 下載範本</button>
     <button class="btn btn-amber mobile-hide" onclick="printAllEquipmentQR()">▦ 列印全部 QR</button>
     <input type="file" id="importFile" accept=".xlsx,.xls" style="display:none" onchange="prepareImport(event)">
@@ -209,10 +210,19 @@ function pagerHtml(p){return `<div class="pager"><span class="info">共 ${p.tota
 function goPage(n){page=n;renderCurrent();document.getElementById('view').scrollIntoView({behavior:'smooth'});}
 
 function renderCurrent(){if(tab==='assets')renderAssets();else if(tab==='integration')renderIntegration();else renderRelated(tab);}
+function equipmentDisplayData(e){
+  const plans=state.plans.filter(x=>x.equipment_id===e.equipment_id&&x.status==='active');
+  const due=plans.map(x=>x.next_due_on).filter(Boolean).sort()[0]||e.next_maintenance_on;
+  return {
+    code:e.asset_code||e.qr_code||'',floor:canonicalFloor(e.floor||e.location),due,
+    linked:state.links.some(x=>x.equipment_id===e.equipment_id&&x.status==='active'),
+    marker:markerForEquipment(e.equipment_id)
+  };
+}
 function renderAssets(){
   const p=paginate(filteredAssets());
-  const rows=p.rows.map(e=>{const plans=state.plans.filter(x=>x.equipment_id===e.equipment_id&&x.status==='active');const due=plans.map(x=>x.next_due_on).filter(Boolean).sort()[0]||e.next_maintenance_on;const linked=state.links.some(x=>x.equipment_id===e.equipment_id&&x.status==='active');const marker=markerForEquipment(e.equipment_id);return `<tr>
-    <td class="code">${esc(canonicalFloor(e.floor||e.location)||'—')}</td><td class="code">${esc(e.asset_code||e.qr_code||'—')}</td><td><strong style="color:var(--text-hi)">${esc(e.name)}</strong><div class="muted">${esc(e.location||'')}</div></td><td class="qr-cell"><button class="act qr-btn ${marker?'':'unmapped'}" onclick="openEquipmentQr('${e.equipment_id}')" title="${marker?'掃描後定位 3D 點位':'尚未設定 3D 點位'}">▦ QR</button></td><td>${esc(e.category||'—')}</td><td>${esc(e.department||'—')}</td><td>${esc([e.brand,e.model].filter(Boolean).join(' / ')||'—')}</td><td><span class="pill ${dueClass(due)}">${due?fmtDate(due):'未設定'}</span></td><td>${fmtDate(e.warranty_until)}</td><td>${linked?'<span class="pill ok">已對照</span>':'<span class="pill">未介接</span>'}</td><td>${statusPill(e.status)}</td><td><button class="act" onclick="openRelations('${e.equipment_id}')">關聯</button> <button class="act" onclick="openEquipment('${e.equipment_id}')">編輯</button></td></tr>`;}).join('');
+  const rows=p.rows.map(e=>{const d=equipmentDisplayData(e);return `<tr>
+    <td class="code">${esc(d.floor||'—')}</td><td class="code">${esc(d.code||'—')}</td><td><strong style="color:var(--text-hi)">${esc(e.name)}</strong><div class="muted">${esc(e.location||'')}</div></td><td class="qr-cell"><button class="act qr-btn ${d.marker?'':'unmapped'}" onclick="openEquipmentQr('${e.equipment_id}')" title="${d.marker?'掃描後定位 3D 點位':'尚未設定 3D 點位'}">▦ QR</button></td><td>${esc(e.category||'—')}</td><td>${esc(e.department||'—')}</td><td>${esc([e.brand,e.model].filter(Boolean).join(' / ')||'—')}</td><td><span class="pill ${dueClass(d.due)}">${d.due?fmtDate(d.due):'未設定'}</span></td><td>${fmtDate(e.warranty_until)}</td><td>${d.linked?'<span class="pill ok">已對照</span>':'<span class="pill">未介接</span>'}</td><td>${statusPill(e.status)}</td><td><button class="act" onclick="openRelations('${e.equipment_id}')">關聯</button> <button class="act" onclick="openEquipment('${e.equipment_id}')">編輯</button></td></tr>`;}).join('');
   document.getElementById('view').innerHTML=`<section class="panel"><div class="panel-head"><strong>設備唯一主檔</strong><span class="hint">QR 掃描後依 equipment_id 讀取最新 3D 座標；調整點位後不必重印</span><span class="spacer"></span><button class="act" onclick="loadAll()"><span class="ic ic-refresh"></span> 更新</button></div><div class="table-wrap"><table id="assetTable"><thead><tr><th>樓層</th><th>設備編號</th><th>設備名稱 / 位置</th><th>QR</th><th>類別</th><th>使用部門</th><th>廠牌 / 型號</th><th>下次保養</th><th>保固到期</th><th>監控</th><th>狀態</th><th>操作</th></tr></thead><tbody>${rows||'<tr><td colspan="12" class="empty">尚無設備資料，請新增設備或匯入 XLSX。</td></tr>'}</tbody></table></div>${pagerHtml(p)}</section>`;
 }
 
@@ -341,14 +351,125 @@ async function confirmImport(){if(!pendingImport)return;const btn=document.getEl
  }catch(e){msg.textContent=schemaError(e)?'資料庫尚未套用 equipment_lifecycle.sql，無法匯入完整資料。':e.message;btn.disabled=false;}}
 
 function buildSheet(rows,headers){const ws=XLSX.utils.json_to_sheet(rows,{header:headers});ws['!cols']=headers.map(h=>({wch:Math.max(12,Math.min(28,h.length*2+4))}));if(rows.length)ws['!autofilter']={ref:`A1:${XLSX.utils.encode_col(headers.length-1)}${rows.length+1}`};return ws;}
-function exportWorkbook(){const wb=XLSX.utils.book_new();const erows=filteredAssets().map(e=>({'設備編號':e.asset_code||e.qr_code,'安裝樓層':e.floor,'設備名稱':e.name,'設備類別':e.category,'設備照片':e.photo_url,'使用部門':e.department,'廠牌':e.brand,'型號':e.model,'製造年份':e.manufactured_year,'安裝日期':fmtDate(e.installed_on)==='—'?'':fmtDate(e.installed_on),'驗收日期':fmtDate(e.accepted_on)==='—'?'':fmtDate(e.accepted_on),'設備壽命(年)':e.service_life_y,'電壓':e.voltage,'功率(kW)':e.power_kw,'原廠名稱':e.original_manufacturer,'原廠聯絡人':e.original_contact,'原廠電話':e.original_phone,'代理商':e.distributor,'代理商聯絡人':e.distributor_contact,'代理商電話':e.distributor_phone,'保固開始':e.warranty_from,'保固到期':e.warranty_until,'是否有保養合約':e.has_maintenance_contract?'是':'否','保養廠商':e.maintenance_vendor,'保養週期':e.maintenance_cycle,'上次保養':e.last_maintenance_on,'下次保養':e.next_maintenance_on,'設備負責人':e.responsible_name,'24小時維修電話':e.emergency_phone,'操作手冊':e.operation_manual_url,'維修手冊':e.maintenance_manual_url,'電路圖':e.circuit_diagram_url,'PLC程式':e.plc_program_url,'備註':e.remarks}));
- const prows=state.plans.map(x=>({'設備編號':eq(x.equipment_id).asset_code,'設備名稱':eq(x.equipment_id).name,'保養項目':x.item_name,'保養週期':x.cycle_text,'負責人':x.responsible_name,'上次保養':x.last_performed_on,'下次保養':x.next_due_on,'完成日期':x.last_completed_on,'結果':x.last_result,'備註':x.note}));
- const rrows=state.records.map(x=>({'日期':x.performed_on,'設備編號':eq(x.equipment_id).asset_code,'設備名稱':eq(x.equipment_id).name,'故障內容':x.fault_description,'故障原因':x.fault_cause,'處理方式':x.action_taken,'更換零件':x.replacement_parts,'停機時間(hr)':x.downtime_hours,'維修人員':x.technician,'維修費用':x.maintenance_cost,'備註':x.note}));
- const crows=state.contracts.map(x=>({'設備編號':eq(x.equipment_id).asset_code,'設備名稱':eq(x.equipment_id).name,'廠商':x.vendor,'聯絡人':x.contact_name,'電話':x.contact_phone,'合約開始':x.starts_on,'合約到期':x.ends_on,'服務內容':x.service_scope,'備註':x.note}));
- const drows=state.assets.map(e=>{const ds=state.documents.filter(x=>x.equipment_id===e.equipment_id&&x.is_current!==false),find=t=>ds.find(x=>x.document_type===t)?.file_url||'';return {'設備編號':e.asset_code,'設備名稱':e.name,'操作手冊':find('operation_manual')||e.operation_manual_url,'維修手冊':find('maintenance_manual')||e.maintenance_manual_url,'零件手冊':find('parts_manual'),'電路圖':find('circuit_diagram')||e.circuit_diagram_url,'PLC程式':find('plc_program')||e.plc_program_url,'參數備份':find('parameter_backup'),'設備照片':find('photo')||e.photo_url,'備註':e.remarks};});
- const arows=state.costs.map(x=>{const total=num(x.repair_cost)+num(x.maintenance_cost)+num(x.parts_cost)+num(x.downtime_loss);return {'年度':x.fiscal_year,'設備編號':eq(x.equipment_id).asset_code,'設備名稱':eq(x.equipment_id).name,'維修費':x.repair_cost,'保養費':x.maintenance_cost,'零件費':x.parts_cost,'停機損失':x.downtime_loss,'合計':total,'備註':x.note};});
- const mrows=state.points.map(p=>{const l=state.links.find(x=>x.link_id===p.link_id)||{};return {'設備編號':eq(p.equipment_id).asset_code,'設備名稱':eq(p.equipment_id).name,'外部系統':l.external_system,'外部設備鍵':l.external_equipment_key,'協定':l.protocol,'同步模式':l.sync_mode,'點位碼':p.point_code,'點位名稱':p.point_name,'點位位址':p.point_address,'資料型態':p.data_type,'單位':p.unit,'讀寫權限':p.access_mode,'取樣秒數':p.sampling_seconds,'正常下限':p.normal_min,'正常上限':p.normal_max,'告警下限':p.alarm_low,'告警上限':p.alarm_high,'狀態':p.status};});
- [['設備總表',erows],['保養排程',prows],['維修履歷',rrows],['保養合約',crows],['文件管理',drows],['年度成本',arows],['中央監控介接',mrows]].forEach(([n,r])=>XLSX.utils.book_append_sheet(wb,buildSheet(r,XLSX_HEADERS[n]),n));XLSX.writeFile(wb,`設備生命週期_${todayISO()}.xlsx`);
+
+const EXPORT_HEADERS={
+ '設備總表':['設備編號','QR定位網址','3D點位狀態','3D樓層','X座標','Y座標','Z座標','安裝樓層','位置說明','設備名稱','設備類別','設備照片','使用部門','廠牌','型號','序號','製造年份','安裝日期','驗收日期','設備壽命(年)','電壓','功率(kW)','原廠名稱','原廠聯絡人','原廠電話','代理商','代理商聯絡人','代理商電話','保固開始','保固到期','是否有保養合約','保養廠商','保養週期','上次保養','下次保養','設備負責人','24小時維修電話','操作手冊','維修手冊','電路圖','PLC程式','中央監控狀態','外部主資料鍵','關鍵程度','設備狀態','備註'],
+ '保養排程':['設備編號','設備名稱','保養項目','保養類型','保養週期','間隔值','間隔單位','負責人','上次保養','下次保養','完成日期','結果','狀態','備註'],
+ '維修履歷':['日期','設備編號','設備名稱','履歷類型','故障內容','故障原因','處理方式','更換零件','停機時間(hr)','維修人員','結果','維修費用','零件費','停機損失','下次保養','備註'],
+ '保養合約':['設備編號','設備名稱','廠商','聯絡人','電話','合約編號','合約開始','合約到期','服務內容','SLA回應小時','合約金額','狀態','備註'],
+ '文件管理':XLSX_HEADERS['文件管理'],
+ '文件明細':['設備編號','設備名稱','文件類型','文件名稱','版本','有效日期','到期日期','目前版本','檔案網址','備註'],
+ '年度成本':['年度','設備編號','設備名稱','維修費','保養費','零件費','停機損失','合計','來源','備註'],
+ '中央監控介接':['設備編號','設備名稱','外部系統','外部設備鍵','協定','同步模式','主資料來源','端點代稱','最後同步','連線狀態','點位碼','點位名稱','點位位址','資料型態','單位','讀寫權限','取樣秒數','正常下限','正常上限','告警下限','告警上限','點位最新值','點位最後收到','對照狀態','點位狀態']
+};
+
+const EXPORT_OPTIONS={
+ '設備總表':{dates:['安裝日期','驗收日期','保固開始','保固到期','上次保養','下次保養'],numbers:['X座標','Y座標','Z座標','製造年份','設備壽命(年)','功率(kW)'],urls:['QR定位網址','設備照片','操作手冊','維修手冊','電路圖','PLC程式'],statuses:['3D點位狀態','中央監控狀態','設備狀態']},
+ '保養排程':{dates:['上次保養','下次保養','完成日期'],numbers:['間隔值'],statuses:['狀態']},
+ '維修履歷':{dates:['日期','下次保養'],numbers:['停機時間(hr)','維修費用','零件費','停機損失'],statuses:[]},
+ '保養合約':{dates:['合約開始','合約到期'],numbers:['SLA回應小時','合約金額'],statuses:['狀態']},
+ '文件管理':{dates:[],numbers:[],urls:['操作手冊','維修手冊','零件手冊','電路圖','PLC程式','參數備份','設備照片'],statuses:[]},
+ '文件明細':{dates:['有效日期','到期日期'],numbers:[],urls:['檔案網址'],statuses:['目前版本']},
+ '年度成本':{dates:[],numbers:['年度','維修費','保養費','零件費','停機損失','合計'],statuses:[]},
+ '中央監控介接':{dates:[],datetimes:['最後同步','點位最後收到'],numbers:['取樣秒數','正常下限','正常上限','告警下限','告警上限'],statuses:['連線狀態','對照狀態','點位狀態']}
+};
+
+function exportEqCode(id){const e=eq(id);return e.asset_code||e.qr_code||'';}
+function exportEqName(id){return eq(id).name||'';}
+function exportStatus(v){return STATUS[v]||v||'';}
+function exportNumber(v){if(v==null||v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null;}
+function exportDate(v){if(!v)return null;const s=fmtDate(v);if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return null;const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d,12,0,0);}
+function exportDateTime(v){if(!v)return null;const d=new Date(v);return Number.isNaN(d.getTime())?null:d;}
+function exportBool(v){return v===true?'是':v===false?'否':'未設定';}
+function exportLastValue(v){if(v==null)return '';return typeof v==='object'?JSON.stringify(v):String(v);}
+
+function buildEquipmentExportRow(e){
+  const d=equipmentDisplayData(e),m=d.marker;
+  return {'設備編號':d.code,'QR定位網址':equipment3DUrl(e.equipment_id),'3D點位狀態':m?'已設定':'未設定','3D樓層':m?canonicalFloor(m.floor_id):'',
+    'X座標':m?exportNumber(m.x):null,'Y座標':m?exportNumber(m.y):null,'Z座標':m?exportNumber(m.z):null,'安裝樓層':d.floor,'位置說明':e.location||'',
+    '設備名稱':e.name||'','設備類別':e.category||'','設備照片':e.photo_url||'','使用部門':e.department||'','廠牌':e.brand||'','型號':e.model||'','序號':e.serial_no||'',
+    '製造年份':exportNumber(e.manufactured_year),'安裝日期':exportDate(e.installed_on),'驗收日期':exportDate(e.accepted_on),'設備壽命(年)':exportNumber(e.service_life_y),'電壓':e.voltage||'','功率(kW)':exportNumber(e.power_kw),
+    '原廠名稱':e.original_manufacturer||'','原廠聯絡人':e.original_contact||'','原廠電話':e.original_phone||'','代理商':e.distributor||'','代理商聯絡人':e.distributor_contact||'','代理商電話':e.distributor_phone||'',
+    '保固開始':exportDate(e.warranty_from),'保固到期':exportDate(e.warranty_until),'是否有保養合約':exportBool(e.has_maintenance_contract),'保養廠商':e.maintenance_vendor||'','保養週期':e.maintenance_cycle||'',
+    '上次保養':exportDate(e.last_maintenance_on),'下次保養':exportDate(d.due),'設備負責人':e.responsible_name||'','24小時維修電話':e.emergency_phone||'',
+    '操作手冊':e.operation_manual_url||'','維修手冊':e.maintenance_manual_url||'','電路圖':e.circuit_diagram_url||'','PLC程式':e.plc_program_url||'',
+    '中央監控狀態':d.linked?'已對照':'未介接','外部主資料鍵':e.external_master_key||'','關鍵程度':e.criticality||'','設備狀態':exportStatus(e.status),'備註':e.remarks||''};
+}
+
+function buildMonitorExportRows(){
+  const rows=[],used=new Set();
+  const add=(l,p)=>{if(p?.point_id)used.add(p.point_id);const equipmentId=p?.equipment_id||l?.equipment_id;rows.push({'設備編號':exportEqCode(equipmentId),'設備名稱':exportEqName(equipmentId),
+    '外部系統':l?.external_system||'','外部設備鍵':l?.external_equipment_key||'','協定':l?.protocol||'','同步模式':l?.sync_mode||'','主資料來源':l?.source_of_truth||'','端點代稱':l?.endpoint_alias||'',
+    '最後同步':exportDateTime(l?.last_sync_at),'連線狀態':l?.last_sync_status||'','點位碼':p?.point_code||'','點位名稱':p?.point_name||'','點位位址':p?.point_address||'','資料型態':p?.data_type||'',
+    '單位':p?.unit||'','讀寫權限':p?.access_mode||'','取樣秒數':exportNumber(p?.sampling_seconds),'正常下限':exportNumber(p?.normal_min),'正常上限':exportNumber(p?.normal_max),
+    '告警下限':exportNumber(p?.alarm_low),'告警上限':exportNumber(p?.alarm_high),'點位最新值':exportLastValue(p?.last_value),'點位最後收到':exportDateTime(p?.last_seen_at),
+    '對照狀態':exportStatus(l?.status),'點位狀態':exportStatus(p?.status)});};
+  state.links.forEach(l=>{const points=state.points.filter(p=>p.link_id===l.link_id);if(points.length)points.forEach(p=>add(l,p));else add(l,null);});
+  state.points.filter(p=>!used.has(p.point_id)).forEach(p=>add(null,p));
+  return rows;
+}
+
+function buildExportRows(){
+  const documents=state.assets.map(e=>{const ds=state.documents.filter(x=>x.equipment_id===e.equipment_id&&x.is_current!==false),find=t=>ds.find(x=>x.document_type===t)?.file_url||'';return {'設備編號':e.asset_code||e.qr_code||'','設備名稱':e.name||'','操作手冊':find('operation_manual')||e.operation_manual_url||'','維修手冊':find('maintenance_manual')||e.maintenance_manual_url||'','零件手冊':find('parts_manual'),'電路圖':find('circuit_diagram')||e.circuit_diagram_url||'','PLC程式':find('plc_program')||e.plc_program_url||'','參數備份':find('parameter_backup'),'設備照片':find('photo')||e.photo_url||'','備註':e.remarks||''};});
+  return {
+    '設備總表':state.assets.map(buildEquipmentExportRow),
+    '保養排程':state.plans.map(x=>({'設備編號':exportEqCode(x.equipment_id),'設備名稱':exportEqName(x.equipment_id),'保養項目':x.item_name||'','保養類型':x.maintenance_type||'','保養週期':x.cycle_text||'','間隔值':exportNumber(x.interval_value),'間隔單位':x.interval_unit||'','負責人':x.responsible_name||'','上次保養':exportDate(x.last_performed_on),'下次保養':exportDate(x.next_due_on),'完成日期':exportDate(x.last_completed_on),'結果':x.last_result||'','狀態':exportStatus(x.status),'備註':x.note||''})),
+    '維修履歷':state.records.map(x=>({'日期':exportDate(x.performed_on),'設備編號':exportEqCode(x.equipment_id),'設備名稱':exportEqName(x.equipment_id),'履歷類型':x.record_type||'','故障內容':x.fault_description||'','故障原因':x.fault_cause||'','處理方式':x.action_taken||'','更換零件':x.replacement_parts||'','停機時間(hr)':exportNumber(x.downtime_hours),'維修人員':x.technician||'','結果':x.result||'','維修費用':exportNumber(x.maintenance_cost),'零件費':exportNumber(x.parts_cost),'停機損失':exportNumber(x.downtime_loss),'下次保養':exportDate(x.next_due_on),'備註':x.note||''})),
+    '保養合約':state.contracts.map(x=>({'設備編號':exportEqCode(x.equipment_id),'設備名稱':exportEqName(x.equipment_id),'廠商':x.vendor||'','聯絡人':x.contact_name||'','電話':x.contact_phone||'','合約編號':x.contract_no||'','合約開始':exportDate(x.starts_on),'合約到期':exportDate(x.ends_on),'服務內容':x.service_scope||'','SLA回應小時':exportNumber(x.sla_hours),'合約金額':exportNumber(x.contract_amount),'狀態':exportStatus(x.status),'備註':x.note||''})),
+    '文件管理':documents,
+    '文件明細':state.documents.map(x=>({'設備編號':exportEqCode(x.equipment_id),'設備名稱':exportEqName(x.equipment_id),'文件類型':x.document_type||'','文件名稱':x.title||'','版本':x.version||'','有效日期':exportDate(x.effective_on),'到期日期':exportDate(x.expires_on),'目前版本':x.is_current===false?'否':'是','檔案網址':x.file_url||'','備註':x.note||''})),
+    '年度成本':state.costs.map(x=>({'年度':exportNumber(x.fiscal_year),'設備編號':exportEqCode(x.equipment_id),'設備名稱':exportEqName(x.equipment_id),'維修費':exportNumber(x.repair_cost),'保養費':exportNumber(x.maintenance_cost),'零件費':exportNumber(x.parts_cost),'停機損失':exportNumber(x.downtime_loss),'合計':num(x.repair_cost)+num(x.maintenance_cost)+num(x.parts_cost)+num(x.downtime_loss),'來源':x.source||'','備註':x.note||''})),
+    '中央監控介接':buildMonitorExportRows()
+  };
+}
+
+function styleStatusCell(cell){
+  const v=String(cell.value||'');
+  if(!v)return;
+  const good=/啟用|正常|完成|已對照|已設定|目前|是/.test(v),bad=/停用|退役|異常|逾期|未介接|終止|過期|否/.test(v);
+  cell.font={name:'Microsoft JhengHei',size:10,bold:true,color:{argb:good?'FF047857':bad?'FFB91C1C':'FF92400E'}};
+  cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:good?'FFD1FAE5':bad?'FFFEE2E2':'FFFEF3C7'}};
+  cell.alignment={horizontal:'center',vertical:'middle'};
+}
+
+function styleExportSheet(wb,name,rows){
+  const headers=EXPORT_HEADERS[name],opt=EXPORT_OPTIONS[name]||{},ws=wb.addWorksheet(name,{views:[{state:'frozen',xSplit:name==='設備總表'?3:2,ySplit:1,showGridLines:false}]});
+  const head=ws.addRow(headers);head.height=32;
+  head.eachCell(c=>{c.font={name:'Microsoft JhengHei',size:10,bold:true,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0F4C6E'}};c.alignment={horizontal:'center',vertical:'middle',wrapText:true};c.border={bottom:{style:'medium',color:{argb:'FF00A6C8'}}};});
+  rows.forEach((row,i)=>{const values=headers.map(h=>row[h]??null),r=ws.addRow(values);r.height=23;r.eachCell({includeEmpty:true},c=>{c.font={name:'Microsoft JhengHei',size:10,color:{argb:'FF263746'}};c.alignment={vertical:'middle'};c.border={bottom:{style:'hair',color:{argb:'FFD7E3EA'}}};if(i%2===1)c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF3F8FB'}};});
+    (opt.dates||[]).forEach(h=>{const n=headers.indexOf(h);if(n>=0){const c=r.getCell(n+1);if(c.value)c.numFmt='yyyy-mm-dd';c.alignment={horizontal:'center',vertical:'middle'};}});
+    (opt.datetimes||[]).forEach(h=>{const n=headers.indexOf(h);if(n>=0){const c=r.getCell(n+1);if(c.value)c.numFmt='yyyy-mm-dd hh:mm';c.alignment={horizontal:'center',vertical:'middle'};}});
+    (opt.numbers||[]).forEach(h=>{const n=headers.indexOf(h);if(n>=0){const c=r.getCell(n+1);if(c.value!=null)c.numFmt=/費|成本|損失|金額/.test(h)?'#,##0':'#,##0.###';c.alignment={horizontal:'right',vertical:'middle'};}});
+    (opt.urls||[]).forEach(h=>{const n=headers.indexOf(h);if(n>=0){const c=r.getCell(n+1),url=typeof c.value==='string'?c.value:'';if(/^https?:\/\//i.test(url)){c.value={text:h==='QR定位網址'?'開啟 3D 定位':'開啟連結',hyperlink:url,tooltip:url};c.font={name:'Microsoft JhengHei',size:10,color:{argb:'FF0369A1'},underline:true};c.alignment={horizontal:'center',vertical:'middle'};}}});
+    (opt.statuses||[]).forEach(h=>{const n=headers.indexOf(h);if(n>=0)styleStatusCell(r.getCell(n+1));});
+  });
+  headers.forEach((h,i)=>{let width=Math.max(10,Math.min(22,h.length*2+3));rows.slice(0,200).forEach(row=>{const v=row[h];if(v instanceof Date)return;const len=String(v??'').length;width=Math.max(width,Math.min(34,len+3));});if((opt.urls||[]).includes(h))width=16;if(/備註|內容|原因|處理方式|服務內容|位置說明/.test(h))width=28;if(/日期|保固|保養$|最後同步|最後收到/.test(h))width=Math.max(width,13);ws.getColumn(i+1).width=width;});
+  const lastRow=Math.max(1,rows.length+1);ws.autoFilter={from:{row:1,column:1},to:{row:lastRow,column:headers.length}};ws.properties.defaultRowHeight=23;
+  ws.pageSetup={paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:0.25,right:0.25,top:0.5,bottom:0.5,header:0.2,footer:0.2},printTitlesRow:'1:1'};
+  ws.headerFooter={oddHeader:`&C&"Microsoft JhengHei,Bold"臺北農產運銷股份有限公司 第一果菜市場｜${name}`,oddFooter:'&L設備生命週期管理&R第 &P 頁／共 &N 頁'};
+  ws.properties.tabColor={argb:name==='設備總表'?'FF00A6C8':'FF4F86A6'};
+  return ws;
+}
+
+function buildExportSummary(wb,rowsBySheet){
+  const ws=wb.addWorksheet('匯出說明',{views:[{showGridLines:false}]});
+  ws.mergeCells('A1:F1');ws.getCell('A1').value='臺北農產運銷股份有限公司 第一果菜市場';ws.getCell('A1').font={name:'Microsoft JhengHei',size:18,bold:true,color:{argb:'FFFFFFFF'}};ws.getCell('A1').fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF083B55'}};ws.getCell('A1').alignment={horizontal:'center',vertical:'middle'};ws.getRow(1).height=36;
+  ws.mergeCells('A2:F2');ws.getCell('A2').value='設備生命週期管理｜完整資料匯出';ws.getCell('A2').font={name:'Microsoft JhengHei',size:13,bold:true,color:{argb:'FF075985'}};ws.getCell('A2').alignment={horizontal:'center',vertical:'middle'};ws.getRow(2).height=28;
+  const now=new Date(),metadata=[['匯出日期',`${todayISO()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`],['匯出範圍','完整資料（不受頁面搜尋、樓層或類別篩選影響）'],['設備總數',state.assets.length],['運轉中',state.assets.filter(x=>x.status==='active').length]];
+  metadata.forEach((v,i)=>{const r=ws.getRow(i+4);r.values=[v[0],v[1]];r.getCell(1).font={name:'Microsoft JhengHei',bold:true,color:{argb:'FF075985'}};r.getCell(2).font={name:'Microsoft JhengHei',color:{argb:'FF263746'}};});
+  const start=10;ws.getRow(start).values=['工作表','資料筆數'];ws.getRow(start).eachCell(c=>{c.font={name:'Microsoft JhengHei',bold:true,color:{argb:'FFFFFFFF'}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF0F4C6E'}};c.alignment={horizontal:'center'};});
+  Object.entries(rowsBySheet).forEach(([name,rows],i)=>{const r=ws.getRow(start+i+1);r.values=[name,rows.length];r.getCell(2).numFmt='#,##0';if(i%2===1)r.eachCell(c=>c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFF3F8FB'}});});
+  const noteRow=start+Object.keys(rowsBySheet).length+3;ws.mergeCells(`A${noteRow}:F${noteRow+1}`);ws.getCell(`A${noteRow}`).value='說明：網站畫面可維持精簡；本活頁簿會匯出設備主檔所有可用欄位，以及保養、維修、合約、文件、成本與中央監控關聯資料。樓層與下次保養採用與網站相同的顯示邏輯。';ws.getCell(`A${noteRow}`).alignment={wrapText:true,vertical:'middle'};ws.getCell(`A${noteRow}`).font={name:'Microsoft JhengHei',size:10,color:{argb:'FF475569'}};ws.getCell(`A${noteRow}`).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FFEFF6FA'}};
+  [20,42,16,16,16,16].forEach((w,i)=>ws.getColumn(i+1).width=w);ws.properties.tabColor={argb:'FF083B55'};ws.pageSetup={paperSize:9,orientation:'portrait',fitToPage:true,fitToWidth:1,fitToHeight:1};return ws;
+}
+
+let exportingWorkbook=false;
+async function exportWorkbook(){
+  if(exportingWorkbook)return;if(typeof ExcelJS==='undefined'){toast('XLSX 排版元件載入失敗，請重新整理後再試。',true);return;}if(!state.assets.length){toast('目前沒有設備資料可匯出。',true);return;}
+  exportingWorkbook=true;toast('正在整理完整設備資料…');
+  try{const rowsBySheet=buildExportRows(),wb=new ExcelJS.Workbook();wb.creator='臺北農產設備建置系統';wb.company='臺北農產運銷股份有限公司';wb.subject='第一果菜市場設備生命週期管理';wb.created=new Date();buildExportSummary(wb,rowsBySheet);Object.keys(rowsBySheet).forEach(name=>styleExportSheet(wb,name,rowsBySheet[name]));
+    const buffer=await wb.xlsx.writeBuffer(),blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),url=URL.createObjectURL(blob),a=document.createElement('a'),now=new Date();a.href=url;a.download=`設備生命週期_${todayISO()}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);toast(`已匯出 ${state.assets.length} 台設備完整資料`);
+  }catch(e){console.error(e);toast('匯出失敗：'+e.message,true);}finally{exportingWorkbook=false;}
 }
 function downloadTemplate(){const wb=XLSX.utils.book_new();Object.entries(XLSX_HEADERS).forEach(([n,h])=>XLSX.utils.book_append_sheet(wb,buildSheet([],h),n));XLSX.writeFile(wb,'設備履歷管理範本.xlsx');}
 
