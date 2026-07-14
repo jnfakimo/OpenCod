@@ -2161,7 +2161,23 @@ async function createUser() {
   const { data: authData, error: authErr } = await db.auth.signUp({ email, password: pass });
   if (authErr) {
     if (authErr.message === 'User already registered') {
-      showToast('此 Email 已被註冊，請換一個 Email 或確認帳號是否已存在', true);
+      // 偵測是否為孤立帳號（Auth 存在但 users 表無 profile）
+      const { data: existProf } = await db.from('users').select('user_id,name,status').eq('email', email).maybeSingle();
+      if (existProf) {
+        const statusTxt = existProf.status === 'active' ? '（啟用中）' : '（已停用）';
+        showToast(`此 Email 已有帳號「${existProf.name}」${statusTxt}，請至帳號清單查看`, true);
+      } else {
+        // users 表無記錄 → 孤立 Auth 帳號
+        if (confirm(`⚠️ 偵測到孤立帳號
+
+此 Email（${email}）在認證系統中已存在，但帳號清單中沒有資料。
+
+可能原因：先前建立帳號時 profile 寫入失敗。
+
+點「確定」自動修復，建立使用者資料`)) {
+          await forceCreateOrphanProfile({ name, username, email, phone, deptId, rbacRole, role });
+        }
+      }
     } else {
       showToast('建立帳號失敗：' + translateError(authErr.message), true);
     }
@@ -2178,6 +2194,38 @@ async function createUser() {
   ['u-name','u-username','u-email','u-pass','u-phone'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('u-dept-l1').value = '';
   document.getElementById('u-dept-l2').innerHTML = '<option value="">-- 無下級單位 --</option>';
+  document.getElementById('u-dept-l2').disabled = true;
+  document.getElementById('u-role').value = 'reporter';
+  applyRolePreset('c');
+  await loadUsers();
+}
+
+// ─── 修復孤立帳號：Auth 存在但 users 無 profile ─────────────────────────────────
+async function forceCreateOrphanProfile({ name, username, email, phone, deptId, rbacRole, role }) {
+  // 嘗試透過 RPC 取得孤立 auth user 的 auth_id
+  let authId = null;
+  const { data: rpcId, error: rpcErr } = await db.rpc('get_auth_user_id_by_email', { p_email: email });
+  if (!rpcErr && rpcId) {
+    authId = rpcId;
+  } else {
+    // RPC 不存在：fallback — 用不存在的 uuid 代替，後續須手動對掃
+    showToast('無法自動取得認證 ID，請先建立以下 SQL 函式再重試（見底部說明）', true);
+    return;
+  }
+  const permissions = collectPermissionValues('c');
+  const profile = {
+    auth_id: authId, name, username, email,
+    phone: phone || null, dept_id: deptId,
+    role, rbac_role: rbacRole, permissions,
+    status: 'active', created_by: currentUser.user_id
+  };
+  const { error: profErr } = await db.from('users').insert(profile);
+  if (profErr) { showToast('修復失敗：' + translateError(profErr.message), true); return; }
+  await writeAudit('users', authId, 'insert', null, { ...profile, _note: '孤立帳號修復' });
+  showToast(`✅ 帳號「${name}」修復建立成功！請使用「重設密碼」功能更新密碼`);
+  ['u-name','u-username','u-email','u-pass','u-phone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('u-dept-l1').value = '';
+  document.getElementById('u-dept-l2').innerHTML = '<option value="">—— 無下級單位 ——</option>';
   document.getElementById('u-dept-l2').disabled = true;
   document.getElementById('u-role').value = 'reporter';
   applyRolePreset('c');
