@@ -1293,6 +1293,29 @@ body{
         <label>可使用系統（功能選單）</label>
         <div id="perm-e-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px 14px;padding:6px 0"></div>
       </div>
+      <!-- 密碼重設區塊 -->
+      <div class="field" style="grid-column:1/-1;margin-top:4px">
+        <div style="border:1px solid rgba(255,179,0,.3);border-radius:3px;overflow:hidden">
+          <div onclick="toggleEditPwSection()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,179,0,.06);cursor:pointer;user-select:none">
+            <span style="font-size:.8rem;color:var(--amber);font-weight:700;letter-spacing:.06em">🔑 重設密碼（選填）</span>
+            <span id="editPwToggleIcon" style="color:var(--text-dim);font-size:.8rem;transition:transform .2s">&#9660;</span>
+          </div>
+          <div id="editPwSection" style="display:none;padding:12px 14px;border-top:1px solid rgba(255,179,0,.2);background:rgba(2,8,20,.4)">
+            <p style="font-size:.75rem;color:var(--text-dim);margin-bottom:10px">若不需要變更密碼，請保持空白。填寫密碼則儲存時同步重設。</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="field">
+                <label>新密碼（至少 6 碼）</label>
+                <input id="edit-u-newpw" type="password" placeholder="不變更請留空" autocomplete="new-password">
+              </div>
+              <div class="field">
+                <label>確認新密碼</label>
+                <input id="edit-u-newpw2" type="password" placeholder="再輸一次" autocomplete="new-password">
+              </div>
+            </div>
+            <div id="editPwMsg" style="font-size:.76rem;min-height:1em;color:var(--text-dim)"></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-sm" style="background:rgba(12,40,64,0.6);color:var(--text-dim);border:1px solid var(--border)" onclick="closeModal('editUserModal')">取消</button>
@@ -1767,11 +1790,26 @@ function editUser(userId) {
   document.getElementById('edit-u-phone').value = u.phone || '';
   document.getElementById('edit-u-username').value = u.username || '';
   document.getElementById('edit-u-email').value = u.email || '—';
+  // 清空密碼欄位
+  document.getElementById('edit-u-newpw').value = '';
+  document.getElementById('edit-u-newpw2').value = '';
+  document.getElementById('editPwMsg').textContent = '';
+  document.getElementById('editPwSection').style.display = 'none';
+  document.getElementById('editPwToggleIcon').innerHTML = '&#9660;';
   const rbacRole = normalizeRoleId(u);
   document.getElementById('edit-u-role').value = rbacRole;
   populateEditUserDeptSelects(u.dept_id || null);
   renderPermissionList('e', normalizePermissions(u.permissions, rbacRole));
   document.getElementById('editUserModal').classList.add('show');
+}
+
+function toggleEditPwSection() {
+  const sec = document.getElementById('editPwSection');
+  const icon = document.getElementById('editPwToggleIcon');
+  const isOpen = sec.style.display !== 'none';
+  sec.style.display = isOpen ? 'none' : 'block';
+  icon.innerHTML = isOpen ? '&#9660;' : '&#9650;';
+  if (!isOpen) document.getElementById('edit-u-newpw').focus();
 }
 
 async function saveEditUser() {
@@ -1782,17 +1820,62 @@ async function saveEditUser() {
   const rbacRole = document.getElementById('edit-u-role').value;
   const role   = legacyRoleForRbac(rbacRole);
   const deptId = document.getElementById('edit-u-dept-l2').value || document.getElementById('edit-u-dept-l1').value || null;
+  const newPw  = document.getElementById('edit-u-newpw').value;
+  const newPw2 = document.getElementById('edit-u-newpw2').value;
+  const pwMsg  = document.getElementById('editPwMsg');
+
   if (!name) { showToast('請填寫姓名', true); return; }
   if (!/^[一-龥]{2,10}$/.test(name)) { showToast('姓名格式錯誤，請輸入 2~10 個中文字', true); return; }
   if (!username) { showToast('請填寫登入帳號', true); return; }
   if (!/^[a-zA-Z0-9_]+$/.test(username)) { showToast('帳號格式錯誤：僅限英數字與底線', true); return; }
+
+  // 密碼驗證（如果有填寫）
+  if (newPw) {
+    if (newPw.length < 6) {
+      pwMsg.textContent = '密碼至少需要 6 個字元'; pwMsg.style.color = 'var(--red)';
+      document.getElementById('editPwSection').style.display = 'block';
+      document.getElementById('editPwToggleIcon').innerHTML = '&#9650;';
+      return;
+    }
+    if (newPw !== newPw2) {
+      pwMsg.textContent = '兩次密碼不一致'; pwMsg.style.color = 'var(--red)';
+      document.getElementById('editPwSection').style.display = 'block';
+      document.getElementById('editPwToggleIcon').innerHTML = '&#9650;';
+      return;
+    }
+  }
+
   const permissions = collectPermissionValues('e');
   const before = userMap[userId];
   const updates = { name, username, phone: phone || null, role, rbac_role: rbacRole, dept_id: deptId, permissions };
   const { error } = await db.from('users').update(updates).eq('user_id', userId);
   if (error) { showToast('儲存失敗：' + translateError(error.message), true); return; }
+
+  // 密碼同步重設
+  if (newPw) {
+    pwMsg.textContent = '密碼重設中…'; pwMsg.style.color = 'var(--cyan)';
+    const targetEmail = document.getElementById('edit-u-email').value;
+    const { error: rpcErr } = await db.rpc('admin_reset_user_password', {
+      p_email: targetEmail,
+      p_new_password: newPw
+    });
+    if (rpcErr) {
+      // fallback: 寄送重設信
+      const redirectTo = window.location.origin + '/word-cloud/system/login.html';
+      const { error: mailErr } = await db.auth.resetPasswordForEmail(targetEmail, { redirectTo });
+      if (mailErr) {
+        showToast('資料儲存成功，但密碼重設失敗：' + translateError(mailErr.message), true);
+      } else {
+        showToast(`資料已更新，密碼重設信已寄至 ${targetEmail}`);
+      }
+    } else {
+      showToast(`使用者「${name}」已更新，密碼同步重設完成`);
+    }
+  } else {
+    showToast(`使用者「${name}」已更新`);
+  }
+
   await writeAudit('users', userId, 'update', { name: before?.name, phone: before?.phone, role: before?.role, rbac_role: before?.rbac_role, dept_id: before?.dept_id, permissions: before?.permissions }, updates);
-  showToast(`使用者「${name}」已更新`);
   closeModal('editUserModal');
   await loadUsers();
 }
