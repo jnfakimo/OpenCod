@@ -2159,27 +2159,31 @@ async function createUser() {
   if (!/^[A-Za-z0-9_]+$/.test(username)) { showToast('帳號僅限英文、數字、底線', true); return; }
 
   const { data: authData, error: authErr } = await db.auth.signUp({ email, password: pass });
-  if (authErr) {
-    if (authErr.message === 'User already registered') {
-      // 偵測是否為孤立帳號（Auth 存在但 users 表無 profile）
-      const { data: existProf } = await db.from('users').select('user_id,name,status').eq('email', email).maybeSingle();
-      if (existProf) {
-        const statusTxt = existProf.status === 'active' ? '（啟用中）' : '（已停用）';
-        showToast(`此 Email 已有帳號「${existProf.name}」${statusTxt}，請至帳號清單查看`, true);
-      } else {
-        // users 表無記錄 → 孤立 Auth 帳號
-        if (confirm(`⚠️ 偵測到孤立帳號
 
-此 Email（${email}）在認證系統中已存在，但帳號清單中沒有資料。
+  // 情況 A：Email 確認開啟 → authErr = 'User already registered'
+  // 情況 B：Email 確認關閉 → 無 error，但 identities = [] 表示 email 已存在
+  const isEmailTaken =
+    authErr?.message === 'User already registered' ||
+    (!authErr && authData?.user && (authData.user.identities?.length === 0));
 
-可能原因：先前建立帳號時 profile 寫入失敗。
+  if (authErr && !isEmailTaken) {
+    showToast('建立帳號失敗：' + translateError(authErr.message), true);
+    return;
+  }
+
+  if (isEmailTaken) {
+    const { data: existProf } = await db.from('users').select('user_id,name,status').eq('email', email).maybeSingle();
+    if (existProf) {
+      const statusTxt = existProf.status === 'active' ? '（啟用中）' : '（已停用）';
+      showToast(`此 Email 已有帳號「${existProf.name}」${statusTxt}，請至帳號清單查看`, true);
+    } else {
+      if (confirm(`⚠️ 偵測到孤立帳號
+
+此 Email（${email}）在認證系統已存在，但帳號清單沒有資料。
 
 點「確定」自動修復，建立使用者資料`)) {
-          await forceCreateOrphanProfile({ name, username, email, phone, deptId, rbacRole, role });
-        }
+        await forceCreateOrphanProfile({ name, username, email, phone, deptId, rbacRole, role });
       }
-    } else {
-      showToast('建立帳號失敗：' + translateError(authErr.message), true);
     }
     return;
   }
