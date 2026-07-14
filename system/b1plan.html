@@ -87,19 +87,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 #mkpanel .p-t{color:var(--cyan);font-weight:700;font-size:12px}
 #mkpanel .panel-close{display:inline-flex;background:none;border:1px solid var(--border);color:var(--text2);border-radius:3px;padding:3px 8px;font-size:10px;cursor:pointer}
 #mkpanel .panel-close:hover{border-color:var(--cyan);color:var(--cyan)}
+#mkpanel .panel-close.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.12)}
 #mkpanel label{color:var(--text2);display:flex;align-items:center;gap:7px;cursor:pointer}
 #mkpanel label span{text-shadow:0 0 3px rgba(255,255,255,.6)}
 #mkpanel input{accent-color:var(--cyan)}
-#mkpanel .status-filter{border-top:1px solid var(--border);margin-top:6px;padding-top:7px}
-#mkpanel .status-filter-title{color:var(--cyan);font-weight:700;margin-bottom:2px}
-#mkpanel .status-filter label{color:var(--text)}
-#mkpanel .status-dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none;box-shadow:0 0 5px currentColor}
-#mkpanel .filter-menu{border:1px solid var(--border);border-radius:4px;margin-top:7px;overflow:hidden}
-#mkpanel .filter-menu summary{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px;color:var(--cyan);font-weight:700;cursor:pointer;list-style:none;background:rgba(0,212,255,.06);user-select:none}
-#mkpanel .filter-menu summary::-webkit-details-marker{display:none}
-#mkpanel .filter-menu summary::after{content:'▾';font-size:10px;transition:transform .2s}
-#mkpanel .filter-menu[open] summary::after{transform:rotate(180deg)}
-#mkpanel .filter-options{padding:5px 8px 7px;border-top:1px solid var(--border)}
 
 @media(max-width:600px){ .tb-title{display:none} .tbtn{width:42px;height:42px;font-size:17px} #floors select{min-width:120px;font-size:12px} #mkpanel,#mkToggle{font-size:11px} #bottomRightRow,#osdNav{display:none!important} #tools{right:10px;top:164px;gap:8px} }
 
@@ -147,19 +138,17 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 </div>
 
 <!-- 標記顯示選單（左側，預設隱藏，與 3D 立體樓層一致）-->
-<button id="mkToggle" onclick="toggleMkPanel(true)"><span class="ic ic-checkmark"></span> 打卡狀態</button>
+<button id="mkToggle" onclick="toggleMkPanel(true)"><span class="ic ic-handover"></span> 標記顯示</button>
 <div id="mkpanel">
-  <div class="panel-head"><div class="p-t"><span class="ic ic-checkmark"></span> 打卡狀態</div><button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button></div>
-  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" onchange="toggleMkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 巡邏點名稱</label>
-  <div style="color:var(--text2);margin-top:3px">巡邏點數：<span style="color:var(--text)" id="mkNum">—</span></div>
-  <details class="filter-menu">
-    <summary><span class="ic ic-checkmark"></span> 打卡狀態</summary>
-    <div class="filter-options">
-      <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('ok',this.checked)"><i class="status-dot" style="color:#00ff9d;background:#00ff9d"></i> 已打</label>
-      <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('pending',this.checked)"><i class="status-dot" style="color:#c77dff;background:#c77dff"></i> 待打卡</label>
-      <label><input type="checkbox" checked onchange="togglePlanPatrolStatus('overdue',this.checked)"><i class="status-dot" style="color:#ff5470;background:#ff5470"></i> 逾期未打卡</label>
-    </div>
-  </details>
+  <div class="panel-head">
+    <div class="p-t"><span class="ic ic-handover"></span> 標記顯示</div>
+    <span style="display:flex;gap:6px">
+      <button class="panel-close" id="mkPinBtn" onclick="toggleMkPin()" title="釘住後點空白處不會自動收合">📌 釘住</button>
+      <button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button>
+    </span>
+  </div>
+  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" onchange="toggleMkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 顯示標記名稱</label>
+  <div style="color:var(--text2);margin-top:3px">標記數：<span style="color:var(--text)" id="mkNum">—</span></div>
 </div>
 
 <div id="bottomRightRow">
@@ -253,7 +242,6 @@ function showFloor(f){
 // ── 整合標記（唯讀，與整合標記系統 / 3D 同步）──────────────
 const MK_COL={equipment:'#00d4ff',space:'#00ff9d',patrol:'#c77dff',repair:'#ff5470',note:'#ffb300'};
 const KV={equipment:true,space:true,patrol:true,repair:true,note:true};
-const PLAN_PATROL_STATUS_VISIBLE={ok:true,pending:true,overdue:true};
 let planMarkers=[], showLab=false;
 function escB(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 let patrolStatusMap=new Map();
@@ -277,7 +265,7 @@ function markerColor(m){
 function drawPlanMarkers(){
   if(!viewer.viewport) return;
   viewer.clearOverlays();
-  const list=planMarkers.filter(m=>m.floor_id===curFloor && KV[m.kind]!==false && (m.kind!=='patrol'||PLAN_PATROL_STATUS_VISIBLE[patrolStatusMap.get(m.marker_id)||'pending']!==false));
+  const list=planMarkers.filter(m=>m.floor_id===curFloor && KV[m.kind]!==false);
   list.forEach(m=>{
     const el=document.createElement('div'); el.className='pin'+(showLab?' show-lab':'');
     const col=markerColor(m);
@@ -287,7 +275,6 @@ function drawPlanMarkers(){
   const n=document.getElementById('mkNum'); if(n) n.textContent=list.length+' 個';
 }
 function toggleMkKind(k,on){ KV[k]=on; drawPlanMarkers(); }
-function togglePlanPatrolStatus(state,on){PLAN_PATROL_STATUS_VISIBLE[state]=on;drawPlanMarkers();}
 function toggleMkLabels(on){ showLab=on; drawPlanMarkers(); }
 let mkPinned=false;
 function toggleMkPanel(open){
