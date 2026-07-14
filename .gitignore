@@ -1,0 +1,29 @@
+# generated images (draw-free skill)
+generated/
+slides/generated/
+
+# OS files
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+
+# IDE
+.idea/
+.vscode/
+*.suo
+*.user
+
+# temp
+*.tmp
+
+# Python .venv (ai-agent-ep03)
+.venv/
+
+# knowledge vault (sensebar-agent-knowledge-vault-builder)
+__pycache__/
+*.vtt
+*.mp4
+*.m4a
+*.mp3
+temp_sub.*

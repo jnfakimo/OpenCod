@@ -2,6 +2,8 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -37,6 +39,17 @@
   --font-mono:'Share Tech Mono',monospace;
   --font-head:'Rajdhani',sans-serif;
 }
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-dim:transparent;--cyan-glow:none;--blue:#2563eb;--green:#059669;--green-dim:transparent;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] .sidebar{background:linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%)}
+:root[data-theme="light"] .sidebar::before{opacity:.3}
+:root[data-theme="light"] .org-label{text-shadow:none}
+:root[data-theme="light"] .sidebar-logo h1{text-shadow:none}
+:root[data-theme="light"] .field input,.field select,.field textarea{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+:root[data-theme="light"] .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--cyan)}
 
 /* ===== BODY ===== */
 body{
@@ -105,8 +118,6 @@ body{
   border-bottom:1px solid var(--border);
   position:relative;
 }
-.brand-logo{display:block;max-width:120px;width:60%;height:auto;margin:0 auto 12px;
-  filter:drop-shadow(0 0 10px rgba(0,212,255,.25));border-radius:6px}
 .sidebar-logo::after{
   content:'';position:absolute;
   bottom:0;left:0;right:0;height:1px;
@@ -165,7 +176,11 @@ body{
   width:1px;
   background:linear-gradient(180deg,transparent,var(--cyan),transparent);
 }
-.nav-icon{font-size:1rem;width:20px;text-align:center}
+.nav-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;width:22px;height:22px;text-align:center}
+.nav-icon img,.section-icon img,.stat-icon img,.scard-icon img{display:block;width:100%;height:100%;object-fit:contain}
+.nav-icon img{filter:drop-shadow(0 0 6px rgba(0,212,255,.28))}
+.section-icon{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;flex:0 0 32px;vertical-align:middle}
+.section-icon img{filter:drop-shadow(0 0 8px rgba(0,212,255,.32))}
 .sidebar-footer{
   padding:14px 20px;
   border-top:1px solid var(--border);
@@ -207,6 +222,7 @@ body{
   box-shadow:var(--cyan-glow);
 }
 .page-header h2{
+  display:flex;align-items:center;gap:8px;
   font-family:var(--font-head);
   font-size:1.65rem;font-weight:700;
   color:var(--cyan);
@@ -248,7 +264,7 @@ body{
   text-transform:uppercase;
   display:flex;align-items:center;gap:8px;
 }
-.panel-title::before{content:'◈';font-size:0.6rem;color:var(--cyan);opacity:0.8}
+.panel-title::before{content:'';display:none}
 
 /* ===== TABLE ===== */
 .data-table{width:100%;border-collapse:collapse;font-size:0.83rem}
@@ -345,6 +361,9 @@ body{
   position:relative;overflow:hidden;
   clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%);
 }
+.stat-icon{position:absolute;top:14px;right:14px;width:46px;height:46px;opacity:.9;pointer-events:none}
+.stat-icon img{filter:drop-shadow(0 0 8px rgba(0,212,255,.28))}
+.stat-card .stat-val{padding-right:42px}
 .stat-card::before{
   content:'';position:absolute;
   top:0;left:0;right:0;height:2px;
@@ -516,8 +535,9 @@ body{
     -webkit-overflow-scrolling:touch;
     border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
   .sidebar-nav::-webkit-scrollbar{height:3px}
-  .nav-item{white-space:nowrap;padding:9px 14px;border-left:none;
-    border-bottom:2px solid transparent}
+  .nav-item{flex:0 0 auto;min-width:max-content;white-space:nowrap;padding:9px 14px;border-left:none;
+    border-bottom:2px solid transparent;writing-mode:horizontal-tb;word-break:keep-all}
+  .nav-icon{flex-basis:20px;width:20px;height:20px}
   .nav-item.active{border-left:none;border-bottom-color:var(--cyan);
     background:linear-gradient(180deg,rgba(0,212,255,0.12),transparent)}
   .nav-item.active::after{display:none}
@@ -539,14 +559,15 @@ body{
 .scard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--scard-c,var(--cyan)) 0%,transparent 80%);opacity:.7}
 .scard::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,212,255,.012) 3px,rgba(0,212,255,.012) 4px);pointer-events:none}
 .scard:hover{border-color:var(--scard-c,var(--cyan));background:rgba(0,212,255,.04);transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.4),0 0 0 1px var(--scard-c,var(--cyan)) inset}
-.scard-icon{font-size:2rem;font-family:var(--font-mono);color:var(--scard-c,var(--cyan));margin-bottom:14px;line-height:1;text-shadow:0 0 12px var(--scard-c,var(--cyan))}
+.scard-icon{display:flex;align-items:center;width:58px;height:58px;font-size:0;color:var(--scard-c,var(--cyan));margin-bottom:14px;line-height:1}
+.scard-icon img{filter:drop-shadow(0 0 10px var(--scard-c,var(--cyan)));}
 .scard-title{font-family:var(--font-head);font-size:1.05rem;font-weight:700;color:var(--text-hi);letter-spacing:.1em;margin-bottom:6px}
 .scard-desc{font-size:.74rem;color:var(--text-dim);font-family:var(--font-mono);line-height:1.6;margin-bottom:18px;min-height:2.8em}
 .scard-enter{font-family:var(--font-mono);font-size:.7rem;color:var(--scard-c,var(--cyan));opacity:.6;display:flex;align-items:center;gap:5px;transition:opacity .2s}
 .scard:hover .scard-enter{opacity:1}
 .scard-badge{position:absolute;top:10px;right:12px;font-family:var(--font-mono);font-size:.62rem;color:var(--scard-c,var(--cyan));border:1px solid var(--scard-c,var(--cyan));padding:1px 6px;border-radius:2px;opacity:.6}
 .modelhub-note{font-family:var(--font-mono);font-size:.65rem;color:var(--text-dim);margin-bottom:14px;letter-spacing:.06em}
-.modelhub-card-grid{display:grid;grid-template-columns:repeat(3,minmax(240px,320px));gap:18px;margin-bottom:18px}
+.modelhub-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-bottom:18px}
 .modelhub-bridge{max-width:996px;border:1px solid var(--border);background:rgba(4,17,31,.72);border-radius:4px;padding:16px 18px;color:var(--text-dim);font-size:.78rem;line-height:1.7;position:relative}
 .modelhub-bridge::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#ff5ea0,transparent 78%)}
 .modelhub-bridge-title{font-family:var(--font-head);font-size:.92rem;color:var(--text-hi);letter-spacing:.08em;margin-bottom:6px}
@@ -556,15 +577,14 @@ body{
 .modelhub-stat{border:1px solid rgba(26,74,112,.78);background:rgba(2,8,20,.55);padding:10px 12px;border-radius:3px}
 .modelhub-stat b{display:block;color:var(--cyan);font-family:var(--font-mono);font-size:1.15rem;margin-bottom:3px}
 .modelhub-stat small{color:var(--text-dim);font-size:.68rem}
-@media (max-width:1180px){.modelhub-card-grid{grid-template-columns:repeat(2,minmax(240px,320px))}}
-@media (max-width:760px){.modelhub-card-grid{grid-template-columns:1fr;max-width:320px}}
 @media (max-width:520px){
   .modelhub-stats{grid-template-columns:1fr}
 }
 .settings-back-btn{display:inline-flex;align-items:center;gap:8px;padding:7px 16px;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.25);border-radius:2px;color:var(--text-dim);font-family:var(--font-mono);font-size:.78rem;cursor:pointer;margin-bottom:20px;transition:all .2s}
 .settings-back-btn:hover{color:var(--cyan);border-color:var(--cyan)}
 .settings-section-header{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-.settings-section-header .s-icon{font-size:1.4rem;color:var(--scard-c,var(--cyan));font-family:var(--font-mono)}
+.settings-section-header .s-icon{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;color:var(--scard-c,var(--cyan))}
+.settings-section-header .s-icon img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 7px var(--scard-c,var(--cyan)))}
 .settings-section-header h3{font-family:var(--font-head);font-size:1rem;font-weight:700;color:var(--text-hi);letter-spacing:.1em}
 
 .line-toggle{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
@@ -573,7 +593,10 @@ body{
 .line-toggle input:checked+.line-toggle-slider{background:rgba(0,212,255,.25);border-color:var(--cyan)}
 .line-toggle-slider:before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:var(--text-dim);border-radius:50%;transition:.25s}
 .line-toggle input:checked+.line-toggle-slider:before{transform:translateX(20px);background:var(--cyan)}
+
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
 </head>
 <body>
 
@@ -584,10 +607,10 @@ body{
     <span data-sysname="org">臺北農產運銷股份有限公司</span> ／ <span data-sysname="site">第一果菜市場</span>
   </div>
   <div class="topbar-right">
-    <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'">◫ 戰情儀表板</a>
-    <a href="workorder.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="報修派工系統">◪ 報修系統</a>
-    <a href="app.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'">◉ 巡檢</a>
-    <span style="font-size:.7rem;color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600">⬡ 後台</span>
+    <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'"><img src="../assets/system-icons/admin-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 戰情儀表板</a>
+    <a href="workorder.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="報修派工系統"><img src="../assets/system-icons/maintenance-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 報修系統</a>
+    <a href="app.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'"><img src="../assets/system-icons/guardpatrol-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 巡檢</a>
+    <span style="font-size:.7rem;color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600"><img src="../assets/system-icons/admin-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 後台</span>
     <span><span class="online-dot"></span>系統連線中</span>
     <span class="topbar-clock" id="topClock"></span>
   </div>
@@ -597,26 +620,27 @@ body{
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo">
-      <img src="logo.png" alt="臺北農產 第一果菜市場" class="brand-logo" onerror="this.style.display='none'">
       <div class="org-label"><span data-sysname="org">臺北農產運銷股份有限公司</span><br><span data-sysname="site">第一果菜市場</span></div>
-      <h1>⬡ 後台管理系統</h1>
+      <h1><span class="section-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span> 後台管理系統</h1>
     </div>
     <nav class="sidebar-nav">
-      <a class="nav-item" href="dashboard.html"><span class="nav-icon">◫</span> 戰情儀表板</a>
-      <div class="nav-item" data-page="settings"><span class="nav-icon">⚙</span> 系統設定</div>
-      <div class="nav-item" data-page="users"><span class="nav-icon">◉</span> 帳號管理</div>
-      <a href="materials.html" style="display:flex;align-items:center;gap:10px;padding:11px 22px;color:var(--text-dim);text-decoration:none;font-size:.88rem;letter-spacing:.04em;transition:color .2s" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)'"><span class="nav-icon">◧</span> 設備材料管理</a>
-      <div class="nav-item" data-page="repairs"><span class="nav-icon">◪</span> 報修 &amp; 維修</div>
-      <a href="dispatch.html" style="display:flex;align-items:center;gap:10px;padding:11px 22px;color:var(--text-dim);text-decoration:none;font-size:.88rem;letter-spacing:.04em;transition:color .2s" onmouseover="this.style.color='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)'"><span class="nav-icon">◪</span> 派工系統</a>
-      <a href="handover.html" style="display:flex;align-items:center;gap:10px;padding:11px 22px;color:var(--text-dim);text-decoration:none;font-size:.88rem;letter-spacing:.04em;transition:color .2s" onmouseover="this.style.color='#b48aff'" onmouseout="this.style.color='var(--text-dim)'"><span class="nav-icon">◈</span> 電子交接簿</a>
-      <div class="nav-item" data-page="modelhub"><span class="nav-icon">⬢</span> 3D雲台建模</div>
-      <div class="nav-item" data-page="costs"><span class="nav-icon">◬</span> 費用統計</div>
-      <div class="nav-item" data-page="audit"><span class="nav-icon">◭</span> 系統紀錄</div>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span> 戰情儀表板</a>
+      <div class="nav-item" data-page="settings"><span class="nav-icon"><img src="../assets/system-icons/settings-icon.png" alt=""></span> 系統設定</div>
+      <div class="nav-item" data-page="users"><span class="nav-icon"><img src="../assets/system-icons/account-icon.png" alt=""></span> 帳號管理</div>
+      <a class="nav-item" href="equipment.html"><span class="nav-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 設備建置管理</a>
+      <a class="nav-item" href="materials.html"><span class="nav-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 設備材料管理</a>
+      <div class="nav-item" data-page="repairs"><span class="nav-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 報修 &amp; 維修</div>
+      <a class="nav-item" href="dispatch.html"><span class="nav-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 派工系統</a>
+      <a class="nav-item" href="handover.html"><span class="nav-icon"><img src="../assets/system-icons/handover-icon.png" alt=""></span> 電子交接簿</a>
+      <a class="nav-item" href="guardpatrol.html"><span class="nav-icon"><img src="../assets/system-icons/guardpatrol-icon.png" alt=""></span> 駐衛警巡檢系統</a>
+      <div class="nav-item" data-page="modelhub"><span class="nav-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 3D雲台建模</div>
+      <div class="nav-item" data-page="costs"><span class="nav-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></span> 費用統計</div>
+      <div class="nav-item" data-page="audit"><span class="nav-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></span> 系統紀錄</div>
     </nav>
     <div class="sidebar-footer">
       <div class="user-info" id="sidebarUser">載入中…</div>
       <button class="logout-btn" style="margin-bottom:6px;background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3);color:var(--cyan)" onclick="openChangePwModal()">🔑 更改密碼</button>
-      <button class="logout-btn" onclick="logout()">⏻ 登出</button>
+      <button class="logout-btn" onclick="logout()"><span class="ic ic-logout"></span> 登出</button>
     </div>
   </aside>
 
@@ -627,17 +651,17 @@ body{
     <div class="page-section active" id="page-dashboard">
       <div class="page-header" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
         <div>
-          <h2>◫ 戰情儀表板</h2>
+          <h2><span class="section-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span> 戰情儀表板</h2>
           <p>系統狀態 — 上次更新：<span id="lastRefresh" style="color:var(--cyan)">—</span></p>
         </div>
-        <button onclick="loadDashboard()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'">↻ 重新整理</button>
+        <button onclick="loadDashboard()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'"><span class="ic ic-refresh"></span> 重新整理</button>
       </div>
       <div class="stats-grid" id="statsGrid">
-        <div class="stat-card"><div class="stat-val" id="stat-eq">—</div><div class="stat-label">設備總數</div></div>
-        <div class="stat-card"><div class="stat-val" id="stat-pending">—</div><div class="stat-label">待處理維修</div></div>
-        <div class="stat-card"><div class="stat-val" id="stat-insp-today">—</div><div class="stat-label">今日巡檢</div></div>
-        <div class="stat-card" style="--card-color:var(--red)"><div class="stat-val" id="stat-abnormal" style="color:var(--red);text-shadow:0 0 14px rgba(255,59,59,0.5)">—</div><div class="stat-label">今日異常</div></div>
-        <div class="stat-card"><div class="stat-val" id="stat-users">—</div><div class="stat-label">啟用帳號</div></div>
+        <div class="stat-card"><div class="stat-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></div><div class="stat-val" id="stat-eq">—</div><div class="stat-label">設備總數</div></div>
+        <div class="stat-card"><div class="stat-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></div><div class="stat-val" id="stat-pending">—</div><div class="stat-label">待處理維修</div></div>
+        <div class="stat-card"><div class="stat-icon"><img src="../assets/system-icons/guardpatrol-icon.png" alt=""></div><div class="stat-val" id="stat-insp-today">—</div><div class="stat-label">今日巡檢</div></div>
+        <div class="stat-card" style="--card-color:var(--red)"><div class="stat-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></div><div class="stat-val" id="stat-abnormal" style="color:var(--red);text-shadow:0 0 14px rgba(255,59,59,0.5)">—</div><div class="stat-label">今日異常</div></div>
+        <div class="stat-card"><div class="stat-icon"><img src="../assets/system-icons/account-icon.png" alt=""></div><div class="stat-val" id="stat-users">—</div><div class="stat-label">啟用帳號</div></div>
       </div>
       <div class="panel">
         <div class="panel-title">最新維修單</div>
@@ -647,7 +671,7 @@ body{
 
     <!-- USERS -->
     <div class="page-section" id="page-users">
-      <div class="page-header"><h2>◉ 帳號管理</h2><p>帳號與角色權限管理</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/account-icon.png" alt=""></span> 帳號管理</h2><p>帳號與角色權限管理</p></div>
       <div class="panel">
         <div class="panel-title">新增帳號</div>
         <div class="form-grid">
@@ -719,7 +743,7 @@ body{
       <div class="panel">
         <div class="panel-title" style="display:flex;justify-content:space-between;align-items:center">
           <span>批次匯入帳號（XLSX）</span>
-          <button class="btn btn-sm" style="border:1px solid var(--border);color:var(--text-dim);font-size:.72rem;background:none" onclick="downloadImportTemplate()">▤ 範本</button>
+          <button class="btn btn-sm" style="border:1px solid var(--border);color:var(--text-dim);font-size:.72rem;background:none" onclick="downloadImportTemplate()"><span class="ic ic-template"></span> 範本</button>
         </div>
         <p style="font-size:.78rem;color:var(--text-dim);margin-bottom:12px">支援匯出格式或範本格式（姓名, 帳號, Email, 密碼, 電話, 角色）；XLSX / CSV 皆可讀。帳號/Email已存在則自動跳過。</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -732,7 +756,7 @@ body{
 
     <!-- EQUIPMENT -->
     <div class="page-section" id="page-equipment">
-      <div class="page-header"><h2>◧ 設備管理</h2><p>設備清冊與維護管理</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 設備管理</h2><p>設備清冊與維護管理</p></div>
       <div class="panel">
         <div class="panel-title">新增設備</div>
         <div class="form-grid">
@@ -762,7 +786,7 @@ body{
 
     <!-- INSPECTIONS -->
     <div class="page-section" id="page-inspections">
-      <div class="page-header"><h2>◫ 巡檢記錄</h2><p>INSPECTION LOG — READ ONLY</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/guardpatrol-icon.png" alt=""></span> 巡檢記錄</h2><p>INSPECTION LOG — READ ONLY</p></div>
       <div class="panel">
         <div class="search-bar">
           <select id="inspEqFilter" onchange="loadInspections()">
@@ -787,7 +811,7 @@ body{
 
     <!-- REPAIRS -->
     <div class="page-section" id="page-repairs">
-      <div class="page-header"><h2>◪ 報修 &amp; 維修</h2><p>報修與維修工單管理</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 報修 &amp; 維修</h2><p>報修與維修工單管理</p></div>
       <div class="panel">
         <div class="search-bar">
           <select id="repairStatusFilter" onchange="onRepairFiltersChange()">
@@ -818,7 +842,7 @@ body{
 
     <!-- COSTS -->
     <div class="page-section" id="page-costs">
-      <div class="page-header"><h2>◬ 費用統計</h2><p>生命週期費用分析</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></span> 費用統計</h2><p>生命週期費用分析</p></div>
       <div class="panel">
         <div class="panel-title">新增費用記錄</div>
         <div class="form-grid">
@@ -873,7 +897,7 @@ body{
 
     <!-- AUDIT -->
     <div class="page-section" id="page-audit">
-      <div class="page-header"><h2>◭ 系統紀錄</h2><p>系統操作紀錄 — 永久保存 / 不可竄改</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></span> 系統紀錄</h2><p>系統操作紀錄 — 永久保存 / 不可竄改</p></div>
       <div class="panel">
         <div class="search-bar">
           <select id="auditTableFilter" onchange="loadAudit()">
@@ -898,7 +922,7 @@ body{
 
     <!-- CYCLES -->
     <div class="page-section" id="page-cycles">
-      <div class="page-header"><h2>↻ 巡檢週期管理</h2><p>巡檢週期控制</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/guardpatrol-icon.png" alt=""></span> 巡檢週期管理</h2><p>巡檢週期控制</p></div>
       <div class="panel">
         <div class="panel-title">建立新週期</div>
         <div class="form-grid">
@@ -928,10 +952,10 @@ body{
     <div class="page-section" id="page-locanalysis">
       <div class="page-header" style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
         <div>
-          <h2>⊞ 位置分析</h2>
+          <h2><span class="section-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span> 位置分析</h2>
           <p>場域下鑽分析 — 場域異常與報修樞紐統計</p>
         </div>
-        <button onclick="loadLocationAnalysis()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'">↻ 重新整理</button>
+        <button onclick="loadLocationAnalysis()" style="flex-shrink:0;padding:7px 16px;background:rgba(0,212,255,0.08);border:1px solid var(--border-hi);color:var(--cyan);font-family:var(--font-head);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:2px;font-size:0.75rem;font-weight:700;transition:all .2s" onmouseover="this.style.boxShadow='var(--cyan-glow)'" onmouseout="this.style.boxShadow='none'"><span class="ic ic-refresh"></span> 重新整理</button>
       </div>
 
       <!-- Filter bar -->
@@ -985,30 +1009,44 @@ body{
 
     <!-- 3D MODEL HUB -->
     <div class="page-section" id="page-modelhub">
-      <div class="page-header"><h2>⬢ 3D建模系統</h2><p>3D 模型建模、區域位置主檔與整合標記系統介接管理</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 3D建模系統</h2><p>3D 模型建模、區域位置主檔與整合標記系統介接管理</p></div>
 
       <div class="modelhub-note">■ 3D-MODELER v1.0 · 點選卡片進入子系統</div>
       <div class="modelhub-card-grid">
         <div class="scard" style="--scard-c:#ff5ea0" onclick="location.href='modeler.html'">
           <div class="scard-badge">HUB-01</div>
-          <div class="scard-icon">⬢</div>
+          <div class="scard-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></div>
           <div class="scard-title">3D建模系統</div>
           <div class="scard-desc">上傳 DXF 更新樓層平面圖<br>同步更新 3D 立體模型</div>
           <div class="scard-enter">▶ 第一步：進入建模</div>
         </div>
         <div class="scard" style="--scard-c:#00d4ff" onclick="location.href='arealist.html'">
           <div class="scard-badge">HUB-02</div>
-          <div class="scard-icon">▤</div>
+          <div class="scard-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></div>
           <div class="scard-title">區域位置表</div>
           <div class="scard-desc">建立樓層與空間名稱主檔<br>空間是否使用 / 匯入匯出</div>
           <div class="scard-enter">▶ 第二步：建立主檔</div>
         </div>
-        <div class="scard" style="--scard-c:#00ff9d" onclick="location.href='b1_integrated_marker_system.html'">
+        <div class="scard" style="--scard-c:#c77dff" onclick="location.href='patrollist.html'">
           <div class="scard-badge">HUB-03</div>
-          <div class="scard-icon">◈</div>
+          <div class="scard-icon"><img src="../assets/system-icons/guardpatrol-icon.png" alt=""></div>
+          <div class="scard-title">巡邏點清單</div>
+          <div class="scard-desc">讀取全樓層巡邏點標示資料<br>彙總檢視與快速定位</div>
+          <div class="scard-enter">▶ 檢視巡邏點</div>
+        </div>
+        <div class="scard" style="--scard-c:#00ff9d" onclick="location.href='b1_integrated_marker_system.html'">
+          <div class="scard-badge">HUB-04</div>
+          <div class="scard-icon"><img src="../assets/system-icons/handover-icon.png" alt=""></div>
           <div class="scard-title">整合標記系統</div>
           <div class="scard-desc">讀取區域位置表空間主檔<br>平面圖標記與位置定位</div>
           <div class="scard-enter">▶ 第三步：標記定位</div>
+        </div>
+        <div class="scard" style="--scard-c:#ffb300" onclick="location.href='floor3d.html'">
+          <div class="scard-badge">HUB-05</div>
+          <div class="scard-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></div>
+          <div class="scard-title">3D模型圖</div>
+          <div class="scard-desc">統一 3D 立體模型資料來源<br>供後續多系統介接應用</div>
+          <div class="scard-enter">▶ 檢視 3D 模型</div>
         </div>
       </div>
 
@@ -1026,7 +1064,7 @@ body{
 
     <!-- SETTINGS -->
     <div class="page-section" id="page-settings">
-      <div class="page-header"><h2>⚙ 系統設定</h2><p>系統設定與組態管理</p></div>
+      <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/settings-icon.png" alt=""></span> 系統設定</h2><p>系統設定與組態管理</p></div>
 
       <!-- ══ SETTINGS HUB (卡片總覽) ══ -->
       <div id="settings-hub">
@@ -1036,7 +1074,7 @@ body{
           <!-- 卡片1：系統識別 -->
           <div class="scard" style="--scard-c:#00d4ff" onclick="openSettingsSection('sec-sysname')">
             <div class="scard-badge">SYS-01</div>
-            <div class="scard-icon">◈</div>
+            <div class="scard-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></div>
             <div class="scard-title">系統識別</div>
             <div class="scard-desc">機構名稱 / 場所名稱<br>系統顯示標題設定</div>
             <div class="scard-enter">▶ 進入設定</div>
@@ -1045,7 +1083,7 @@ body{
           <!-- 卡片2：組織架構 -->
           <div class="scard" style="--scard-c:#ffb300" onclick="openSettingsSection('sec-dept')">
             <div class="scard-badge">SYS-02</div>
-            <div class="scard-icon">⊞</div>
+            <div class="scard-icon"><img src="../assets/system-icons/account-icon.png" alt=""></div>
             <div class="scard-title">組織架構</div>
             <div class="scard-desc">一/二級部門新增<br>部門樹狀結構管理</div>
             <div class="scard-enter">▶ 進入設定</div>
@@ -1054,7 +1092,7 @@ body{
           <!-- 卡片3：班別管理 -->
           <div class="scard" style="--scard-c:#00ff9d" onclick="openSettingsSection('sec-shift')">
             <div class="scard-badge">SYS-03</div>
-            <div class="scard-icon">⌖</div>
+            <div class="scard-icon"><img src="../assets/system-icons/handover-icon.png" alt=""></div>
             <div class="scard-title">班別管理</div>
             <div class="scard-desc">早/中/夜班時段設定<br>電子交接簿班別自動套用</div>
             <div class="scard-enter">▶ 進入設定</div>
@@ -1063,7 +1101,7 @@ body{
           <!-- 卡片4：推播通知 -->
           <div class="scard" style="--scard-c:#b48aff" onclick="openSettingsSection('sec-line')">
             <div class="scard-badge">SYS-04</div>
-            <div class="scard-icon">◎</div>
+            <div class="scard-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></div>
             <div class="scard-title">LINE 推播</div>
             <div class="scard-desc">Channel Token / 群組 ID<br>異常/報修/案件通知開關</div>
             <div class="scard-enter">▶ 進入設定</div>
@@ -1072,7 +1110,7 @@ body{
           <!-- 卡片5：3D 建模系統 -->
           <div class="scard" style="--scard-c:#ff5ea0" onclick="location.href='modeler.html'">
             <div class="scard-badge">SYS-05</div>
-            <div class="scard-icon">⬢</div>
+            <div class="scard-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></div>
             <div class="scard-title">3D建模系統</div>
             <div class="scard-desc">上傳 DXF 更新樓層平面圖<br>同步更新 3D 立體模型</div>
             <div class="scard-enter">▶ 進入系統</div>
@@ -1081,7 +1119,7 @@ body{
           <!-- 卡片6：權限管理 RBAC -->
           <div class="scard" style="--scard-c:#1a7fff" onclick="location.href='rbac.html'">
             <div class="scard-badge">SYS-06</div>
-            <div class="scard-icon">⊞</div>
+            <div class="scard-icon"><img src="../assets/system-icons/account-icon.png" alt=""></div>
             <div class="scard-title">權限管理 RBAC</div>
             <div class="scard-desc">角色 × 權限矩陣<br>使用者角色指派</div>
             <div class="scard-enter">▶ 進入系統</div>
@@ -1090,7 +1128,7 @@ body{
           <!-- 卡片7：整合 API -->
           <div class="scard" style="--scard-c:#00ff9d" onclick="location.href='api.html'">
             <div class="scard-badge">SYS-07</div>
-            <div class="scard-icon">⇄</div>
+            <div class="scard-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></div>
             <div class="scard-title">整合 API 文件</div>
             <div class="scard-desc">10 大系統整合接口<br>共用設備/案件編號</div>
             <div class="scard-enter">▶ 查看文件</div>
@@ -1099,7 +1137,7 @@ body{
           <!-- 卡片8：通知中心 -->
           <div class="scard" style="--scard-c:#ffb300" onclick="location.href='notices.html'">
             <div class="scard-badge">SYS-08</div>
-            <div class="scard-icon">◎</div>
+            <div class="scard-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></div>
             <div class="scard-title">通知中心</div>
             <div class="scard-desc">站內即時通知<br>派工/逾期/結案提醒</div>
             <div class="scard-enter">▶ 進入系統</div>
@@ -1115,7 +1153,7 @@ body{
         <!-- 系統識別 -->
         <div class="settings-section" id="sec-sysname" style="display:none">
           <div class="settings-section-header" style="--scard-c:#00d4ff">
-            <span class="s-icon">◈</span>
+            <span class="s-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span>
             <div><h3>系統識別設定</h3><div style="font-size:.72rem;color:var(--text-dim);font-family:var(--font-mono);margin-top:2px">SYS-01 / SYSTEM IDENTITY</div></div>
           </div>
           <div class="panel">
@@ -1131,7 +1169,7 @@ body{
         <!-- 組織架構 -->
         <div class="settings-section" id="sec-dept" style="display:none">
           <div class="settings-section-header" style="--scard-c:#ffb300">
-            <span class="s-icon" style="color:#ffb300">⊞</span>
+            <span class="s-icon" style="color:#ffb300"><img src="../assets/system-icons/account-icon.png" alt=""></span>
             <div><h3>組織架構管理</h3><div style="font-size:.72rem;color:var(--text-dim);font-family:var(--font-mono);margin-top:2px">SYS-02 / ORG STRUCTURE</div></div>
           </div>
           <div class="panel">
@@ -1154,7 +1192,7 @@ body{
         <!-- 班別管理 -->
         <div class="settings-section" id="sec-shift" style="display:none">
           <div class="settings-section-header" style="--scard-c:#00ff9d">
-            <span class="s-icon" style="color:#00ff9d">⌖</span>
+            <span class="s-icon" style="color:#00ff9d"><img src="../assets/system-icons/handover-icon.png" alt=""></span>
             <div><h3>班別管理設定</h3><div style="font-size:.72rem;color:var(--text-dim);font-family:var(--font-mono);margin-top:2px">SYS-03 / SHIFT MANAGEMENT</div></div>
           </div>
           <div class="panel">
@@ -1173,7 +1211,7 @@ body{
         <!-- LINE 推播 -->
         <div class="settings-section" id="sec-line" style="display:none">
           <div class="settings-section-header" style="--scard-c:#b48aff">
-            <span class="s-icon" style="color:#b48aff">◎</span>
+            <span class="s-icon" style="color:#b48aff"><img src="../assets/system-icons/audit-icon.png" alt=""></span>
             <div><h3>LINE 推播通知設定</h3><div style="font-size:.72rem;color:var(--text-dim);font-family:var(--font-mono);margin-top:2px">SYS-04 / LINE NOTIFICATION</div></div>
           </div>
           <div class="panel">
@@ -1221,11 +1259,13 @@ body{
 <!-- EDIT USER MODAL -->
 <div class="modal-bg" id="editUserModal">
   <div class="modal">
-    <div class="modal-title">◉ 編輯使用者</div>
+    <div class="modal-title"><span class="ic ic-inspection"></span> 編輯使用者</div>
     <input type="hidden" id="edit-u-id">
     <div class="form-grid">
       <div class="field"><label>姓名</label><input id="edit-u-name" type="text" placeholder="姓名"></div>
       <div class="field"><label>電話</label><input id="edit-u-phone" type="text" placeholder="聯絡電話"></div>
+      <div class="field"><label>登入帳號</label><input id="edit-u-username" type="text" placeholder="英數字/底線"></div>
+      <div class="field"><label>電子郵件</label><input id="edit-u-email" type="text" disabled style="color:var(--text-dim);background:rgba(2,8,20,0.4);cursor:not-allowed" placeholder="登入用 Email（唯讀）"></div>
       <div class="field"><label>第一層部門</label>
         <select id="edit-u-dept-l1" onchange="onEditUserDeptL1Change()">
           <option value="">-- 選擇第一層 --</option>
@@ -1262,7 +1302,7 @@ body{
 <!-- EDIT EQUIPMENT MODAL -->
 <div class="modal-bg" id="editEqModal">
   <div class="modal">
-    <div class="modal-title">◧ 修改設備資料</div>
+    <div class="modal-title"><span class="ic ic-equipment"></span> 修改設備資料</div>
     <input type="hidden" id="edit-eq-id">
     <div class="form-grid">
       <div class="field"><label>設備名稱</label><input id="edit-eq-name" type="text"></div>
@@ -1309,7 +1349,7 @@ body{
 <!-- 更改密碼 -->
 <div class="modal-bg" id="changePwModal">
   <div class="modal">
-    <div class="modal-title">◉ 更改密碼</div>
+    <div class="modal-title"><span class="ic ic-inspection"></span> 更改密碼</div>
     <div class="form-grid">
       <div class="field"><label>新密碼</label><input id="new-pw" type="password" placeholder="至少 8 個字元" autocomplete="new-password"></div>
       <div class="field"><label>確認新密碼</label><input id="new-pw2" type="password" placeholder="再輸入一次" autocomplete="new-password"></div>
@@ -1359,6 +1399,7 @@ const DTP=(()=>{
 const SUPABASE_URL = 'https://qztffronusdhgxhjjubt.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
 
 let currentUser = null;
 let allUsers = [], allEquipment = [], allDepts = [], userMap = {}, eqMap = {}, deptMap = {};
@@ -1588,7 +1629,7 @@ async function loadAll() {
   const [{ data: us }, { data: eqs }, { data: depts }, { data: rolePerms }] = await Promise.all([
     db.from('users').select('*').order('name'),
     db.from('equipment').select('*').order('name'),
-    db.from('departments').select('*').order('sort_order'),
+    db.from('departments').select('*').eq('status','active').order('sort_order'),
     db.from('role_permissions').select('role_id,perm,allowed'),
   ]);
   allUsers = us || []; allEquipment = eqs || []; allDepts = depts || [];
@@ -1610,7 +1651,7 @@ function populateAdminDeptSelects(selectedDeptId) {
   if (!l1Sel) return;
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
   l1Sel.innerHTML = '<option value="">-- 選擇第一層 --</option>' +
-    l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+    l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   if (selectedDeptId) {
     const dept = deptMap[selectedDeptId];
     if (dept?.parent_id) {
@@ -1636,7 +1677,7 @@ function onAdminDeptL1Change() {
     l2Sel.disabled = true;
   } else {
     l2Sel.innerHTML = '<option value="">-- 選擇課別（選填）--</option>' +
-      children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
+      children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
     l2Sel.disabled = false;
   }
 }
@@ -1662,7 +1703,7 @@ function populateEditUserDeptSelects(selectedDeptId) {
   if (!l1Sel) return;
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
   l1Sel.innerHTML = '<option value="">-- 選擇第一層 --</option>' +
-    l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+    l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   if (selectedDeptId) {
     const dept = deptMap[selectedDeptId];
     if (dept?.parent_id) {
@@ -1688,7 +1729,7 @@ function onEditUserDeptL1Change() {
     l2Sel.disabled = true;
   } else {
     l2Sel.innerHTML = '<option value="">-- 選擇課別（選填）--</option>' +
-      children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
+      children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
     l2Sel.disabled = false;
   }
 }
@@ -1699,6 +1740,8 @@ function editUser(userId) {
   document.getElementById('edit-u-id').value = u.user_id;
   document.getElementById('edit-u-name').value = u.name || '';
   document.getElementById('edit-u-phone').value = u.phone || '';
+  document.getElementById('edit-u-username').value = u.username || '';
+  document.getElementById('edit-u-email').value = u.email || '—';
   const rbacRole = normalizeRoleId(u);
   document.getElementById('edit-u-role').value = rbacRole;
   populateEditUserDeptSelects(u.dept_id || null);
@@ -1710,14 +1753,17 @@ async function saveEditUser() {
   const userId = document.getElementById('edit-u-id').value;
   const name   = document.getElementById('edit-u-name').value.trim();
   const phone  = document.getElementById('edit-u-phone').value.trim();
+  const username = document.getElementById('edit-u-username').value.trim();
   const rbacRole = document.getElementById('edit-u-role').value;
   const role   = legacyRoleForRbac(rbacRole);
   const deptId = document.getElementById('edit-u-dept-l2').value || document.getElementById('edit-u-dept-l1').value || null;
   if (!name) { showToast('請填寫姓名', true); return; }
   if (!/^[一-龥]{2,10}$/.test(name)) { showToast('姓名格式錯誤，請輸入 2~10 個中文字', true); return; }
+  if (!username) { showToast('請填寫登入帳號', true); return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) { showToast('帳號格式錯誤：僅限英數字與底線', true); return; }
   const permissions = collectPermissionValues('e');
   const before = userMap[userId];
-  const updates = { name, phone: phone || null, role, rbac_role: rbacRole, dept_id: deptId, permissions };
+  const updates = { name, username, phone: phone || null, role, rbac_role: rbacRole, dept_id: deptId, permissions };
   const { error } = await db.from('users').update(updates).eq('user_id', userId);
   if (error) { showToast('儲存失敗：' + translateError(error.message), true); return; }
   await writeAudit('users', userId, 'update', { name: before?.name, phone: before?.phone, role: before?.role, rbac_role: before?.rbac_role, dept_id: before?.dept_id, permissions: before?.permissions }, updates);
@@ -1732,7 +1778,7 @@ function populateEqFilter(selectId) {
   const current = el.value;
   const isEntryForm = selectId === 'cost-eq';
   el.innerHTML = `<option value="">${isEntryForm ? '-- 選擇設備 --' : '全部設備'}</option>` +
-    allEquipment.map(e => `<option value="${e.equipment_id}" ${e.equipment_id === current ? 'selected':''}>${e.name}</option>`).join('');
+    allEquipment.map(e => `<option value="${e.equipment_id}" ${e.equipment_id === current ? 'selected':''}>${escHtml(e.name)}</option>`).join('');
 }
 
 async function loadDashboard() {
@@ -1783,9 +1829,9 @@ function formatPerms(p, roleId) {
 
 function renderUsers(users) {
   document.getElementById('usersTbody').innerHTML = users.map(u => `<tr>
-    <td>${u.name}</td>
-    <td style="font-family:var(--font-mono);font-size:.8rem">${u.username || '—'}</td>
-    <td>${getDeptPath(u.dept_id)}</td>
+    <td>${escHtml(u.name)}</td>
+    <td style="font-family:var(--font-mono);font-size:.8rem">${escHtml(u.username || '—')}</td>
+    <td>${escHtml(getDeptPath(u.dept_id))}</td>
     <td><span class="role-badge">${ROLE_LABEL[normalizeRoleId(u)] || normalizeRoleId(u)}</span></td>
     <td>${formatPerms(u.permissions, normalizeRoleId(u))}</td>
     <td><span class="badge ${u.status === 'active' ? 'badge-active' : 'badge-inactive'}">${u.status === 'active' ? '啟用' : '停用'}</span></td>
@@ -1803,7 +1849,7 @@ function populateUserFilters() {
   const prevL1 = l1Sel.value;
   const l1Depts = allDepts.filter(d => !d.parent_id).sort((a,b) => (a.sort_order||0)-(b.sort_order||0));
   l1Sel.innerHTML = '<option value="">全部部門</option>' +
-    l1Depts.map(d => `<option value="${d.dept_id}">${d.name}</option>`).join('');
+    l1Depts.map(d => `<option value="${d.dept_id}">${escHtml(d.name)}</option>`).join('');
   if (prevL1) l1Sel.value = prevL1;
 }
 
@@ -1816,7 +1862,7 @@ function onFilterL1Change() {
     l2Sel.disabled = true;
   } else {
     l2Sel.innerHTML = '<option value="">全部課別</option>' +
-      children.map(c => `<option value="${c.dept_id}">${c.name}</option>`).join('');
+      children.map(c => `<option value="${c.dept_id}">${escHtml(c.name)}</option>`).join('');
     l2Sel.disabled = false;
   }
   filterUsers();
@@ -2045,8 +2091,8 @@ async function loadEquipmentList() {
 
 function renderEquipment(list) {
   document.getElementById('eqTbody').innerHTML = list.map(e => `<tr>
-    <td>${e.name}</td>
-    <td>${e.location || '—'}</td>
+    <td>${escHtml(e.name)}</td>
+    <td>${escHtml(e.location || '—')}</td>
     <td style="font-family:var(--font-mono)">${e.purchase_cost ? Number(e.purchase_cost).toLocaleString() + ' 元' : '—'}</td>
     <td><span class="badge badge-${e.status}">${e.status === 'active' ? '啟用' : e.status === 'inactive' ? '停用' : '已汰除'}</span></td>
     <td><button class="btn btn-sm" style="background:rgba(12,40,64,0.5);border:1px solid var(--border-hi);color:var(--text-dim)" onclick="showQr('${e.equipment_id}','${e.name.replace(/'/g,"\\'")}','${e.qr_code}')">QR ↗</button></td>
@@ -2290,7 +2336,7 @@ async function loadCostByEq() {
   });
   const sorted = Object.values(byEq).sort((a, b) => b.total - a.total);
   document.getElementById('costByEq').innerHTML = sorted.length ? sorted.map((r,i) => `<div class="cost-eq-row">
-    <span class="cost-eq-name"><span style="font-family:var(--font-mono);color:var(--text-dim);margin-right:10px">${String(i+1).padStart(2,'0')}</span>${r.name}</span>
+    <span class="cost-eq-name"><span style="font-family:var(--font-mono);color:var(--text-dim);margin-right:10px">${String(i+1).padStart(2,'0')}</span>${escHtml(r.name)}</span>
     <span class="cost-eq-amount">${r.total.toLocaleString()} 元</span>
   </div>`).join('') : '<div style="color:var(--text-dim);font-size:.85rem;font-family:var(--font-mono)">目前無費用紀錄</div>';
 }
@@ -2654,7 +2700,7 @@ async function testLinePush() {
     const body = await res.json().catch(() => ({}));
     if (body.ok) showToast('測試訊息已送出，請查看 LINE 群組');
     else showToast('推播失敗：' + (body.msg || '請確認 Token / Group ID 已儲存'), true);
-  } catch(e) { showToast('推播失敗：' + e.message, true); }
+  } catch(e) { showToast('推播失敗：' + translateError(e.message), true); }
 }
 
 function applySystemName() {
@@ -2685,7 +2731,7 @@ function buildL1Block(d) {
       ${c.code ? `<span class="dept-code-badge">${escHtml(c.code)}</span>` : ''}
       <div class="dept-acts">
         <button class="dept-btn-edit" onclick="startEditDept('${c.dept_id}')">編輯</button>
-        <button class="dept-btn-del"  onclick="deleteDept('${c.dept_id}')">刪除</button>
+        <button class="dept-btn-del"  onclick="deleteDept('${c.dept_id}')">停用</button>
       </div>
     </div>
     <div id="edit-${c.dept_id}" style="display:none"></div>
@@ -2697,12 +2743,12 @@ function buildL1Block(d) {
       <div class="dept-l1">
         <div class="dept-row">
           <span onclick="toggleL1('${d.dept_id}')" style="cursor:pointer;color:#00d4ff;width:16px;display:inline-block;text-align:center;user-select:none">${caret}</span>
-          <span class="dept-l1-icon">◈</span>
+          <span class="ic ic-handover dept-l1-icon"></span>
           <span class="dept-label" onclick="toggleL1('${d.dept_id}')" style="cursor:pointer">${escHtml(d.name)}</span>
           ${d.code ? `<span class="dept-code-badge">${escHtml(d.code)}</span>` : ''}
           <div class="dept-acts">
             <button class="dept-btn-edit" onclick="startEditDept('${d.dept_id}')">編輯</button>
-            <button class="dept-btn-del"  onclick="deleteDept('${d.dept_id}')">刪除</button>
+            <button class="dept-btn-del"  onclick="deleteDept('${d.dept_id}')">停用</button>
           </div>
         </div>
         <div id="edit-${d.dept_id}" style="display:none"></div>
@@ -2798,17 +2844,17 @@ async function confirmAddDept(parentId) {
 async function deleteDept(deptId) {
   const dept = deptMap[deptId];
   const hasChildren = allDepts.some(d => d.parent_id === deptId);
-  if (hasChildren) { showToast('請先刪除下層部門', true); return; }
-  if (!confirm(`確定刪除「${dept?.name}」？此操作無法復原。`)) return;
-  const { error } = await db.from('departments').delete().eq('dept_id', deptId);
-  if (error) { showToast('刪除失敗：' + translateError(error.message), true); return; }
-  await writeAudit('departments', deptId, 'update', { name: dept?.name }, null);
-  showToast('部門已刪除');
+  if (hasChildren) { showToast('請先停用下層部門', true); return; }
+  if (!confirm(`確定停用「${dept?.name}」？既有資料與人員關聯會永久保留。`)) return;
+  const { error } = await db.from('departments').update({status:'inactive'}).eq('dept_id', deptId);
+  if (error) { showToast('停用失敗：' + translateError(error.message), true); return; }
+  await writeAudit('departments', deptId, 'update', { name: dept?.name, status:dept?.status }, {status:'inactive'});
+  showToast('部門已停用，歷史資料仍保留');
   await reloadDepts();
 }
 
 async function reloadDepts() {
-  const { data } = await db.from('departments').select('*').order('sort_order');
+  const { data } = await db.from('departments').select('*').eq('status','active').order('sort_order');
   allDepts = data || [];
   allDepts.forEach(d => deptMap[d.dept_id] = d);
   populateAdminDeptSelects();
@@ -2878,7 +2924,7 @@ async function loadModelHub() {
   set('mh-marked-count', '…');
   set('mh-unmarked-count', '…');
   const [{ data: spaces, error: spaceErr }, { data: markers, error: markerErr }] = await Promise.all([
-    db.from('floor_spaces').select('space_id').eq('market_id', 'market1').limit(5000),
+    db.from('floor_spaces').select('space_id').eq('market_id', 'market1').eq('status','active').limit(5000),
     db.from('plan_markers').select('space_id,status').not('space_id', 'is', null).eq('status', 'active').limit(5000)
   ]);
   if (spaceErr || markerErr) {
@@ -3000,7 +3046,7 @@ function renderLocAnalysis() {
     if (hideZero && mkInsp+mkRepair === 0) continue;
     rows.push(`<tr class="la-market-row" onclick="laToggle('${mkKey}')" style="cursor:pointer;background:rgba(0,212,255,0.06);border-top:1px solid var(--border-hi)">
       <td colspan="4" style="font-family:var(--font-head);font-size:.85rem;color:var(--cyan);letter-spacing:.06em;padding-left:12px">
-        <span style="margin-right:6px">${mkCollapsed ? '▶' : '▼'}</span>${mNode.name}
+        <span style="margin-right:6px">${mkCollapsed ? '▶' : '▼'}</span>${escHtml(mNode.name)}
       </td>
       <td style="text-align:right;font-family:var(--font-mono)">${mkInsp||'—'}</td>
       <td style="text-align:right;font-family:var(--font-mono);color:${mkAbn?'var(--red)':'inherit'}">${mkAbn||'—'}</td>
@@ -3095,8 +3141,11 @@ function translateError(msg) {
   if (msg.includes('User already registered')) return '此 Email 已被註冊';
   if (msg.includes('Invalid login credentials')) return '帳號或密碼錯誤';
   if (msg.includes('Email not confirmed')) return 'Email 尚未驗證，請檢查信箱';
-  if (msg.includes('Password should be at least')) return '密碼至少需要 6 個字元';
+  if (msg.includes('New password should be different')) return '新密碼不能與舊密碼相同';
+  if (msg.includes('Password should be at least')) return '密碼長度不足，請輸入更長的密碼';
   if (msg.includes('Signup requires a valid password')) return '請輸入有效密碼';
+  if (msg.includes('For security purposes') && msg.includes('second')) return '操作過於頻繁，請稍後再試';
+  if (msg.includes('Email link is invalid or has expired') || msg.includes('otp_expired')) return '連結已失效或過期，請重新申請';
   if (msg.includes('invalid format')) return 'Email 格式不正確';
   if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
   if (msg.includes('null value in column')) return '必填欄位不可空白';
@@ -3104,11 +3153,11 @@ function translateError(msg) {
   if (msg.includes('violates row-level security')) return '無操作權限';
   if (msg.includes('permission denied')) return '無操作權限';
   if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
-  if (msg.includes('relation does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
   if (msg.includes('value too long')) return '輸入值過長';
   if (msg.includes('invalid input syntax')) return '輸入格式不正確';
   if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) return '網路連線失敗，請稍後再試';
-  return msg;
+  return '操作失敗，請稍後再試或聯絡系統管理員';
 }
 
 function showToast(msg, isErr = false) {

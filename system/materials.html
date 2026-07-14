@@ -2,6 +2,8 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
@@ -13,6 +15,12 @@
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
   --cyan:#00d4ff;--cyan-glow:0 0 14px rgba(0,212,255,.5);--blue:#1a7fff;--green:#00ff9d;
   --amber:#ffb300;--red:#ff3b3b;--text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-glow:none;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] .modal-bg{background:rgba(0,0,0,.4)}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px;
   background-image:linear-gradient(rgba(0,212,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.015) 1px,transparent 1px);background-size:40px 40px}
@@ -102,15 +110,19 @@ tr:hover td{background:rgba(0,212,255,.04)}
 .toast.show{transform:translateX(-50%) translateY(0)} .toast.err{border-color:var(--red)}
 @media(max-width:720px){.grp-b{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.grp-b{grid-template-columns:1fr}}
+
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
 </head>
 <body>
 <nav class="navbar">
-  <div><div class="nav-title">◧ 設備材料管理</div><div class="nav-sub">Material Master · 臺北農產 第一果菜市場</div></div>
+  <div><div class="nav-title"><span class="ic ic-equipment"></span> 設備材料管理</div><div class="nav-sub">Material Master · 臺北農產 第一果菜市場</div></div>
   <div class="nav-space"></div>
-  <a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
-  <a href="workorder.html"><button class="nav-back">◪ 報修系統</button></a>
-  <a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
+  <a href="dashboard.html"><button class="nav-back"><span class="ic ic-dashboard"></span> 戰情儀表板</button></a>
+  <a class="mobile-hide" href="equipment.html"><button class="nav-back"><span class="ic ic-equipment"></span> 設備建置</button></a>
+  <a href="workorder.html"><button class="nav-back"><span class="ic ic-dispatch"></span> 報修系統</button></a>
+  <a href="app.html"><button class="nav-back"><span class="ic ic-inspection"></span> 巡檢</button></a>
   <a href="admin.html"><button class="nav-back">← 後台</button></a>
 </nav>
 
@@ -131,7 +143,7 @@ tr:hover td{background:rgba(0,212,255,.04)}
     <button class="btn btn-add" onclick="openAdd()">＋ 新增材料</button>
     <button class="btn btn-blue" onclick="document.getElementById('impFile').click()">⭳ 匯入XLSX</button>
     <button class="btn btn-green" onclick="exportXLSX('xlsx')">⭱ 匯出XLSX</button>
-    <button class="btn" onclick="downloadTemplate()">▤ 範本</button>
+    <button class="btn" onclick="downloadTemplate()"><span class="ic ic-template"></span> 範本</button>
     <input type="file" id="impFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="onImportFile(event)">
   </div>
 
@@ -180,10 +192,25 @@ tr:hover td{background:rgba(0,212,255,.04)}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
 const PER=10;              // 每 10 筆一頁
 let mats=[], cats=[], spaces=[], page=1, editId=null, qrTargetUrl='';
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates foreign key constraint')) return '關聯資料錯誤，無法刪除';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('JWT expired')) return '登入已過期，請重新整理頁面';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('value too long')) return '輸入值過長';
+  if (msg.includes('invalid input syntax')) return '輸入格式不正確';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 // 全系統統一日期格式：西元 YYYY-MM-DD
 function todayISO(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function fmtDate(v){if(!v)return '—';const d=new Date(v);if(isNaN(d))return String(v).slice(0,10);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
@@ -228,9 +255,9 @@ const GROUPS=[
 
 async function load(){
   const [m,c,s]=await Promise.all([
-    db.from('materials').select('*').limit(5000),
+    db.from('materials').select('*').eq('status','active').limit(5000),
     db.from('material_categories').select('*').eq('status','active').order('sort_order'),
-    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').limit(5000)
+    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').eq('status','active').limit(5000)
   ]);
   if(m.error){document.getElementById('tbody').innerHTML='<tr><td colspan="12" class="empty">無法讀取。請先於 Supabase 執行 sql/material_master.sql 建表。</td></tr>';return;}
   mats=m.data||[]; cats=c.data||[]; spaces=s.data||[];
@@ -289,7 +316,7 @@ function render(){
       <td>${m.inspection_required?'<span class="pill on">需</span>':'<span class="pill">否</span>'}</td>
       <td>${files}</td>
       <td><span class="act" onclick="showQR('${m.material_id}')">◱ QR</span></td>
-      <td><span class="act" onclick="openEdit('${m.material_id}')">編輯</span><span class="act del" onclick="delMaterial('${m.material_id}')">刪除</span></td>
+      <td><span class="act" onclick="openEdit('${m.material_id}')">編輯</span><span class="act del" onclick="delMaterial('${m.material_id}')">停用</span></td>
     </tr>`;
   }).join('');
   document.getElementById('pInfo').textContent=`共 ${list.length} 筆 · 每頁 ${PER} 筆`;
@@ -356,14 +383,14 @@ async function saveMaterial(){
   let error;
   if(editId){({error}=await db.from('materials').update(rec).eq('material_id',editId));}
   else{({error}=await db.from('materials').insert(rec));}
-  if(error){msg.textContent=(error.code==='23505'?'材料編號重複':'儲存失敗：'+error.message);return;}
+  if(error){msg.textContent=(error.code==='23505'?'材料編號重複':'儲存失敗：'+translateError(error.message));return;}
   closeM('m-edit');toast(editId?'已更新':'已新增');await load();
 }
 async function delMaterial(id){const m=mats.find(x=>x.material_id===id);if(!m)return;
-  if(!confirm(`確定刪除「${m.material_code||''} ${m.material_name}」？`))return;
-  const {error}=await db.from('materials').delete().eq('material_id',id);
-  if(error){toast('刪除失敗：'+error.message,true);return;}
-  toast('已刪除');await load();
+  if(!confirm(`確定停用「${m.material_code||''} ${m.material_name}」？歷史資料會永久保留。`))return;
+  const {error}=await db.from('materials').update({status:'inactive'}).eq('material_id',id);
+  if(error){toast('停用失敗：'+translateError(error.message),true);return;}
+  toast('已停用，歷史資料仍保留');await load();
 }
 
 // ── QR：掃描導向設備連結檔（CAD/規格書/手冊…），無檔則導向明細 ──
@@ -415,7 +442,7 @@ function onImportFile(ev){
     const wb=XLSX.read(e.target.result,{type:'array'});
     const ws=wb.Sheets[wb.SheetNames[0]];
     await importAoa(XLSX.utils.sheet_to_json(ws,{header:1,blankrows:false}));
-  }catch(err){toast('匯入失敗：'+err.message,true);}};
+  }catch(err){toast('匯入失敗：'+translateError(err.message),true);}};
   r.readAsArrayBuffer(file);
 }
 async function importAoa(aoa){
@@ -447,7 +474,7 @@ async function importAoa(aoa){
   let ok=0,err=null;
   if(withCode.length){const {error}=await db.from('materials').upsert(withCode,{onConflict:'material_code'});if(error)err=error;else ok+=withCode.length;}
   if(noCode.length){const {error}=await db.from('materials').insert(noCode);if(error)err=error;else ok+=noCode.length;}
-  if(err){toast('匯入部分失敗：'+err.message,true);}
+  if(err){toast('匯入部分失敗：'+translateError(err.message),true);}
   else toast(`已匯入 ${ok} 筆`);
   await load();
 }

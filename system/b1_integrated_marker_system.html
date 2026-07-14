@@ -2,12 +2,29 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>臺北農產 第一果菜市場 — 整合標記系統</title>
 <style>
 :root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0;
-  --eq:#00d4ff;--sp:#00ff9d;--rp:#ff5470;--nt:#ffb300}
+  --eq:#00d4ff;--sp:#00ff9d;--pt:#c77dff;--rp:#ff5470;--nt:#ffb300}
+:root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b;--eq:#0284c7;--sp:#059669;--pt:#9333ea;--rp:#dc2626;--nt:#b45309}
+/* light mode overrides */
+:root[data-theme="light"] #topbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] #osd{background:#f8fafc;color:#1e293b}
+:root[data-theme="light"] #floors select{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
+:root[data-theme="light"] #floors option{background:#ffffff;color:#1e293b}
+:root[data-theme="light"] .tbtn{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] .tbtn:hover{background:#e2e8f0}
+:root[data-theme="light"] #hud{background:rgba(255,255,255,.92);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #panel{background:rgba(255,255,255,.97);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #panelToggle{background:#f1f5f9;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] .mk-item{background:#f8fafc;border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] #mouseHint{background:rgba(255,255,255,.92);border-color:#e2e8f0;color:#1e293b}
+:root[data-theme="light"] .pin .plab{background:#000;border-color:rgba(255,255,255,.42);color:#fff}
+:root[data-theme="light"] .modal-bg{background:rgba(0,0,0,.4)}
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe UI','Noto Sans TC',sans-serif;overflow:hidden}
 
@@ -50,7 +67,7 @@ body.panel-open #panelToggle{display:none}
 .pn-empty{text-align:center;color:var(--text2);font-size:12px;padding:40px 10px}
 .pn-legend{padding:10px 14px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:8px 14px;font-size:11px;color:var(--text2)}
 .pn-legend span{display:inline-flex;align-items:center;gap:5px}
-.pn-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.pn-legend i{width:11px;height:11px;border-radius:50%;display:inline-block;box-shadow:0 0 0 1px rgba(255,255,255,.6)}
 .pn-count{padding:8px 14px;font-size:11px;color:var(--text2);border-top:1px solid var(--border)}
 
 /* Floor switch */
@@ -68,10 +85,15 @@ body.panel-open #panelToggle{display:none}
 .tbtn{width:40px;height:40px;background:rgba(4,20,40,.95);border:1px solid var(--border);color:var(--cyan2);border-radius:5px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all .15s;user-select:none}
 .tbtn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.1)}
 
-/* HUD */
-#hud{position:fixed;right:14px;bottom:14px;background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;z-index:150;font-size:11px;line-height:1.6}
+/* Bottom-right row: mouse-control hint + HUD, side by side (hint on the left, HUD on the right) */
+#bottomRightRow{position:fixed;right:14px;bottom:14px;z-index:150;display:flex;align-items:flex-end;gap:8px}
+#hud{background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;line-height:1.6}
 #hud .h-t{color:var(--cyan);font-weight:700;margin-bottom:2px}
 #hud span{color:var(--text)}
+#mouseHint{background:rgba(4,20,40,.92);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:11px;line-height:1.6;color:var(--text);white-space:nowrap}
+
+/* Navigator (mini-map) — bottom-left, enlarged 1.3x */
+#osdNav{position:fixed!important;top:auto!important;right:auto!important;left:14px!important;bottom:14px!important;width:169px!important;height:130px!important;z-index:150}
 
 #placehint{position:fixed;left:50%;top:60px;transform:translateX(-50%);background:rgba(0,212,255,.15);border:1px solid var(--cyan);color:var(--cyan);padding:6px 16px;border-radius:20px;font-size:12px;z-index:190;display:none}
 #placehint.on{display:block}
@@ -82,7 +104,7 @@ body.panel-open #panelToggle{display:none}
 .pin::before{content:'';position:absolute;left:50%;top:50%;width:24px;height:24px;transform:translate(-50%,-50%);border-radius:50%}
 .pin:hover .pdot{transform:rotate(-45deg) scale(1.25)}
 .pin .pdot{width:9px;height:9px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:1px solid #fff;box-shadow:0 0 4px rgba(0,0,0,.6);margin:0 auto;transition:transform .12s}
-.pin .plab{position:absolute;left:50%;top:-3px;transform:translate(-50%,-100%);background:rgba(2,11,24,.92);border:1px solid var(--border);color:var(--text);font-size:9px;padding:1px 5px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s}
+.pin .plab{position:absolute;left:50%;top:-3px;transform:translate(-50%,-100%);background:#000;border:1px solid rgba(255,255,255,.42);color:#fff;font-size:12px!important;font-weight:600;line-height:1.35;padding:3px 7px;border-radius:4px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;box-shadow:0 2px 7px rgba(0,0,0,.48)}
 .pin:hover .plab,.pin.show-lab .plab{opacity:1}
 .pin.sel .pdot{outline:3px solid rgba(255,255,255,.5);outline-offset:2px}
 
@@ -134,9 +156,13 @@ body.panel-open #panelToggle{display:none}
   .pn-list{max-height:38vh}
   #floors{top:auto;bottom:14px;left:14px;right:auto;flex-direction:row}
   #tools{top:auto;bottom:64px;left:14px;right:auto;flex-direction:row}
-  #hud{display:none}
+  #bottomRightRow{display:none}
+  #osdNav{bottom:114px!important;width:130px!important;height:100px!important}
 }
+
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
 </head>
 <body>
 
@@ -152,8 +178,6 @@ body.panel-open #panelToggle{display:none}
   <div class="tb-title">整合標記系統</div>
   <div class="tb-space"></div>
   <a href="modeler.html" class="tb-back">3D建模系統</a>
-  <a href="b1plan.html" class="tb-back">開啟平面圖</a>
-  <a href="floor3d.html" class="tb-back">開啟3D模型</a>
   <a href="arealist.html" class="tb-back">區域位置表</a>
   <a href="b1_integrated_marker_system.html" class="tb-back">整合標記系統</a>
   <a href="admin.html#modelhub" class="tb-back">後台</a>
@@ -163,7 +187,7 @@ body.panel-open #panelToggle{display:none}
 <div id="panel">
   <div class="pn-head" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
     <div>
-      <div class="pn-title">◈ 整合標記</div>
+      <div class="pn-title"><span class="ic ic-handover"></span> 整合標記</div>
       <div class="pn-sub" id="pnFloor">B1 地下一層</div>
     </div>
     <div style="display:flex;gap:6px;flex:none">
@@ -177,7 +201,8 @@ body.panel-open #panelToggle{display:none}
       <select id="fltKind" onchange="renderList()">
         <option value="markers">本層標記</option>
         <option value="equipment">設備清單</option>
-        <option value="space">空間清單（區域位置表）</option>
+        <option value="space">空間清單（區域位置）</option>
+        <option value="patrol">巡邏點標示</option>
         <option value="repair">報修案件</option>
       </select>
     </div>
@@ -194,12 +219,14 @@ body.panel-open #panelToggle{display:none}
   <div class="pn-legend">
     <span><i style="background:var(--eq)"></i>設備</span>
     <span><i style="background:var(--sp)"></i>空間</span>
+    <span><i style="background:var(--pt)"></i>巡邏點</span>
     <span><i style="background:var(--rp)"></i>報修點</span>
     <span><i style="background:var(--nt)"></i>一般</span>
   </div>
 </div>
 
 <div id="osd"></div>
+<div id="osdNav"></div>
 
 <div id="placehint">點選平面圖任一位置放置標記　·　再按一次退出放置模式</div>
 
@@ -216,15 +243,18 @@ body.panel-open #panelToggle{display:none}
   <div class="tbtn" id="t-zin"  title="放大">＋</div>
   <div class="tbtn" id="t-zout" title="縮小">－</div>
   <div class="tbtn" id="t-rl"   title="逆時針旋轉">↺</div>
-  <div class="tbtn" id="t-rr"   title="順時針旋轉">↻</div>
+  <div class="tbtn" id="t-rr"   title="順時針旋轉"><span class="ic ic-refresh"></span></div>
   <div class="tbtn" id="t-lab"  title="顯示/隱藏標籤">🏷</div>
   <div class="tbtn" id="t-home" title="重置視角">⊡</div>
   <div class="tbtn" id="t-fs"   title="全螢幕">⛶</div>
 </div>
 
-<div id="hud">
-  <div class="h-t" id="hudFloor">▣ B1 地下一層</div>
-  <div>縮放：<span id="h-zoom">100%</span>　旋轉：<span id="h-rot">0°</span></div>
+<div id="bottomRightRow">
+  <div id="mouseHint">🖱 滾輪：縮放　拖曳：平移　雙擊：放大</div>
+  <div id="hud">
+    <div class="h-t" id="hudFloor"><span class="ic ic-3d"></span> B1 地下一層</div>
+    <div>縮放：<span id="h-zoom">100%</span>　旋轉：<span id="h-rot">0°</span></div>
+  </div>
 </div>
 
 <!-- Marker create/edit modal -->
@@ -237,6 +267,7 @@ body.panel-open #panelToggle{display:none}
         <div class="kind-row" id="kindRow">
           <button type="button" class="kbtn" data-k="equipment" style="--c:var(--eq)" onclick="pickKind('equipment')">設備</button>
           <button type="button" class="kbtn" data-k="space" style="--c:var(--sp)" onclick="pickKind('space')">空間</button>
+          <button type="button" class="kbtn" data-k="patrol" style="--c:var(--pt)" onclick="pickKind('patrol')">巡邏點</button>
           <button type="button" class="kbtn" data-k="repair" style="--c:var(--rp)" onclick="pickKind('repair')">報修點</button>
           <button type="button" class="kbtn" data-k="note" style="--c:var(--nt)" onclick="pickKind('note')">一般</button>
         </div>
@@ -257,7 +288,7 @@ body.panel-open #panelToggle{display:none}
       <div class="fld"><label>備註（選填）</label><textarea id="mkNote" placeholder="說明 / 狀態…"></textarea></div>
       <div class="md-msg" id="mkMsg"></div>
       <div class="md-actions">
-        <button class="btn-danger" id="mkDel" style="display:none" onclick="deleteMk()">刪除</button>
+        <button class="btn-danger" id="mkDel" style="display:none" onclick="deleteMk()">停用</button>
         <button class="btn-primary" onclick="saveMk()">儲存標記</button>
       </div>
     </div>
@@ -270,23 +301,41 @@ body.panel-open #panelToggle{display:none}
   <div class="dt-body" id="dtBody"></div>
   <div class="dt-acts">
     <button class="btn" onclick="editFromDetail()">編輯</button>
-    <button class="btn" style="border-color:var(--rp);color:var(--rp)" onclick="delFromDetail()">刪除</button>
+    <button class="btn" style="border-color:var(--rp);color:var(--rp)" onclick="delFromDetail()">停用</button>
   </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/openseadragon/4.1.0/openseadragon.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="patrolstatus.js"></script>
 <script>
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
-const KIND={equipment:{c:'#00d4ff',n:'設備'},space:{c:'#00ff9d',n:'空間'},repair:{c:'#ff5470',n:'報修點'},note:{c:'#ffb300',n:'一般'}};
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
+const KIND={equipment:{c:'#00d4ff',n:'設備'},space:{c:'#00ff9d',n:'空間'},patrol:{c:'#c77dff',n:'巡邏點'},repair:{c:'#ff5470',n:'報修點'},note:{c:'#ffb300',n:'一般'}};
 function prog(p,m){document.getElementById('ldfill').style.width=p+'%';document.getElementById('ldmsg').textContent=m;}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function translateError(msg) {
+  if (!msg) return '未知錯誤';
+  if (msg.includes('duplicate key value')) return '資料重複，請確認是否已存在';
+  if (msg.includes('null value in column')) return '必填欄位不可空白';
+  if (msg.includes('violates row-level security')) return '無操作權限';
+  if (msg.includes('permission denied')) return '無操作權限';
+  if (msg.includes('relation') && msg.includes('does not exist')) return '資料表不存在，請確認資料庫設定';
+  if (msg.includes('Failed to fetch') || msg.includes('NetworkError') || msg.includes('Load failed')) return '網路連線失敗，請稍後再試';
+  return '操作失敗，請稍後再試或聯絡系統管理員';
+}
 prog(15,'建立檢視器…');
 
 let rot=0, loaded=0, curFloor='B1', placeMode=false, showLabels=false;
 let markers=[], equip=[], spaces=[], repairs=[], editId=null, curKind='note', detailId=null, pendingLink=null;
+let viewerReady=false, dataReady=false;
+function tryFocusDeepLink(){
+  if(!viewerReady||!dataReady) return;
+  const mid=new URLSearchParams(location.search).get('marker');
+  if(mid) focusMarker(mid);
+}
 
 // 樓層正規化，讓「B1 / B1F」、「1F / 1」等視為同一層（區域位置表與平面圖命名不一致時仍能對應）
 function canonicalFloor(f){
@@ -299,15 +348,15 @@ function canonicalFloor(f){
 }
 
 const FLOORS=[
-  {id:'B1', label:'▣ B1 地下一層', dzi:'plans/b1.dzi', idx:null},
-  {id:'1F', label:'▣ 1F 一樓',     dzi:'plans/f1.dzi', idx:null},
-  {id:'2F', label:'▣ 2F 二樓',     dzi:'plans/f2.dzi', idx:null},
-  {id:'3F', label:'▣ 3F 三樓',     dzi:'plans/f3.dzi', idx:null},
+  {id:'B1', label:'B1 地下一層', dzi:'plans/b1.dzi', idx:null},
+  {id:'1F', label:'1F 一樓',     dzi:'plans/f1.dzi', idx:null},
+  {id:'2F', label:'2F 二樓',     dzi:'plans/f2.dzi', idx:null},
+  {id:'3F', label:'3F 三樓',     dzi:'plans/f3.dzi', idx:null},
 ];
 
 const viewer = OpenSeadragon({
   id:'osd', prefixUrl:'', showNavigationControl:false,
-  showNavigator:true, navigatorPosition:'TOP_RIGHT', navigatorHeight:100, navigatorWidth:130,
+  showNavigator:true, navigatorId:'osdNav', navigatorPosition:'BOTTOM_LEFT', navigatorHeight:130, navigatorWidth:169,
   navigatorAutoFade:false, navigatorBackground:'#041428', navigatorBorderColor:'#0a3a5a', navigatorDisplayRegionColor:'#00d4ff',
   backgroundColor:'#04101f', degrees:0, minZoomLevel:0.2, maxZoomPixelRatio:4, zoomPerScroll:1.3,
   animationTime:0.5, springStiffness:7,
@@ -338,6 +387,7 @@ function onLoad(){
   prog(100,'完成');
   setTimeout(()=>{ const l=document.getElementById('loading'); l.style.transition='opacity .4s'; l.style.opacity='0'; setTimeout(()=>l.style.display='none',400); },150);
   showFloor('B1'); updHud();
+  viewerReady=true; tryFocusDeepLink();
 }
 
 function item(i){ return i==null?null:viewer.world.getItemAt(i); }
@@ -348,8 +398,8 @@ function showFloor(f){
   FLOORS.forEach(fl=>{ const it=item(fl.idx); if(it) it.setOpacity(fl.id===f?1:0); });
   const sel=document.getElementById('floorSel'); if(sel && sel.value!==f) sel.value=f;
   const cur=FLOORS.find(fl=>fl.id===f);
-  document.getElementById('hudFloor').textContent=cur.label;
-  document.getElementById('pnFloor').textContent=cur.label.replace('▣ ','');
+  document.getElementById('hudFloor').innerHTML='<span class="ic ic-3d"></span> '+cur.label;
+  document.getElementById('pnFloor').textContent=cur.label;
   hideDetail();
   drawMarkers(); renderList();
 }
@@ -359,12 +409,14 @@ async function loadData(){
   const [mk,eq,sp,rp]=await Promise.all([
     db.from('plan_markers').select('*').eq('status','active'),
     db.from('equipment').select('equipment_id,name,location').limit(3000),
-    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').limit(5000),
+    db.from('floor_spaces').select('space_id,floor,space_name').eq('market_id','market1').eq('status','active').limit(5000),
     db.from('repair_requests').select('request_id,req_no,fault_type,fault_desc,status').order('created_at',{ascending:false}).limit(500)
   ]);
   markers=mk.data||[]; equip=eq.data||[]; spaces=sp.data||[]; repairs=(rp.data||[]).filter(r=>!['done','closed','completed','已完成','已結案'].includes(r.status));
   fillLinkSelects();
   drawMarkers(); renderList();
+  dataReady=true; tryFocusDeepLink();
+  refreshPatrolStatus();
 }
 
 const STAT_LABEL={pending:'待處理',dispatched:'已派工',processing:'處理中',accepted:'已受理',repairing:'維修中'};
@@ -407,13 +459,23 @@ function fillLinkSelects(){
 }
 
 // ── Draw overlays ──────────────────────────────────────────
+let patrolStatusMap=new Map();
+function markerColor(m){
+  if(m.kind==='patrol' && patrolStatusMap.has(m.marker_id)) return PatrolStatus.COLORS[patrolStatusMap.get(m.marker_id)];
+  return m.color||KIND[m.kind]?.c||'#ffb300';
+}
+async function refreshPatrolStatus(){
+  try{ const r=await PatrolStatus.compute(db); patrolStatusMap=r.map; }
+  catch(e){ /* patrol_shifts 尚未建表時，靜默略過，圖釘維持原色 */ }
+  drawMarkers();
+}
 function drawMarkers(){
   viewer.clearOverlays();
   markers.filter(m=>m.floor_id===curFloor).forEach(m=>{
     const el=document.createElement('div');
     el.className='pin'+(showLabels?' show-lab':'');
     el.dataset.id=m.marker_id;
-    const col=m.color||KIND[m.kind]?.c||'#ffb300';
+    const col=markerColor(m);
     el.innerHTML=`<div class="pdot" style="background:${col}"></div><div class="plab">${esc(m.label)}</div>`;
     el.addEventListener('click',ev=>{ ev.stopPropagation(); openDetail(m.marker_id,ev); });
     viewer.addOverlay({element:el, location:new OpenSeadragon.Point(m.x,m.y), placement:OpenSeadragon.Placement.CENTER, checkResize:false});
@@ -450,6 +512,21 @@ function renderList(){
         <span class="mk-kind">${KIND[m.kind]?.n||''}</span></div>`;
     }).join(''):'<div class="pn-empty">此樓層尚無標記。<br>可從「設備清單／空間清單」點選項目放置，或按「放置標記模式」自訂新增。</div>';
     document.getElementById('pnCount').textContent=`本層標記：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
+    return;
+  }
+  if(src==='patrol'){
+    let list=markers.filter(m=>m.floor_id===curFloor && m.kind==='patrol');
+    const total=list.length;
+    if(q) list=list.filter(m=>(m.label||'').toLowerCase().includes(q)||(m.note||'').toLowerCase().includes(q));
+    if(placeStatus==='unplaced') list=[];
+    box.innerHTML=list.length?list.map(m=>{
+      const col=m.color||KIND[m.kind]?.c||'#ffb300';
+      return `<div class="mk-item" onclick="focusMarker('${m.marker_id}')">
+        <span class="cdot" style="background:${col}"></span>
+        <span class="mk-name">${esc(m.label)}</span>
+        <span class="mk-kind">${KIND[m.kind]?.n||''}</span></div>`;
+    }).join(''):'<div class="pn-empty">此樓層尚無巡邏點。<br>可按「放置標記模式」新增。</div>';
+    document.getElementById('pnCount').textContent=`巡邏點：${total} 個`+(list.length!==total?`（篩選後 ${list.length}）`:'');
     return;
   }
   // ── 主資料清單瀏覽 ──
@@ -510,7 +587,13 @@ function focusMarker(id){
   viewer.viewport.panTo(new OpenSeadragon.Point(m.x,m.y));
   viewer.viewport.zoomTo(Math.max(viewer.viewport.getZoom(),2));
   detailId=id; markLoadedSelection();
-  setTimeout(()=>{const el=document.querySelector('.pin[data-id="'+id+'"]');if(el)openDetailByEl(m,el);},350);
+  let tries=0;
+  const tryOpen=()=>{
+    const el=document.querySelector('.pin[data-id="'+id+'"]');
+    if(el){ openDetailByEl(m,el); return; }
+    if(++tries<15) setTimeout(tryOpen,150);
+  };
+  setTimeout(tryOpen,350);
 }
 
 // ── Place mode ─────────────────────────────────────────────
@@ -623,14 +706,14 @@ async function saveMk(){
   let error;
   if(editId){({error}=await db.from('plan_markers').update(rec).eq('marker_id',editId));}
   else{({error}=await db.from('plan_markers').insert(rec));}
-  if(error){msg.textContent='儲存失敗：'+error.message;return;}
+  if(error){msg.textContent='儲存失敗：'+translateError(error.message);return;}
   closeMk(); await loadData();
 }
 async function deleteMk(){
   if(!editId)return;
-  if(!confirm('確定刪除此標記？'))return;
-  const {error}=await db.from('plan_markers').delete().eq('marker_id',editId);
-  if(error){document.getElementById('mkMsg').textContent='刪除失敗：'+error.message;return;}
+  if(!confirm('確定停用此標記？歷史資料會永久保留。'))return;
+  const {error}=await db.from('plan_markers').update({status:'inactive'}).eq('marker_id',editId);
+  if(error){document.getElementById('mkMsg').textContent='停用失敗：'+translateError(error.message);return;}
   closeMk(); detailId=null; await loadData();
 }
 
@@ -695,6 +778,7 @@ window.addEventListener('keydown',e=>{
 
 buildSources();
 loadData();
+setInterval(refreshPatrolStatus,60000);
 </script>
 </body>
 </html>

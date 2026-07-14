@@ -2,10 +2,18 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>整合 API 文件 — 報修派工管理系統</title>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;--cyan:#00d4ff;--blue:#1a7fff;--green:#00ff9d;--amber:#ffb300;--purple:#b48aff;--text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif;--font-mono:'Share Tech Mono',monospace}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--blue:#2563eb;--green:#059669;--amber:#b45309;--purple:#7c3aed;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+/* light mode overrides */
+:root[data-theme="light"] body{background-image:none}
+:root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
+:root[data-theme="light"] .nav-title{text-shadow:none}
+:root[data-theme="light"] pre{background:#f1f5f9;color:#1e293b;border-color:#e2e8f0}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
 a{color:var(--blue);text-decoration:none}
@@ -28,16 +36,20 @@ th{text-align:left;color:var(--text-dim);padding:7px 9px;border-bottom:1px solid
 td{padding:7px 9px;border-bottom:1px solid rgba(12,40,64,.4);vertical-align:top}
 .note{background:rgba(0,212,255,.05);border-left:3px solid var(--cyan);padding:10px 14px;border-radius:0 4px 4px 0;margin:10px 0;font-size:.8rem}
 .warn{background:rgba(255,179,0,.06);border-left:3px solid var(--amber);padding:10px 14px;border-radius:0 4px 4px 0;margin:10px 0;font-size:.8rem;color:var(--amber)}
+
 </style>
+<link rel="stylesheet" href="light-mode-fix.css">
+<link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
 </head>
 <body>
 <nav class="navbar">
   <div><div class="nav-title">⇄ 整合 API 文件</div><div class="nav-sub">系統整合 API 參考</div></div>
   <div class="nav-space"></div>
-<a href="dashboard.html"><button class="nav-back">◫ 戰情儀表板</button></a>
-<a href="workorder.html"><button class="nav-back">⚒ 報修系統</button></a>
-<a href="dispatch.html"><button class="nav-back">◪ 派工系統</button></a>
-<a href="app.html"><button class="nav-back">◉ 巡檢</button></a>
+<a href="dashboard.html"><button class="nav-back"><span class="ic ic-dashboard"></span> 戰情儀表板</button></a>
+<a class="mobile-hide" href="equipment.html"><button class="nav-back"><span class="ic ic-equipment"></span> 設備建置</button></a>
+<a href="workorder.html"><button class="nav-back"><span class="ic ic-dispatch"></span> 報修系統</button></a>
+<a href="dispatch.html"><button class="nav-back"><span class="ic ic-dispatch"></span> 派工系統</button></a>
+<a href="app.html"><button class="nav-back"><span class="ic ic-inspection"></span> 巡檢</button></a>
   <a href="admin.html"><button class="nav-back">← 後台</button></a>
 </nav>
 <div class="wrap">
@@ -56,7 +68,7 @@ td{padding:7px 9px;border-bottom:1px solid rgba(12,40,64,.4);vertical-align:top}
 <h2>二、共用主鍵（跨系統一致）</h2>
 <table>
   <tr><th>識別碼</th><th>欄位</th><th>說明</th></tr>
-  <tr><td>設備編號</td><td><code>equipment.equipment_id</code> / <code>qr_code</code></td><td>全系統唯一，QR 可掃描快查</td></tr>
+  <tr><td>設備編號</td><td><code>equipment.equipment_id</code> / <code>asset_code</code></td><td>UUID 為內部關聯主鍵；asset_code 為 QR 與外部系統穩定設備編號</td></tr>
   <tr><td>報修單號</td><td><code>repair_requests.req_no</code></td><td>RPyyyymmdd-NNNN</td></tr>
   <tr><td>派工單號</td><td><code>maintenance_orders.wo_no</code></td><td>WOyyyymmdd-NNNN</td></tr>
   <tr><td>位置編號</td><td><code>locations.location_id</code></td><td>市場→樓層→區域→細部</td></tr>
@@ -67,8 +79,23 @@ td{padding:7px 9px;border-bottom:1px solid rgba(12,40,64,.4);vertical-align:top}
 
 <h3>設備 Equipment</h3>
 <p><span class="tag get">GET</span><code>/equipment</code>　查詢設備（含履歷主檔）</p>
-<pre>GET /rest/v1/equipment?qr_code=eq.EQ-E007&amp;select=*
+<pre>GET /rest/v1/equipment?asset_code=eq.EQ-E007&amp;select=*
 GET /rest/v1/equipment?select=equipment_id,name,category,status</pre>
+
+<h3>設備保養 / 履歷 / 合約 / 文件</h3>
+<p><span class="tag get">GET</span><span class="tag post">POST</span><span class="tag patch">PATCH</span>
+<code>/equipment_maintenance_plans</code>、<code>/equipment_maintenance_records</code>、<code>/equipment_contracts</code>、<code>/equipment_documents</code></p>
+
+<h3>中央監控設備對照 / 點位 / 事件</h3>
+<p><span class="tag get">GET</span><span class="tag post">POST</span><span class="tag patch">PATCH</span>
+<code>/equipment_external_links</code>、<code>/equipment_monitor_points</code>、<code>/equipment_monitor_events</code></p>
+<pre>POST /rest/v1/equipment_monitor_events
+{ "equipment_id":"&lt;uuid&gt;", "point_id":"&lt;uuid&gt;",
+  "external_system":"BMS-01", "external_event_key":"BMS-01-20260713-000001",
+  "event_code":"HIGH_TEMP", "severity":"warning", "event_state":"open",
+  "title":"馬達溫度過高", "value":{"value":82.5,"unit":"°C"},
+  "occurred_at":"2026-07-13T10:00:00+08:00" }</pre>
+<div class="note">中央監控的秒級原始值應保存在 BMS/SCADA 或時序資料庫；本系統只保存點位清冊、最新狀態與需稽核的告警事件。</div>
 
 <h3>報修 Repair Request</h3>
 <p><span class="tag get">GET</span><span class="tag post">POST</span><code>/repair_requests</code></p>
@@ -101,6 +128,7 @@ GET /rest/v1/equipment?select=equipment_id,name,category,status</pre>
   <tr><td>8</td><td>採購系統</td><td>等待料件狀態觸發請購；零件對應 cost_records(parts)</td></tr>
   <tr><td>9</td><td>倉儲庫存系統</td><td>更換零件扣庫；parts_used 對應庫存品項</td></tr>
   <tr><td>10</td><td>BI 戰情儀表板</td><td>直接讀取本系統 REST 或 SQL view 供 BI 彙整</td></tr>
+  <tr><td>11</td><td>中央監控 BMS / SCADA</td><td>以 <code>external_equipment_key</code> 與 <code>point_code</code> 對照；告警事件可自動建立報修</td></tr>
 </table>
 
 <h2>五、Webhook / 事件（預留）</h2>

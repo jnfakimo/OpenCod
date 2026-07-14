@@ -68,9 +68,9 @@ insert into markets (market_id, name, short_name, sort_order) values
 ('market2','第二市場','第二',2)
 on conflict do nothing;
 
--- 若資料庫先前已建立其他市場（魚市場 / 行政大樓），移除之，只保留第一/第二市場
-delete from locations where market_id in ('fish','admin');
-delete from markets   where market_id in ('fish','admin');
+-- 舊市場資料永久保留；不再實體刪除，只標記為停用。
+update locations set status='inactive' where market_id in ('fish','admin');
+update markets   set status='inactive' where market_id in ('fish','admin');
 
 -- ============================================================
 -- Seed: Locations — 第一市場 B1 地下室

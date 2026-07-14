@@ -56,8 +56,8 @@ UPDATE departments SET sort_order = 12 WHERE code = 'MGMT-FIN';  -- 出納課
 UPDATE departments SET sort_order = 13 WHERE code = 'MGMT-LEGAL';-- 法務
 UPDATE departments SET sort_order = 14 WHERE code = 'MGMT-HR';   -- 人事室
 
--- 9. Clean up duplicate 人事室 (MGMT-HR2) created by an earlier buggy migration.
---    Reassign any references to the correct 人事室 (MGMT-HR), then delete it.
+-- 9. Archive duplicate 人事室 (MGMT-HR2) created by an earlier migration.
+--    Reassign references but permanently retain the old department row.
 DO $$
 DECLARE v_keep uuid; v_dup uuid;
 BEGIN
@@ -66,7 +66,7 @@ BEGIN
   IF v_dup IS NOT NULL THEN
     UPDATE users            SET dept_id = v_keep WHERE dept_id = v_dup;
     UPDATE handover_records SET dept_id = v_keep WHERE dept_id = v_dup;
-    DELETE FROM departments WHERE dept_id = v_dup;
+    UPDATE departments SET status = 'inactive' WHERE dept_id = v_dup;
   END IF;
 END $$;
 

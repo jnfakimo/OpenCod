@@ -1,63 +1,49 @@
-# 臺北農產 第一果菜市場 — 設備巡檢 / 報修 / 派工系統
+# AI Agent YouTube Subtitle Knowledge Base Builder (Agent-to-Agent Guide)
 
-A web-based equipment **inspection · repair · dispatch · maintenance** system for
-臺北農產運銷股份有限公司 第一果菜市場, with 2D floor-plan and 3D stacked-floor
-viewers, an integrated marker layer, a Material Master, and a shift handover log.
+This repository outlines the automated workflow for AI Agents to extract subtitles from a YouTube channel, parse and clean the transcripts, build a structured three-layer Obsidian Second Brain database, and utilize it for automated lesson/teaching planning.
 
-- **Live**: https://jnfakimo.github.io/word-cloud/ → forwards to `system/index.html`
-- **Stack**: static multi-page HTML/JS (no build) + Supabase (PostgreSQL/Auth/Storage),
-  hosted on GitHub Pages. Libraries load from CDNs.
-- **Agent notes**: see [`AGENTS.md`](AGENTS.md). Full architecture: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md).
+> This guide is formatted specifically for consumption by agentic AI coders (such as Claude Code, Codex, AntiGravity, OpenCode). If you are an Agent reading this repo, follow the instructions and run the scripts below to replicate the knowledge base construction.
 
-## Run locally
-No install or build — the pages are static and talk to the hosted Supabase directly.
-```bash
-python3 -m http.server 8080      # then open http://localhost:8080/system/index.html
-```
-Or just open any `system/*.html` in a browser.
+---
 
-## Project structure
-```
-index.html            # redirects to system/index.html
-system/*.html         # application pages
-system/sql/*.sql      # Supabase schema (idempotent)
-system/plans/*        # live floor-plan tiles/textures (2D & 3D) — keep
-supabase/functions/   # LINE-notify edge function
+## System Architecture
+
+```mermaid
+graph TD
+    Channel[@sensebar Channel] -->|1. extract_videos.py| VideoList[Filtered Video List & URLs]
+    VideoList -->|2. download_all_subs.py| TempVTT[Raw VTT Subtitles]
+    TempVTT -->|3. VTT Cleaning Engine| CleanMD[Deduplicated Markdown Files]
+    CleanMD -->|4. Obsidian Vault| ThreeLayer[Three-Layer Vault Structure]
+    ThreeLayer -->|5. Weekly Agent Task| KB[Structured Knowledge Base]
 ```
 
-### Main pages (under `system/`)
-| Page | 用途 |
-|---|---|
-| `index.html` / `login.html` | 入口 / 登入 |
-| `app.html` | 巡檢 App |
-| `admin.html` | 後台管理 |
-| `dashboard.html` | 戰情儀表板 |
-| `workorder.html` | 報修 / 派工 |
-| `materials.html` | 設備材料管理（Material Master） |
-| `arealist.html` | 區域位置表（樓層空間） |
-| `b1_integrated_marker_system.html` | 整合標記編輯 |
-| `b1plan.html` / `floor3d.html` | 2D 平面圖 / 3D 立體樓層 |
-| `modeler.html` | 3D 建模（DXF→平面/3D） |
-| `handover.html` | 電子交接簿 |
-| `analytics.html` / `rbac.html` | 統計分析 / 權限管理 |
+---
 
-## Backend setup (Supabase)
-1. Create a Supabase project (or use the configured one, ref `qztffronusdhgxhjjubt`).
-2. In the SQL Editor, run the scripts in `system/sql/` in this order:
-   `schema.sql` → `locations_schema.sql` → `work_order_schema.sql` → `floor_models.sql`
-   → `handover_schema.sql` → `floor_spaces.sql` → `plan_markers.sql` → `material_master.sql`
-3. Create Storage buckets `floorplans` and `repair-files`.
-4. Each page embeds the Supabase URL + **anon** key (public by design); update them
-   in the `<script>` init block if you point at a different project.
+## Step-by-Step Implementation Workflow
 
-> Row-Level Security is currently open (`allow_all_for_now`) for development —
-> tighten before production.
+### Step 1: Filter Channel Videos & Extract URLs
+Use `extract_videos.py` to fetch video metadata, filter by keywords (`claude`, `codex`, `antigravity`, `opencode`, `agent`), and export URLs.
 
-## Deploy
-Push to `main`; GitHub Pages builds and publishes automatically. The site is
-CDN-cached — append `?v=<n>` to a URL to force a fresh copy after a deploy.
+### Step 2: Download Subtitles & Clean VTT
+Use `download_all_subs.py` to loop through URLs, download subtitles via `yt-dlp`, and clean:
+1. Remove VTT metadata headers and timestamps
+2. Strip HTML/XML tags
+3. Deduplicate scrolling lines
+4. Write clean Markdown files
 
-## Conventions
-- Dark cyberpunk theme (`--bg:#020b18`, `--cyan:#00d4ff`); UI in Traditional Chinese.
-- Dates standardised to **`YYYY-MM-DD`**; forms carry a 填表日期 (today).
-- SQL is idempotent; add `alter table … add column if not exists` when adding columns.
+### Step 3: Establish the Three-Layer Obsidian Vault
+- `Clipping/` — raw transcript files (do not modify)
+- `創作庫/` — your own scripts, lecture drafts, original notes
+- `知識庫/` — structured knowledge managed by Agent
+
+### Step 4: Run Weekly Agent Restructuring
+1. Scan `Clipping/` and `創作庫/` for new files
+2. Digest transcripts, extract summaries/topics
+3. Write structured notes into `知識庫/`
+4. Perform health check (lint)
+5. Update Index and Log notes
+
+### Step 5: Process Teaching Files & Write Plans
+- Lesson/curriculum plan generation
+- Auto-downloading & OCR
+- Web interactive cockpit (教學駕駛艙)

@@ -58,7 +58,7 @@
 **報修派工管理系統（P1–P6，企業級 14 模組規劃的已完成部分）**
 - `workorder.html` — 報修系統（新增報修、派工、案件流程）
 - `dashboard.html` — 戰情儀表板　`analytics.html` — 統計分析
-- `equipment.html` — 設備履歷　`rbac.html` — 權限管理 RBAC
+- `equipment.html` — 設備建置與生命週期（XLSX 匯入匯出、保養、履歷、合約、文件、成本、中央監控介接）　`rbac.html` — 權限管理 RBAC
 - `notices.html` — 通知中心　`api.html` — 整合 API 文件
 - `maintenance.html` — 舊維修管理（已被 `workorder.html` 取代，導覽一律指向報修系統）
 
@@ -86,8 +86,17 @@
 5. `handover_schema.sql` / `handover_cases.sql` — 電子交接簿
 6. `floor_spaces.sql` — **區域位置表**（各樓層平面空間名稱）
 7. `plan_markers.sql` — **整合標記**（外鍵參照 equipment / floor_spaces / repair_requests，故須在 6 之後）
+8. `material_master.sql` — 材料與備品主檔
+9. `equipment_lifecycle.sql` — 設備生命週期、保養、履歷、合約、文件、成本與中央監控介接
+10. `patrol_shifts.sql` / `checkin_logs.sql` — 駐衛警班別與簽到紀錄
+11. `rls_hardening.sql` / `rls_hardening_login_fix.sql` — 正式環境權限
+12. `permanent_data_protection.sql` — **最後執行**；禁止實體刪除/清空並建立人員異動快照
 
-輔助 / 修補：`dept_rebuild.sql`、`org_update.sql`、`repair_request_timeout_fix.sql`
+輔助 / 修補：`dept_rebuild.sql`、`org_update.sql`、`repair_request_timeout_fix.sql`。
+`dept_rebuild.sql` 現為安全增量同步，不會清空人員部門或刪除既有部門。
+
+**永久保存原則**：正式資料只能新增、修改或設為 `inactive`，不可重建資料庫、
+`TRUNCATE` 或實體 `DELETE` 人員與業務歷程。所有人員異動會寫入 `users_history`。
 
 **⚠️ 新增/改欄位時**：若表已存在，`create table if not exists` 不會補欄位 → 必須另外寫 `alter table ... add column if not exists`（見 `plan_markers.sql` 的 `repair_id` 範例）。
 
@@ -98,7 +107,7 @@
 - **樓層命名不一致**：區域位置表匯入資料常見「B1F/1F」，平面圖系統用「B1/1F/2F/3F」。
   跨系統比對樓層時請用正規化：`B1≈B1F`、`1F≈1`、`RF≈頂樓`
   （參考 `b1_integrated_marker_system.html` 的 `canonicalFloor()`）。
-- **市場**：僅保留 `market1`（第一市場）、`market2`（第二市場）。fish/admin 等舊市場已刪。
+- **市場**：主要使用 `market1`（第一市場）、`market2`（第二市場）；其他舊市場只停用、不刪除。
 - **標記座標**：`plan_markers` 存 OpenSeadragon viewport 正規化座標（x,y），才能隨圖縮放/旋轉對位。
 - **平面圖對位**：B1/1F/2F/3F 用同一 world frame 與像素網格疊放，故可上下層對齊。
 - **報修表單**（workorder 新增報修）現況：聯絡人/單位/電話自帳號自動帶入、手機必填、無「設備」欄、故障位置為自由文字、故障位置照片必填、希望完成日期為「點選年月日」。

@@ -1,0 +1,10 @@
+desktop.ini
+*.tmp
+~$*
+__pycache__/
+*.pyc
+.venv/
+venv/
+_preview.*
+_to_remove.txt
+*.log

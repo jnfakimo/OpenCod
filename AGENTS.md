@@ -39,7 +39,7 @@ DXF→plan/3D · `handover.html` shift handover · `analytics.html` · `rbac.htm
 
 ## How to run / verify
 - **Run**: it's static. Open any `system/*.html` in a browser, or serve the repo
-  root (`python3 -m http.server`) and browse to `/system/…`. No install/build.
+  root (`python3 -m http.server`) and browse to `/system/...`. No install/build.
 - **Verify JS**: this repo has no test suite. Sanity-check a page's inline script
   with Node before committing:
   ```
@@ -53,7 +53,11 @@ All schema is in `system/sql/` and is **idempotent** (`create table if not exist
 `add column if not exists`, `drop policy if exists` before create). To provision a
 fresh Supabase project, run in the SQL Editor in this order:
 `schema.sql` → `locations_schema.sql` → `work_order_schema.sql` → `floor_models.sql`
-→ `handover_schema.sql` → `floor_spaces.sql` → `plan_markers.sql` → `material_master.sql`.
+→ `handover_schema.sql` → `floor_spaces.sql` → `plan_markers.sql` → `material_master.sql`
+→ `equipment_lifecycle.sql` → `patrol_shifts.sql` → `checkin_logs.sql` → `rls_hardening.sql`
+→ `rls_hardening_login_fix.sql` → `permanent_data_protection.sql`.
+`permanent_data_protection.sql` must be applied last. Production data is append/update/
+deactivate only: never reset the database, truncate tables, or physically delete personnel.
 RLS is currently open (`allow_all_for_now`) for development. Storage buckets:
 `floorplans`, `repair-files`.
 
@@ -61,7 +65,7 @@ RLS is currently open (`allow_all_for_now`) for development. Storage buckets:
 - **Match the surrounding style**: cyberpunk dark theme. Core vars: `--bg:#020b18`,
   `--cyan:#00d4ff`, `--green:#00ff9d`, `--amber:#ffb300`, `--red:#ff3b3b`; fonts
   Noto Sans TC + Rajdhani. UI text is Traditional Chinese.
-- **Dates**: unified format is **西元 `YYYY-MM-DD`** (datetime `YYYY-MM-DD HH:mm`);
+- **Dates**: unified format is 西元 `YYYY-MM-DD` (datetime `YYYY-MM-DD HH:mm`);
   date inputs use a calendar picker; forms show a 填表日期 (today). Use the local
   `fmtDate()`/`todayISO()` helpers.
 - **Floor naming differs between systems**: area/material data may use `B1F`,
@@ -76,6 +80,8 @@ RLS is currently open (`allow_all_for_now`) for development. Storage buckets:
   `floor3d.html` and `b1plan.html`.
 - Do **not** drop or truncate DB tables casually — `equipment`, `locations`,
   `floor_spaces`, inspection data are shared across dashboard/repair/materials.
+- Do **not** delete rows from `users` or other protected master/history tables. Set
+  `status='inactive'`; the permanent-data trigger intentionally rejects DELETE/TRUNCATE.
 - Do **not** disable TLS or hardcode secrets beyond the already-public anon key.
 
 ## Git workflow
