@@ -1264,6 +1264,8 @@ body{
     <div class="form-grid">
       <div class="field"><label>姓名</label><input id="edit-u-name" type="text" placeholder="姓名"></div>
       <div class="field"><label>電話</label><input id="edit-u-phone" type="text" placeholder="聯絡電話"></div>
+      <div class="field"><label>登入帳號</label><input id="edit-u-username" type="text" placeholder="英數字/底線"></div>
+      <div class="field"><label>電子郵件</label><input id="edit-u-email" type="text" disabled style="color:var(--text-dim);background:rgba(2,8,20,0.4);cursor:not-allowed" placeholder="登入用 Email（唯讀）"></div>
       <div class="field"><label>第一層部門</label>
         <select id="edit-u-dept-l1" onchange="onEditUserDeptL1Change()">
           <option value="">-- 選擇第一層 --</option>
@@ -1738,6 +1740,8 @@ function editUser(userId) {
   document.getElementById('edit-u-id').value = u.user_id;
   document.getElementById('edit-u-name').value = u.name || '';
   document.getElementById('edit-u-phone').value = u.phone || '';
+  document.getElementById('edit-u-username').value = u.username || '';
+  document.getElementById('edit-u-email').value = u.email || '—';
   const rbacRole = normalizeRoleId(u);
   document.getElementById('edit-u-role').value = rbacRole;
   populateEditUserDeptSelects(u.dept_id || null);
@@ -1749,14 +1753,17 @@ async function saveEditUser() {
   const userId = document.getElementById('edit-u-id').value;
   const name   = document.getElementById('edit-u-name').value.trim();
   const phone  = document.getElementById('edit-u-phone').value.trim();
+  const username = document.getElementById('edit-u-username').value.trim();
   const rbacRole = document.getElementById('edit-u-role').value;
   const role   = legacyRoleForRbac(rbacRole);
   const deptId = document.getElementById('edit-u-dept-l2').value || document.getElementById('edit-u-dept-l1').value || null;
   if (!name) { showToast('請填寫姓名', true); return; }
   if (!/^[一-龥]{2,10}$/.test(name)) { showToast('姓名格式錯誤，請輸入 2~10 個中文字', true); return; }
+  if (!username) { showToast('請填寫登入帳號', true); return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) { showToast('帳號格式錯誤：僅限英數字與底線', true); return; }
   const permissions = collectPermissionValues('e');
   const before = userMap[userId];
-  const updates = { name, phone: phone || null, role, rbac_role: rbacRole, dept_id: deptId, permissions };
+  const updates = { name, username, phone: phone || null, role, rbac_role: rbacRole, dept_id: deptId, permissions };
   const { error } = await db.from('users').update(updates).eq('user_id', userId);
   if (error) { showToast('儲存失敗：' + translateError(error.message), true); return; }
   await writeAudit('users', userId, 'update', { name: before?.name, phone: before?.phone, role: before?.role, rbac_role: before?.rbac_role, dept_id: before?.dept_id, permissions: before?.permissions }, updates);
