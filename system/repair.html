@@ -425,18 +425,51 @@ function toast(msg,isErr=false){
 
 /* ===== LOGIN CACHE ===== */
 function readLoginCache(){
-  try{return JSON.parse(localStorage.getItem('loginUser')||sessionStorage.getItem('loginUser')||'null');}catch{return null;}
+  let legacy=null;
+  try{legacy=JSON.parse(localStorage.getItem('loginUser')||sessionStorage.getItem('loginUser')||'null');}catch{}
+  const current={
+    user_id:sessionStorage.getItem('user_id')||null,
+    username:sessionStorage.getItem('user_username')||null,
+    name:sessionStorage.getItem('user_name')||null,
+    department:sessionStorage.getItem('user_department')||null,
+    role:sessionStorage.getItem('user_role')||null,
+    rbac_role:sessionStorage.getItem('user_rbac_role')||null,
+    permissions:{}
+  };
+  const merged={...(legacy||{})};
+  Object.entries(current).forEach(([key,value])=>{if(value!==null&&value!=='')merged[key]=value;});
+  merged.permissions=legacy?.permissions||merged.permissions||{};
+  return merged.user_id||merged.username||merged.name?merged:null;
+}
+function cacheLoginUser(user){
+  if(!user)return;
+  if(user.user_id)sessionStorage.setItem('user_id',user.user_id);
+  if(user.username)sessionStorage.setItem('user_username',user.username);
+  if(user.name)sessionStorage.setItem('user_name',user.name);
+  if(user.department)sessionStorage.setItem('user_department',user.department);
+  if(user.role)sessionStorage.setItem('user_role',user.role);
+  if(user.rbac_role)sessionStorage.setItem('user_rbac_role',user.rbac_role);
+}
+function validUuid(value){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value||''));}
+async function hydrateLoginUser(){
+  try{
+    const {data:{session}}=await db.auth.getSession();
+    if(!session)return;
+    const {data}=await db.from('users').select('user_id,username,name,department,role,rbac_role,permissions').eq('auth_id',session.user.id).maybeSingle();
+    if(data){me_={...(me_||{}),...data};cacheLoginUser(me_);}
+  }catch(e){console.warn('hydrateLoginUser',e);}
 }
 
 /* ===== INIT ===== */
 async function init(){
   startClock();
   me_=readLoginCache();
+  await hydrateLoginUser();
   const navUser=document.getElementById('navUser');
   if(!me_){
     navUser.textContent='未登入';
     toast('請先登入系統',true);
-    setTimeout(()=>{location.href='app.html';},2000);
+    setTimeout(()=>{location.href='login.html';},2000);
     return;
   }
   const roleName=RBAC_ROLES[normalizeRoleId(me_)]||normalizeRoleId(me_);
@@ -447,31 +480,55 @@ async function init(){
 }
 
 /* ===== LOAD ORDERS ===== */
+function normalizeOrder(row){
+  const req=row.repair_requests||{};
+  const assignee=row.users?.name||row.vendor||'';
+  return {
+    ...row,
+    id:row.order_id,
+    order_id:row.order_id,
+    request_id:row.request_id,
+    req_no:req.req_no||row.wo_no||'',
+    wo_no:row.wo_no||'',
+    equipment_id:row.equipment_id||req.equipment_id||null,
+    fault_type:req.fault_type||req.equipment_category||'設備維修',
+    location:req.fault_location||'',
+    location_desc:req.fault_location||'',
+    description:req.fault_desc||row.work_content||'',
+    fault_desc:req.fault_desc||row.work_content||'',
+    reporter_name:req.reporter||'',
+    reporter:req.reporter||'',
+    reporter_mobile:req.mobile||req.phone||'',
+    phone:req.mobile||req.phone||'',
+    department:req.department||'',
+    urgency:req.urgency||'normal',
+    assigned_to:row.assignee_id||null,
+    assigned_to_name:assignee,
+    status:row.status||req.status||'pending',
+    created_at:row.created_at||req.created_at,
+    request:req
+  };
+}
 async function loadOrders(){
   try{
-    let q=db.from('work_orders').select('*').order('created_at',{ascending:false});
-
-    // 技術人員只看指派給自己的（除非有主管/管理員權限）
-    const role=normalizeRoleId(me_);
-    if(role==='technician'){
-      const myName=me_.name||me_.username||'';
-      const myId=me_.id||me_.username||'';
-      // 篩選 assigned_to 符合自己的工單
-      if(myId){
-        q=db.from('work_orders').select('*')
-          .or(`assigned_to.eq.${myId},assigned_to_name.ilike.%${myName}%`)
-          .order('created_at',{ascending:false});
-      }
-    }
-
-    const {data,error}=await q;
+    const {data,error}=await db.from('maintenance_orders')
+      .select('*,repair_requests(*),users:assignee_id(name)')
+      .or('hidden.eq.false,hidden.is.null')
+      .order('created_at',{ascending:false})
+      .limit(500);
     if(error)throw error;
-    allOrders=data||[];
+    allOrders=(data||[]).map(normalizeOrder);
+    if(normalizeRoleId(me_)==='technician'){
+      const myName=String(me_.name||me_.username||'').toLowerCase();
+      const myId=String(me_.user_id||'').toLowerCase();
+      allOrders=allOrders.filter(o=>String(o.assigned_to||'').toLowerCase()===myId||!!myName&&String(o.assigned_to_name||'').toLowerCase().includes(myName));
+    }
     updateCounts();
   }catch(e){
     console.error('loadOrders error',e);
     toast('工單載入失敗：'+e.message,true);
     allOrders=[];
+    updateCounts();
   }
 }
 
@@ -480,8 +537,8 @@ function updateCounts(){
   const role=normalizeRoleId(me_);
   const myName=(me_?.name||me_?.username||'').toLowerCase();
   const mine=allOrders.filter(o=>
-    (o.assigned_to_name||'').toLowerCase().includes(myName)||
-    String(o.assigned_to||'').toLowerCase()===String(me_?.id||me_?.username||'').toLowerCase()
+    (!!myName&&(o.assigned_to_name||'').toLowerCase().includes(myName))||
+    String(o.assigned_to||'').toLowerCase()===String(me_?.user_id||'').toLowerCase()
   );
   document.getElementById('cnt-mine').textContent=mine.filter(o=>['in_progress','accepted','waiting_parts','waiting_vendor'].includes(o.status)).length;
   document.getElementById('cnt-pending_review').textContent=allOrders.filter(o=>o.status==='pending_review').length;
@@ -503,7 +560,7 @@ function getFiltered(){
   const urg=document.getElementById('fUrgency').value;
   const role=normalizeRoleId(me_);
   const myName=(me_?.name||me_?.username||'').toLowerCase();
-  const myId=String(me_?.id||me_?.username||'').toLowerCase();
+  const myId=String(me_?.user_id||'').toLowerCase();
 
   let list=allOrders;
 
@@ -512,7 +569,7 @@ function getFiltered(){
     list=list.filter(o=>{
       const nm=(o.assigned_to_name||'').toLowerCase();
       const id=String(o.assigned_to||'').toLowerCase();
-      return nm.includes(myName)||id===myId;
+      return (!!myName&&nm.includes(myName))||id===myId;
     }).filter(o=>['in_progress','accepted','waiting_parts','waiting_vendor','pending_review'].includes(o.status));
   } else if(currentTab==='pending_review'){
     list=list.filter(o=>o.status==='pending_review');
@@ -606,20 +663,38 @@ function renderPager(total,shown){
 function goPage(p){currentPage=p;renderCards();window.scrollTo(0,0);}
 
 /* ===== OPEN DETAIL ===== */
+function attachmentUrl(filePath){
+  if(!filePath)return '';
+  if(/^https?:\/\//i.test(filePath))return filePath;
+  return db.storage.from('repair-files').getPublicUrl(filePath).data?.publicUrl||'';
+}
 async function openDetail(id){
   currentOrder=allOrders.find(o=>o.id===id)||null;
   if(!currentOrder)return;
-  document.getElementById('d-title').textContent='工單詳情 ― '+（currentOrder.req_no||'');
+  document.getElementById('d-title').textContent='工單詳情 ― '+(currentOrder.req_no||'');
   document.getElementById('d-badge').innerHTML=badge(currentOrder.status);
 
-  // Load repair log if exists
-  const {data:logs}=await db.from('repair_logs').select('*').eq('work_order_id',id).order('submitted_at',{ascending:false}).limit(1);
-  const repairLog=logs?.[0]||null;
+  const [attRes,timelineRes,costRes]=await Promise.all([
+    db.from('repair_attachments').select('*').eq('order_id',id).order('uploaded_at',{ascending:true}),
+    db.from('case_status_log').select('*').eq('order_id',id).order('created_at',{ascending:true}),
+    db.from('cost_records').select('*').eq('order_id',id).order('cost_date',{ascending:false})
+  ]);
+  if(attRes.error)console.warn('repair_attachments',attRes.error);
+  if(timelineRes.error)console.warn('case_status_log',timelineRes.error);
+  if(costRes.error)console.warn('cost_records',costRes.error);
+  const photoUrls=(attRes.data||[]).filter(x=>x.kind==='photo').map(x=>attachmentUrl(x.file_path)).filter(Boolean);
+  const totalCost=(costRes.data||[]).reduce((sum,x)=>sum+Number(x.amount||0),0);
+  const hasCompletion=!!(currentOrder.finish_time||currentOrder.result_desc||currentOrder.handle_method||photoUrls.length);
+  const repairLog=hasCompletion?{
+    technician_name:currentOrder.assigned_to_name||me_?.name||'—',
+    submitted_at:currentOrder.finish_time||currentOrder.created_at,
+    repair_desc:currentOrder.result_desc||currentOrder.handle_method||'—',
+    has_cost:totalCost>0,
+    cost_amount:totalCost,
+    photo_urls:photoUrls
+  }:null;
 
-  // Load timeline
-  const {data:timeline}=await db.from('work_order_logs').select('*').eq('work_order_id',id).order('created_at',{ascending:true});
-
-  document.getElementById('d-body').innerHTML=buildDetailBody(currentOrder,repairLog,timeline||[]);
+  document.getElementById('d-body').innerHTML=buildDetailBody(currentOrder,repairLog,timelineRes.data||[]);
   document.getElementById('m-detail').classList.add('show');
 }
 
@@ -648,7 +723,7 @@ function buildDetailBody(o,repairLog,timeline){
       const ts=new Date(t.created_at).toLocaleString('zh-TW');
       tlHTML+=`<li>
         <div class="ts">${ts}</div>
-        <div class="st">${t.action||t.status||''} ${t.operator_name?'— '+t.operator_name:''}</div>
+        <div class="st">${t.action||t.status||ST[t.to_status]?.[0]||t.to_status||''} ${t.operator_name?'— '+t.operator_name:''}</div>
         ${t.note?`<div class="nt">${t.note}</div>`:''}
       </li>`;
     });
@@ -816,16 +891,12 @@ function removePhoto(idx){
 
 /* ===== UPLOAD PHOTO TO SUPABASE STORAGE ===== */
 async function uploadPhoto(file,orderId,index){
-  const ext=file.name.split('.').pop()||'jpg';
-  const path=`repair-photos/${orderId}/${Date.now()}_${index}.${ext}`;
-  const {data,error}=await db.storage.from('repair-photos').upload(path,file,{upsert:true,contentType:file.type});
-  if(error){
-    // If bucket doesn't exist, try returning a base64 data URL as fallback
-    console.warn('Storage upload failed, using base64 fallback',error);
-    return null;
-  }
-  const {data:pub}=db.storage.from('repair-photos').getPublicUrl(path);
-  return pub?.publicUrl||null;
+  const ext=(file.name.split('.').pop()||'jpg').replace(/[^a-z0-9]/gi,'').toLowerCase()||'jpg';
+  const path=`completion/${orderId}/${Date.now()}_${index}.${ext}`;
+  const {error}=await db.storage.from('repair-files').upload(path,file,{upsert:false,contentType:file.type||'application/octet-stream'});
+  if(error)throw new Error('照片上傳失敗：'+error.message);
+  const {data:pub}=db.storage.from('repair-files').getPublicUrl(path);
+  return {path,fileName:file.name,publicUrl:pub?.publicUrl||''};
 }
 
 /* ===== SUBMIT REPAIR LOG ===== */
@@ -848,59 +919,72 @@ async function submitRepairLog(){
   setMsg(msgEl,'');
 
   try{
-    // 1. Upload photos
-    const photoUrls=[];
+    const order=currentOrder;
+    if(!order)throw new Error('找不到目前工單，請重新整理後再試');
+    const now=new Date().toISOString();
+    const myName=me_?.name||me_?.username||'維修人員';
+    const myId=validUuid(me_?.user_id)?me_.user_id:null;
+    const reqNo=order.req_no||order.wo_no||'';
+
+    // 1. Upload photos to the existing repair-files bucket.
+    const uploads=[];
     for(let i=0;i<activePhotos.length;i++){
       setMsg(msgEl,`上傳照片 ${i+1}/${activePhotos.length}…`);
-      const url=await uploadPhoto(activePhotos[i].file,currentOrder.id,i);
-      if(url){photoUrls.push(url);}
-      else{
-        // Fallback: store as note that photos were uploaded but storage not configured
-        photoUrls.push(`[照片${i+1}_已上傳但Storage未設定]`);
-      }
+      uploads.push(await uploadPhoto(activePhotos[i].file,order.order_id,i));
     }
 
-    // 2. Insert repair_log
-    const myName=me_?.name||me_?.username||'維修人員';
-    const myId=me_?.id||me_?.username||'';
-    const {data:logData,error:logErr}=await db.from('repair_logs').insert({
-      work_order_id:currentOrder.id,
-      technician_id:myId,
-      technician_name:myName,
-      repair_desc:desc,
-      has_cost:hasCost,
-      cost_amount:hasCost?costAmt:0,
-      cost_note:costNote,
-      photo_urls:photoUrls,
-      submitted_at:new Date().toISOString()
-    }).select().single();
+    // 2. Register uploaded files in the shared attachment table.
+    const attachmentRows=uploads.map(x=>({
+      request_id:order.request_id,
+      order_id:order.order_id,
+      kind:'photo',
+      file_path:x.path,
+      file_name:x.fileName,
+      uploaded_by:myId
+    }));
+    const {error:attachmentErr}=await db.from('repair_attachments').insert(attachmentRows);
+    if(attachmentErr)throw attachmentErr;
 
-    if(logErr)throw logErr;
-
-    // 3. Update work order status → pending_review
-    const {error:statusErr}=await db.from('work_orders').update({
+    // 3. Store completion details in the existing maintenance order.
+    const costSummary=hasCost?`維修費用 NT$ ${Number(costAmt).toLocaleString('zh-TW')}${costNote?'｜'+costNote:''}`:'本次無維修費用';
+    const completionNote=[order.note,`[完工回報] ${costSummary}`].filter(Boolean).join('\n');
+    const {error:statusErr}=await db.from('maintenance_orders').update({
       status:'pending_review',
-      repair_completed_at:new Date().toISOString(),
-      repair_log_id:logData?.id
-    }).eq('id',currentOrder.id);
+      finish_time:now,
+      result_desc:desc,
+      handle_method:desc,
+      note:completionNote
+    }).eq('order_id',order.order_id);
     if(statusErr)throw statusErr;
 
-    // 4. Insert timeline log
-    await db.from('work_order_logs').insert({
-      work_order_id:currentOrder.id,
-      action:'完工回報',
-      status:'pending_review',
-      operator_name:myName,
-      operator_id:myId,
-      note:`維修說明：${desc}${hasCost?` | 費用：NT$${costAmt}`:' | 無費用'}`,
-      created_at:new Date().toISOString()
-    });
+    const {error:reqErr}=await db.from('repair_requests').update({status:'pending_review',updated_at:now}).eq('request_id',order.request_id);
+    if(reqErr)throw reqErr;
 
-    // 5. Show success
+    // 4. Record cost when an equipment link is available; note remains authoritative otherwise.
+    if(hasCost&&order.equipment_id){
+      const costPayload={equipment_id:order.equipment_id,order_id:order.order_id,cost_type:'other',amount:costAmt,cost_date:now.slice(0,10),note:costNote||'維修完工費用'};
+      if(myId)costPayload.created_by=myId;
+      const {error:costErr}=await db.from('cost_records').insert(costPayload);
+      if(costErr)throw costErr;
+    }
+
+    // 5. Append an auditable status event.
+    const logPayload={
+      request_id:order.request_id,
+      order_id:order.order_id,
+      from_status:order.status,
+      to_status:'pending_review',
+      operator_name:myName,
+      note:`維修說明：${desc}｜${costSummary}`
+    };
+    if(myId)logPayload.operator_id=myId;
+    const {error:logErr}=await db.from('case_status_log').insert(logPayload);
+    if(logErr)throw logErr;
+
+    // 6. Show success.
     closeModal();
-    uploadedFiles=[];
     document.getElementById('successSub').textContent=
-      `工單 ${currentOrder.req_no||''} 已更新為「待驗收」，請等待主管結案。`;
+      `工單 ${reqNo} 已更新為「待驗收」，請等待主管結案。`;
     document.getElementById('successOverlay').classList.add('show');
 
     // Reload
@@ -911,7 +995,7 @@ async function submitRepairLog(){
     console.error('submitRepairLog error',e);
     setMsg(msgEl,'送出失敗：'+e.message,'err');
   }finally{
-    btn.disabled=false;btn.textContent='📤 送出完工回報';
+    if(btn){btn.disabled=false;btn.textContent='📤 送出完工回報';}
   }
 }
 
@@ -922,26 +1006,26 @@ async function doCloseCase(orderId){
   if(!confirm('確認結案？此操作無法復原。'))return;
 
   try{
+    const order=allOrders.find(x=>x.order_id===orderId)||currentOrder;
+    if(!order)throw new Error('找不到工單資料');
     const myName=me_?.name||me_?.username||'主管';
-    const myId=me_?.id||me_?.username||'';
-    const {error}=await db.from('work_orders').update({
-      status:'closed',
-      closed_at:new Date().toISOString(),
-      closed_by:myId,
-      closed_by_name:myName,
-      close_remark:remark||null
-    }).eq('id',orderId);
-    if(error)throw error;
-
-    await db.from('work_order_logs').insert({
-      work_order_id:orderId,
-      action:'結案',
-      status:'closed',
+    const myId=validUuid(me_?.user_id)?me_.user_id:null;
+    const now=new Date().toISOString();
+    const {error:orderErr}=await db.from('maintenance_orders').update({status:'closed'}).eq('order_id',orderId);
+    if(orderErr)throw orderErr;
+    const {error:reqErr}=await db.from('repair_requests').update({status:'closed',updated_at:now}).eq('request_id',order.request_id);
+    if(reqErr)throw reqErr;
+    const closeLog={
+      request_id:order.request_id,
+      order_id:orderId,
+      from_status:order.status,
+      to_status:'closed',
       operator_name:myName,
-      operator_id:myId,
-      note:remark||'主管確認結案',
-      created_at:new Date().toISOString()
-    });
+      note:remark||'主管確認結案'
+    };
+    if(myId)closeLog.operator_id=myId;
+    const {error:logErr}=await db.from('case_status_log').insert(closeLog);
+    if(logErr)throw logErr;
 
     toast('✅ 已成功結案！');
     closeModal();
