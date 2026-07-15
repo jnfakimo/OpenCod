@@ -155,7 +155,7 @@ function hasPermission(profile, key) {
 function safeRedirect(target) {
   if (!target) return null;
   if (/^app\.html(?:\?.*)?$/.test(target)) return 'inspection-archived.html';
-  if (/^[A-Za-z0-9_\-]+\.html(\?[A-Za-z0-9_\-=&%.]*)?$/.test(target)) return target;
+  if (/^[A-Za-z0-9_\-]+\.html(?:\?[A-Za-z0-9_\-=&%.]*)?(?:#[A-Za-z0-9_\-]+)?$/.test(target)) return target;
   return null;
 }
 function getRedirectTarget(profile) {
