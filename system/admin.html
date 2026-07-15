@@ -11,7 +11,7 @@
 <title>臺北農產運銷股份有限公司 第一果菜市場 後台管理系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -2082,22 +2082,203 @@ function filterUsers() {
   renderUsers(paginated);
 }
 
-// 統一標準：匯出 XLSX（綠）
+// 統一標準：匯出具摘要、主表與權限矩陣的視覺化 XLSX
 function exportUsersXlsx() {
-  const headers = ['姓名','帳號','Email','密碼','電話','部門','角色','狀態', ...PERMISSION_DEFS.map(p => p.label)];
-  const rows = allUsers.map(u => {
-    const roleId = normalizeRoleId(u);
-    return [
-      u.name, u.username || '', u.email || '', '', // 密碼欄留空（Supabase Auth 加密儲存）
-      u.phone || '',
-      getDeptPath(u.dept_id), ROLE_LABEL[roleId] || roleId,
-      u.status === 'active' ? '啟用' : '停用',
-      ...PERMISSION_DEFS.map(({ key }) => permissionEnabled(u.permissions, key, roleId) ? '是' : '否'),
-    ];
+  if (!allUsers.length) { showToast('目前無帳號資料可匯出', true); return; }
+
+  const color = {
+    navy:'17365D', blue:'0B6B8A', cyan:'DDEBF7', cyanSoft:'EEF7FA',
+    white:'FFFFFF', text:'1F2937', dim:'64748B', border:'CBD5E1',
+    green:'E2F0D9', greenText:'277A3A', red:'FCE4D6', redText:'C00000',
+    amber:'FFF2CC', amberText:'9C5700', gray:'F2F4F7', grayText:'667085'
+  };
+  const fontName = 'Microsoft JhengHei';
+  const border = {
+    top:{style:'thin',color:{rgb:color.border}}, bottom:{style:'thin',color:{rgb:color.border}},
+    left:{style:'thin',color:{rgb:color.border}}, right:{style:'thin',color:{rgb:color.border}}
+  };
+  const style = {
+    title:{fill:{patternType:'solid',fgColor:{rgb:color.navy}},font:{name:fontName,sz:18,bold:true,color:{rgb:color.white}},alignment:{horizontal:'left',vertical:'center'}},
+    subtitle:{fill:{patternType:'solid',fgColor:{rgb:color.navy}},font:{name:fontName,sz:11,color:{rgb:'BFE9F5'}},alignment:{horizontal:'left',vertical:'center'}},
+    note:{fill:{patternType:'solid',fgColor:{rgb:color.amber}},font:{name:fontName,sz:10,color:{rgb:color.amberText}},alignment:{horizontal:'left',vertical:'center',wrapText:true},border},
+    header:{fill:{patternType:'solid',fgColor:{rgb:color.blue}},font:{name:fontName,sz:10,bold:true,color:{rgb:color.white}},alignment:{horizontal:'center',vertical:'center',wrapText:true},border},
+    body:{font:{name:fontName,sz:10,color:{rgb:color.text}},alignment:{vertical:'center',wrapText:true},border},
+    bodyAlt:{fill:{patternType:'solid',fgColor:{rgb:color.cyanSoft}},font:{name:fontName,sz:10,color:{rgb:color.text}},alignment:{vertical:'center',wrapText:true},border},
+    metaLabel:{fill:{patternType:'solid',fgColor:{rgb:color.blue}},font:{name:fontName,sz:10,bold:true,color:{rgb:color.white}},alignment:{horizontal:'center',vertical:'center'},border},
+    metaValue:{fill:{patternType:'solid',fgColor:{rgb:color.cyan}},font:{name:fontName,sz:11,bold:true,color:{rgb:color.navy}},alignment:{horizontal:'center',vertical:'center'},border},
+    enabled:{fill:{patternType:'solid',fgColor:{rgb:color.green}},font:{name:fontName,sz:10,bold:true,color:{rgb:color.greenText}},alignment:{horizontal:'center',vertical:'center'},border},
+    disabled:{fill:{patternType:'solid',fgColor:{rgb:color.red}},font:{name:fontName,sz:10,bold:true,color:{rgb:color.redText}},alignment:{horizontal:'center',vertical:'center'},border},
+    yes:{fill:{patternType:'solid',fgColor:{rgb:color.green}},font:{name:fontName,sz:10,bold:true,color:{rgb:color.greenText}},alignment:{horizontal:'center',vertical:'center'},border},
+    no:{fill:{patternType:'solid',fgColor:{rgb:color.gray}},font:{name:fontName,sz:10,color:{rgb:color.grayText}},alignment:{horizontal:'center',vertical:'center'},border}
+  };
+
+  const setCellStyle = (ws, address, cellStyle) => {
+    if (!ws[address]) ws[address] = { t:'s', v:'' };
+    ws[address].s = cellStyle;
+  };
+  const setRangeStyle = (ws, rangeRef, cellStyle) => {
+    const range = XLSX.utils.decode_range(rangeRef);
+    for (let r = range.s.r; r <= range.e.r; r++) {
+      for (let c = range.s.c; c <= range.e.c; c++) setCellStyle(ws, XLSX.utils.encode_cell({ r, c }), cellStyle);
+    }
+  };
+  const merge = (ws, rangeRef) => {
+    if (!ws['!merges']) ws['!merges'] = [];
+    ws['!merges'].push(XLSX.utils.decode_range(rangeRef));
+  };
+  const taipeiParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone:'Asia/Taipei', year:'numeric', month:'2-digit', day:'2-digit',
+    hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'
+  }).formatToParts(new Date()).reduce((acc, part) => (acc[part.type] = part.value, acc), {});
+  const exportDate = `${taipeiParts.year}-${taipeiParts.month}-${taipeiParts.day}`;
+  const exportTime = `${exportDate} ${taipeiParts.hour}:${taipeiParts.minute}:${taipeiParts.second}`;
+  const getDeptParts = deptId => {
+    const dept = deptMap[deptId];
+    if (!dept) return ['未設定',''];
+    if (!dept.parent_id) return [dept.name,''];
+    return [deptMap[dept.parent_id]?.name || '未設定', dept.name];
+  };
+
+  const users = [...allUsers].sort((a, b) => {
+    const statusOrder = (a.status === 'active' ? 0 : 1) - (b.status === 'active' ? 0 : 1);
+    if (statusOrder) return statusOrder;
+    const deptOrder = getDeptPath(a.dept_id).localeCompare(getDeptPath(b.dept_id), 'zh-Hant');
+    return deptOrder || String(a.name || '').localeCompare(String(b.name || ''), 'zh-Hant');
   });
-  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, '帳號清單');
-  XLSX.writeFile(wb, `帳號清單_${new Date().toISOString().slice(0,10)}.xlsx`);
+  const activeCount = users.filter(u => u.status === 'active').length;
+  const inactiveCount = users.length - activeCount;
+  const coreHeaders = ['序號','姓名','登入帳號','電子郵件','初始密碼','聯絡電話','第一層部門','第二層部門','角色','狀態','可用功能數'];
+  const coreRows = users.map((u, index) => {
+    const roleId = normalizeRoleId(u);
+    const [deptL1, deptL2] = getDeptParts(u.dept_id);
+    const enabledCount = PERMISSION_DEFS.filter(({ key }) => permissionEnabled(u.permissions, key, roleId)).length;
+    return [index + 1, u.name || '', u.username || '', u.email || '', '', u.phone || '', deptL1, deptL2,
+      ROLE_LABEL[roleId] || roleId, u.status === 'active' ? '啟用' : '停用', enabledCount];
+  });
+
+  const accountRows = [
+    ['臺北農產運銷股份有限公司｜帳號管理清單'],
+    ['第一果菜市場設備巡檢維修系統'],
+    [],
+    ['匯出時間', exportTime, '', '', '帳號總數', users.length, '啟用帳號', activeCount, '停用帳號', inactiveCount, ''],
+    ['資安提醒：初始密碼依規範不匯出並保持空白；將本檔重新匯入時，空白密碼會由系統自動產生臨時密碼。'],
+    coreHeaders,
+    ...coreRows
+  ];
+  const accountWs = XLSX.utils.aoa_to_sheet(accountRows);
+  merge(accountWs, 'A1:K1'); merge(accountWs, 'A2:K2'); merge(accountWs, 'B4:D4'); merge(accountWs, 'A5:K5');
+  setRangeStyle(accountWs, 'A1:K1', style.title); setRangeStyle(accountWs, 'A2:K2', style.subtitle);
+  setCellStyle(accountWs, 'A4', style.metaLabel); setRangeStyle(accountWs, 'B4:D4', style.metaValue);
+  ['E4','G4','I4'].forEach(a => setCellStyle(accountWs, a, style.metaLabel));
+  ['F4','H4','J4'].forEach(a => setCellStyle(accountWs, a, style.metaValue));
+  setRangeStyle(accountWs, 'A5:K5', style.note); setRangeStyle(accountWs, 'A6:K6', style.header);
+  coreRows.forEach((row, index) => {
+    const excelRow = index + 7;
+    setRangeStyle(accountWs, `A${excelRow}:K${excelRow}`, index % 2 ? style.bodyAlt : style.body);
+    ['A','E','J','K'].forEach(col => {
+      const address = `${col}${excelRow}`;
+      accountWs[address].s = { ...(accountWs[address].s || style.body), alignment:{horizontal:'center',vertical:'center'} };
+    });
+    setCellStyle(accountWs, `J${excelRow}`, row[9] === '啟用' ? style.enabled : style.disabled);
+  });
+  const accountLastRow = Math.max(6, 6 + coreRows.length);
+  accountWs['!autofilter'] = { ref:`A6:K${accountLastRow}` };
+  accountWs['!cols'] = [{wch:7},{wch:14},{wch:18},{wch:30},{wch:15},{wch:16},{wch:18},{wch:18},{wch:16},{wch:10},{wch:12}];
+  accountWs['!rows'] = [{hpt:30},{hpt:20},{hpt:8},{hpt:24},{hpt:30},{hpt:28}, ...coreRows.map(() => ({hpt:24}))];
+
+  const roleCounts = {};
+  const deptCounts = {};
+  users.forEach(u => {
+    const roleLabel = ROLE_LABEL[normalizeRoleId(u)] || normalizeRoleId(u);
+    const deptLabel = getDeptParts(u.dept_id)[0];
+    roleCounts[roleLabel] = (roleCounts[roleLabel] || 0) + 1;
+    deptCounts[deptLabel] = (deptCounts[deptLabel] || 0) + 1;
+  });
+  const roleSummary = Object.entries(roleCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hant'));
+  const deptSummary = Object.entries(deptCounts).sort((a,b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-Hant'));
+  const permissionSummary = PERMISSION_DEFS.map(({ key, label }) => [label, users.filter(u => permissionEnabled(u.permissions, key, normalizeRoleId(u))).length]);
+  const summaryLength = Math.max(roleSummary.length, deptSummary.length, permissionSummary.length);
+  const summaryRows = [
+    ['臺北農產運銷股份有限公司｜帳號統計摘要'],
+    [`資料產製時間：${exportTime}`],
+    [],
+    ['帳號總數', users.length, '啟用帳號', activeCount, '停用帳號', inactiveCount, '啟用率', users.length ? activeCount / users.length : 0],
+    [],
+    ['角色分布','人數','第一層部門分布','人數','','','權限覆蓋','已授權人數']
+  ];
+  for (let i = 0; i < summaryLength; i++) {
+    summaryRows.push([roleSummary[i]?.[0] || '', roleSummary[i]?.[1] ?? '', deptSummary[i]?.[0] || '', deptSummary[i]?.[1] ?? '', '', '', permissionSummary[i]?.[0] || '', permissionSummary[i]?.[1] ?? '']);
+  }
+  const summaryWs = XLSX.utils.aoa_to_sheet(summaryRows);
+  summaryWs.B4 = { t:'n', v:users.length, f:`COUNTA('帳號清單'!$B$7:$B$${accountLastRow})` };
+  summaryWs.D4 = { t:'n', v:activeCount, f:`COUNTIF('帳號清單'!$J$7:$J$${accountLastRow},"啟用")` };
+  summaryWs.F4 = { t:'n', v:inactiveCount, f:`COUNTIF('帳號清單'!$J$7:$J$${accountLastRow},"停用")` };
+  summaryWs.H4 = { t:'n', v:users.length ? activeCount / users.length : 0, f:'IFERROR(D4/B4,0)' };
+  roleSummary.forEach(([label, count], index) => {
+    const row = index + 7;
+    summaryWs[`B${row}`] = { t:'n', v:count, f:`COUNTIF('帳號清單'!$I$7:$I$${accountLastRow},A${row})` };
+  });
+  deptSummary.forEach(([label, count], index) => {
+    const row = index + 7;
+    summaryWs[`D${row}`] = { t:'n', v:count, f:`COUNTIF('帳號清單'!$G$7:$G$${accountLastRow},C${row})` };
+  });
+  permissionSummary.forEach(([label, count], index) => {
+    const row = index + 7;
+    const permissionCol = XLSX.utils.encode_col(index + 4);
+    summaryWs[`H${row}`] = { t:'n', v:count, f:`COUNTIF('權限矩陣'!$${permissionCol}$5:$${permissionCol}$${4 + users.length},"是")` };
+  });
+  merge(summaryWs, 'A1:H1'); merge(summaryWs, 'A2:H2');
+  setRangeStyle(summaryWs, 'A1:H1', style.title); setRangeStyle(summaryWs, 'A2:H2', style.subtitle);
+  ['A4','C4','E4','G4'].forEach(a => setCellStyle(summaryWs, a, style.metaLabel));
+  ['B4','D4','F4','H4'].forEach(a => setCellStyle(summaryWs, a, style.metaValue));
+  if (summaryWs.H4) summaryWs.H4.z = '0.0%';
+  ['A6:B6','C6:D6','G6:H6'].forEach(range => setRangeStyle(summaryWs, range, style.header));
+  for (let i = 0; i < summaryLength; i++) {
+    const excelRow = i + 7;
+    ['A','B','C','D','G','H'].forEach(col => setCellStyle(summaryWs, `${col}${excelRow}`, i % 2 ? style.bodyAlt : style.body));
+    ['B','D','H'].forEach(col => { summaryWs[`${col}${excelRow}`].s.alignment = {horizontal:'center',vertical:'center'}; });
+  }
+  summaryWs['!cols'] = [{wch:20},{wch:11},{wch:24},{wch:11},{wch:16},{wch:11},{wch:20},{wch:14}];
+  summaryWs['!rows'] = [{hpt:30},{hpt:20},{hpt:8},{hpt:26},{hpt:8},{hpt:28}, ...Array(summaryLength).fill({hpt:22})];
+
+  const permissionHeaders = ['序號','姓名','登入帳號','角色', ...PERMISSION_DEFS.map(p => p.label)];
+  const permissionRows = users.map((u,index) => {
+    const roleId = normalizeRoleId(u);
+    return [index + 1, u.name || '', u.username || '', ROLE_LABEL[roleId] || roleId,
+      ...PERMISSION_DEFS.map(({ key }) => permissionEnabled(u.permissions, key, roleId) ? '是' : '否')];
+  });
+  const permissionWs = XLSX.utils.aoa_to_sheet([
+    ['臺北農產運銷股份有限公司｜帳號權限矩陣'],
+    [`資料產製時間：${exportTime}`],
+    ['閱讀方式：綠色「是」表示已授權，灰色「否」表示未授權。'],
+    permissionHeaders,
+    ...permissionRows
+  ]);
+  const permissionLastCol = XLSX.utils.encode_col(permissionHeaders.length - 1);
+  merge(permissionWs, `A1:${permissionLastCol}1`); merge(permissionWs, `A2:${permissionLastCol}2`); merge(permissionWs, `A3:${permissionLastCol}3`);
+  setRangeStyle(permissionWs, `A1:${permissionLastCol}1`, style.title);
+  setRangeStyle(permissionWs, `A2:${permissionLastCol}2`, style.subtitle);
+  setRangeStyle(permissionWs, `A3:${permissionLastCol}3`, style.note);
+  setRangeStyle(permissionWs, `A4:${permissionLastCol}4`, style.header);
+  permissionRows.forEach((row,index) => {
+    const excelRow = index + 5;
+    setRangeStyle(permissionWs, `A${excelRow}:${permissionLastCol}${excelRow}`, index % 2 ? style.bodyAlt : style.body);
+    for (let col = 4; col < permissionHeaders.length; col++) {
+      const address = `${XLSX.utils.encode_col(col)}${excelRow}`;
+      setCellStyle(permissionWs, address, row[col] === '是' ? style.yes : style.no);
+    }
+  });
+  const permissionLastRow = Math.max(4, 4 + permissionRows.length);
+  permissionWs['!autofilter'] = { ref:`A4:${permissionLastCol}${permissionLastRow}` };
+  permissionWs['!cols'] = [{wch:7},{wch:14},{wch:18},{wch:16}, ...PERMISSION_DEFS.map(() => ({wch:13}))];
+  permissionWs['!rows'] = [{hpt:30},{hpt:20},{hpt:28},{hpt:34}, ...permissionRows.map(() => ({hpt:22}))];
+
+  const wb = XLSX.utils.book_new();
+  wb.Props = { Title:'帳號管理清單', Subject:'帳號、角色與權限管理報表', Author:'臺北農產運銷股份有限公司', CreatedDate:new Date() };
+  XLSX.utils.book_append_sheet(wb, accountWs, '帳號清單');
+  XLSX.utils.book_append_sheet(wb, summaryWs, '統計摘要');
+  XLSX.utils.book_append_sheet(wb, permissionWs, '權限矩陣');
+  XLSX.writeFile(wb, `帳號管理清單_${exportDate}.xlsx`, { compression:true });
 }
 
 // 統一標準：下載匯入範本（XLSX）
@@ -2203,11 +2384,22 @@ async function importUsersXlsx() {
   const log = document.getElementById('csvImportLog');
   log.style.display = 'block'; log.innerHTML = '<div style="color:var(--cyan)">▶ 開始匯入…</div>';
   const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
-  const aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, blankrows: false });
+  const aoa = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, blankrows: true });
   if (!aoa || aoa.length < 2) { log.innerHTML += '<div style="color:var(--red)">格式錯誤：需至少一筆資料列</div>'; return; }
-  const header = aoa[0].map(x => String(x == null ? '' : x).trim());
-  const isExportFmt = header.length >= 8;
-  const dataLines = aoa.slice(1);
+  const headerRowIndex = aoa.findIndex(row => {
+    const labels = (row || []).map(x => String(x == null ? '' : x).trim());
+    return labels.includes('姓名') && (labels.includes('帳號') || labels.includes('登入帳號')) && (labels.includes('Email') || labels.includes('電子郵件'));
+  });
+  if (headerRowIndex < 0) { log.innerHTML += '<div style="color:var(--red)">格式錯誤：找不到姓名、登入帳號與電子郵件欄位</div>'; return; }
+  const header = aoa[headerRowIndex].map(x => String(x == null ? '' : x).trim());
+  const findHeader = (...labels) => labels.map(label => header.indexOf(label)).find(index => index >= 0) ?? -1;
+  const nameIndex = findHeader('姓名');
+  const usernameIndex = findHeader('登入帳號','帳號');
+  const emailIndex = findHeader('電子郵件','Email');
+  const passwordIndex = findHeader('初始密碼','密碼');
+  const phoneIndex = findHeader('聯絡電話','電話');
+  const roleIndex = findHeader('角色');
+  const dataLines = aoa.slice(headerRowIndex + 1);
   let success = 0, failed = 0, skipped = 0;
   const existingUsernames = new Set(allUsers.map(u => (u.username || '').toLowerCase()));
   const existingEmails    = new Set(allUsers.map(u => (u.email    || '').toLowerCase()));
@@ -2221,18 +2413,18 @@ async function importUsersXlsx() {
   };
   for (let i = 0; i < dataLines.length; i++) {
     const cols = (dataLines[i] || []).map(x => String(x == null ? '' : x).trim());
-    let name, username, email, password, phone, roleRaw;
-    if (isExportFmt) {
-      [name, username, email, password, phone] = cols;
-      roleRaw = cols[6];
-    } else {
-      [name, username, email, password, phone, roleRaw] = cols;
-    }
+    if (!cols.some(Boolean)) continue;
+    const name = cols[nameIndex] || '';
+    const username = cols[usernameIndex] || '';
+    const email = cols[emailIndex] || '';
+    const password = passwordIndex >= 0 ? cols[passwordIndex] || '' : '';
+    const phone = phoneIndex >= 0 ? cols[phoneIndex] || '' : '';
+    const roleRaw = roleIndex >= 0 ? cols[roleIndex] || '' : '';
     if (!name || !username || !email) {
-      log.innerHTML += `<div style="color:var(--amber)">第 ${i+2} 行：缺少必填欄位（姓名/帳號/Email），跳過</div>`; failed++; continue;
+      log.innerHTML += `<div style="color:var(--amber)">第 ${headerRowIndex+i+2} 行：缺少必填欄位（姓名/帳號/Email），跳過</div>`; failed++; continue;
     }
     if (existingUsernames.has((username||'').toLowerCase()) || existingEmails.has((email||'').toLowerCase())) {
-      log.innerHTML += `<div style="color:var(--text-dim)">第 ${i+2} 行「${name}」（${username}）：帳號或Email已存在，跳過</div>`; skipped++; continue;
+      log.innerHTML += `<div style="color:var(--text-dim)">第 ${headerRowIndex+i+2} 行「${name}」（${username}）：帳號或Email已存在，跳過</div>`; skipped++; continue;
     }
     const pwd = password || genTempPassword();
     const rbacRole = roleMap[roleRaw] || 'reporter';
@@ -2241,7 +2433,7 @@ async function importUsersXlsx() {
     const profile = { name, username, email: email.toLowerCase(), phone: phone || null, role: userRole, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser?.user_id };
     const created = await createAuthBackedProfile(profile, pwd);
     if (created.error) {
-      log.innerHTML += `<div style="color:var(--red)">第 ${i+2} 行「${name}」：${translateError(created.error.message)}</div>`; failed++; continue;
+      log.innerHTML += `<div style="color:var(--red)">第 ${headerRowIndex+i+2} 行「${name}」：${translateError(created.error.message)}</div>`; failed++; continue;
     }
     const pwdNote = !password ? `<span style="color:var(--amber)">（臨時密碼：${pwd}）</span>` : '';
     const recoverNote = created.recovered ? '<span style="color:var(--amber)">（已修復既有 Email 的帳戶清單）</span>' : '';
