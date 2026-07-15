@@ -610,7 +610,6 @@ body{
     <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'"><img src="../assets/system-icons/admin-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 戰情儀表板</a>
     <a href="workorder.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="報修派工系統"><img src="../assets/system-icons/maintenance-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 報修系統</a>
     <a href="repair.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="維修完工回報"><img src="../assets/system-icons/maintenance-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 完工回報</a>
-    <span aria-disabled="true" style="font-size:.7rem;color:var(--text-dim);padding:3px 8px;border:1px solid var(--border);border-radius:2px;cursor:not-allowed;opacity:.65"><img src="../assets/system-icons/guardpatrol-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 巡檢（修正中）</span>
     <span style="font-size:.7rem;color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600"><img src="../assets/system-icons/admin-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 後台</span>
     <span><span class="online-dot"></span>系統連線中</span>
     <span class="topbar-clock" id="topClock"></span>
@@ -629,12 +628,10 @@ body{
       <div class="nav-item" data-page="settings"><span class="nav-icon"><img src="../assets/system-icons/settings-icon.png" alt=""></span> 系統設定</div>
       <div class="nav-item" data-page="users"><span class="nav-icon"><img src="../assets/system-icons/account-icon.png" alt=""></span> 帳號管理</div>
       <a class="nav-item" href="equipment.html"><span class="nav-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 設備建置管理</a>
-      <a class="nav-item" href="materials.html"><span class="nav-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 設備材料管理</a>
       <div class="nav-item" data-page="repairs"><span class="nav-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 報修 &amp; 維修</div>
       <a class="nav-item" href="dispatch.html"><span class="nav-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 派工系統</a>
       <a class="nav-item" href="repair.html"><span class="nav-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 維修完工</a>
       <a class="nav-item" href="handover.html"><span class="nav-icon"><img src="../assets/system-icons/handover-icon.png" alt=""></span> 電子交接簿</a>
-      <div class="nav-item" aria-disabled="true" style="cursor:not-allowed;opacity:.6"><span class="nav-icon"><img src="../assets/system-icons/guardpatrol-icon.png" alt=""></span> 駐衛警巡檢系統（修正中）</div>
       <div class="nav-item" data-page="modelhub"><span class="nav-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 3D雲台建模</div>
       <div class="nav-item" data-page="costs"><span class="nav-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></span> 費用統計</div>
       <div class="nav-item" data-page="audit"><span class="nav-icon"><img src="../assets/system-icons/audit-icon.png" alt=""></span> 系統紀錄</div>
@@ -1028,13 +1025,6 @@ body{
           <div class="scard-title">區域位置表</div>
           <div class="scard-desc">建立樓層與空間名稱主檔<br>空間是否使用 / 匯入匯出</div>
           <div class="scard-enter">▶ 第二步：建立主檔</div>
-        </div>
-        <div class="scard" style="--scard-c:#c77dff;cursor:not-allowed;opacity:.6" aria-disabled="true">
-          <div class="scard-badge">HUB-03</div>
-          <div class="scard-icon"><img src="../assets/system-icons/guardpatrol-icon.png" alt=""></div>
-          <div class="scard-title">巡邏點清單</div>
-          <div class="scard-desc">讀取全樓層巡邏點標示資料<br>彙總檢視與快速定位</div>
-          <div class="scard-enter">▶ 檢視巡邏點</div>
         </div>
         <div class="scard" style="--scard-c:#00ff9d" onclick="location.href='b1_integrated_marker_system.html'">
           <div class="scard-badge">HUB-04</div>
