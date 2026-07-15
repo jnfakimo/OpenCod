@@ -7,53 +7,28 @@
     var p={};parts.forEach(function(x){p[x.type]=x.value;});
     return p.year+'-'+p.month+'-'+p.day+' '+p.hour+':'+p.minute+':'+p.second;
   }
-  function findStatusText(){
-    var nodes=document.querySelectorAll('span,div');
-    for(var i=0;i<nodes.length;i++){
-      if((nodes[i].textContent||'').trim()==='系統連線中') return nodes[i];
-    }
-    return null;
-  }
-  function setStatusText(el,text){
-    var nodes=el.childNodes;
-    for(var i=0;i<nodes.length;i++){
-      if(nodes[i].nodeType===3&&nodes[i].nodeValue.trim()){
-        nodes[i].nodeValue=text;
-        return;
-      }
-    }
-    el.appendChild(document.createTextNode(text));
-  }
   function installSystemMeta(){
     var style=document.createElement('style');
-    style.textContent='.system-meta-unified{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-family:var(--font-mono,monospace);font-size:.72rem;letter-spacing:.06em;color:var(--text-dim,#64748b)}.system-meta-unified .system-dot{width:7px;height:7px;border-radius:50%;background:var(--green,#00b87a);box-shadow:0 0 8px var(--green,#00b87a);flex:0 0 auto}.system-meta-unified.is-offline .system-dot{background:var(--red,#dc2626);box-shadow:0 0 8px var(--red,#dc2626)}.system-user-unified{max-width:240px;overflow:hidden;text-overflow:ellipsis;color:var(--text,#334155);border-left:1px solid var(--border,#dbe4ee);padding-left:8px}.system-clock-unified{color:var(--cyan,#0284c7);font-family:var(--font-mono,monospace);font-size:.72rem;letter-spacing:.08em;white-space:nowrap}.system-meta-fallback{position:fixed;top:10px;right:12px;z-index:99998;padding:7px 10px;border:1px solid var(--border,#dbe4ee);background:var(--surface,#fff)}@media(max-width:720px){.system-meta-unified{gap:5px;font-size:.62rem;letter-spacing:0}.system-user-unified{max-width:150px;padding-left:5px}.system-clock-unified{font-size:.62rem;letter-spacing:.02em}.system-connectivity-label{display:none}}';
+    style.textContent='.system-meta-unified{display:inline-flex;align-items:center;justify-content:flex-end;gap:12px;margin-left:auto;white-space:nowrap;font-family:var(--font-mono,monospace);font-size:.72rem;letter-spacing:.05em;color:var(--text-dim,#64748b);order:999}.system-connectivity-unified{display:inline-flex;align-items:center;gap:7px}.system-meta-unified .system-dot{width:7px;height:7px;border-radius:50%;background:var(--green,#00b87a);box-shadow:0 0 8px var(--green,#00b87a);flex:0 0 auto}.system-meta-unified.is-offline .system-dot{background:var(--red,#dc2626);box-shadow:0 0 8px var(--red,#dc2626)}.system-user-unified{max-width:240px;overflow:hidden;text-overflow:ellipsis;color:var(--text,#334155)}.system-clock-unified{color:var(--cyan,#0284c7);font-family:var(--font-mono,monospace);font-size:.72rem;letter-spacing:.08em}.system-user-unified,.system-connectivity-unified,.system-clock-unified{padding-left:11px;border-left:1px solid var(--border,#dbe4ee)}.system-meta-fallback{position:fixed;top:10px;right:12px;z-index:99998;padding:7px 10px;border:1px solid var(--border,#dbe4ee);background:var(--surface,#fff)}@media(max-width:1100px){.system-meta-unified{width:100%;justify-content:flex-end;margin-top:7px}.topbar-right,.nav-right,.navbar,.topbar,#topbar{flex-wrap:wrap}}@media(max-width:720px){.system-meta-unified{gap:6px;font-size:.61rem;letter-spacing:0}.system-user-unified{max-width:145px}.system-clock-unified{font-size:.61rem;letter-spacing:0}.system-user-unified,.system-connectivity-unified,.system-clock-unified{padding-left:6px}}';
     document.head.appendChild(style);
 
-    var clock=document.querySelector('[data-system-clock],#topClock,#clock');
-    if(clock){clock.classList.add('system-clock-unified');clock.setAttribute('data-system-clock','');}
-    var existing=findStatusText();
-    var meta;
-    if(existing){
-      meta=existing.closest('.status-pill')||existing;
-      meta.classList.add('system-meta-unified');
-      existing.classList.add('system-connectivity-label');
-    }else{
-      meta=document.createElement('span');
-      meta.className='system-meta-unified';
-      meta.innerHTML='<span class="system-dot" aria-hidden="true"></span><span class="system-connectivity-label">系統連線中</span>';
-      var host=document.querySelector('.topbar-right,.nav-right,.navbar,.topbar,#topbar,.statusbar-right,header');
-      if(clock&&clock.parentNode){clock.parentNode.insertBefore(meta,clock);}
-      else if(host){host.appendChild(meta);}
-      else{meta.classList.add('system-meta-fallback');document.body.appendChild(meta);}
-    }
-    var legacyDot=document.querySelector('.online-dot');
-    if(legacyDot&&!meta.contains(legacyDot))legacyDot.remove();
-    var userMeta=document.createElement('span');
-    userMeta.className='system-user-unified';
-    userMeta.setAttribute('data-system-user','');
-    userMeta.textContent='尚未登入';
-    meta.appendChild(userMeta);
-    document.querySelectorAll('#navUser').forEach(function(el){el.style.display='none';});
+    var meta=document.createElement('div');
+    meta.className='system-meta-unified';
+    meta.setAttribute('data-system-meta','');
+    meta.innerHTML='<span class="system-user-unified" data-system-user>尚未登入</span><span class="system-connectivity-unified"><span class="system-dot" aria-hidden="true"></span><span class="system-connectivity-label">系統連線中</span></span><span class="system-clock-unified" data-system-clock>----</span>';
+    var userMeta=meta.querySelector('[data-system-user]');
+    var clock=meta.querySelector('[data-system-clock]');
+    var label=meta.querySelector('.system-connectivity-label');
+    document.querySelectorAll('#navUser,#topClock,#clock,.online-dot,.dot-online').forEach(function(el){el.style.display='none';});
+    document.querySelectorAll('span,div').forEach(function(el){
+      if(!el.closest('[data-system-meta]')&&(el.textContent||'').trim()==='系統連線中'){
+        var old=el.closest('.status-pill')||el;
+        old.style.display='none';
+      }
+    });
+    var host=document.querySelector('.topbar-right,.nav-right,.navbar,.topbar,#topbar,.statusbar-right,header');
+    if(host)host.appendChild(meta);
+    else{meta.classList.add('system-meta-fallback');document.body.appendChild(meta);}
 
     var deptLookupStarted=false;
     function updateUser(){
@@ -77,9 +52,8 @@
     function update(){
       var online=navigator.onLine;
       meta.classList.toggle('is-offline',!online);
-      var label=meta.querySelector('.system-connectivity-label')||existing;
-      if(label)setStatusText(label,online?'系統連線中':'系統離線');
-      if(clock)clock.textContent=taipeiNow();
+      label.textContent=online?'系統連線中':'系統離線';
+      clock.textContent=taipeiNow();
       updateUser();
     }
     update();

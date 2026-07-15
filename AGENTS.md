@@ -77,7 +77,9 @@ RLS is currently open (`allow_all_for_now`) for development. Storage buckets:
   its shared system-meta component must be visible at the top and show connectivity,
   the signed-in user's `department unit | name`, and Asia/Taipei time in
   `YYYY-MM-DD HH:mm:ss` format. Use the shared component and session profile fields;
-  do not create a second, page-specific user/status/clock format.
+  do not create a second, page-specific user/status/clock format. The component must
+  sit at the far right of the page header in this exact order: user, connectivity,
+  clock.
 
 ## Do NOT
 - Do **not** delete `system/plans/*` — those textures/DZI tiles are used live by
