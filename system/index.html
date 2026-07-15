@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
-<script src="theme.js"></script>
+<script src="theme.js?v=20260715-6"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>臺北農產公司 ｜ 系統入口</title>
+<title>臺北農產運銷 ｜ 系統入口</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -231,11 +231,15 @@
     transition:transform .2s;
   }
   .sys-card:hover .card-enter-arrow{transform:translateX(4px)}
+  .sys-card.module-archived{opacity:.58;filter:grayscale(.45)}
+  .sys-card.module-archived:hover{border-color:var(--border-hi);transform:none;box-shadow:none}
+  .module-status{display:inline-flex;align-items:center;margin:0 0 14px;padding:4px 9px;border:1px solid var(--card-color);color:var(--card-color);font-size:.68rem;letter-spacing:.08em}
+  .module-archived .card-enter{color:var(--text-dim);background:transparent}
 
   /* card color tokens */
   .card-admin   { --card-color:var(--cyan);  --card-rgb:0,212,255  }
   .card-maint   { --card-color:var(--amber); --card-rgb:255,179,0  }
-  .card-inspect { --card-color:var(--green); --card-rgb:0,255,157  }
+  .card-inspect { --card-color:var(--red);   --card-rgb:255,59,59  }
   .card-handover{ --card-color:#b48aff; --card-rgb:180,138,255 }
   .card-asset{ --card-color:var(--cyan); --card-rgb:0,212,255 }
 
@@ -310,7 +314,7 @@
   <!-- HEADER -->
   <div class="header">
     <div class="org-badge">TAPMC · FIRST FRUIT &amp; VEGETABLE MARKET</div>
-    <div class="org-name" data-sysname="org">臺北農產公司</div>
+    <div class="org-name" data-sysname="org">臺北農產運銷股份有限公司</div>
     <div class="sub-name" data-sysname="site">第一果菜市場</div>
     <div class="header-divider"></div>
     <div class="sys-label">整合管理系統入口</div>
@@ -329,12 +333,12 @@
       <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
     </a>
 
-    <a class="sys-card card-maint" href="workorder.html">
+    <a class="sys-card card-maint" href="admin.html#repairs">
       <span class="card-icon" aria-hidden="true">
         <img src="../assets/system-icons/maintenance-icon.png" alt="">
       </span>
       <div class="card-sys-id">SYS-02 ｜ MAINTENANCE</div>
-      <div class="card-title">維修管理系統</div>
+      <div class="card-title">維修/派工/完工系統</div>
       <div class="card-desc">報修單處理流程、維修人員指派、進度追蹤與結案驗收管理。</div>
       <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
     </a>
@@ -391,7 +395,7 @@
     const n = new Date();
     const p = x => String(x).padStart(2,'0');
     document.getElementById('clock').textContent =
-      `${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+      `${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())} ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
   }
   tick();
   setInterval(tick, 1000);

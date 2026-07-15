@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
-<script src="theme.js"></script>
+<script src="theme.js?v=20260715-6"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>電子交接簿 — 臺北農產公司</title>
+<title>電子交接簿 — 臺北農產</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -215,13 +215,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 
 <div class="topbar">
   <div class="topbar-left">
-    <span class="topbar-org"><span data-sysname="org">臺北農產公司</span> <span data-sysname="site">第一果菜市場</span></span>
+    <span class="topbar-org"><span data-sysname="org">臺北農產運銷股份有限公司</span> <span data-sysname="site">第一果菜市場</span></span>
     <span class="topbar-title"><span class="ic ic-handover"></span> 電子交接簿</span>
   </div>
   <div class="topbar-right">
     <a href="dashboard.html"><span class="ic ic-dashboard"></span> 戰情儀表板</a>
     <a href="workorder.html"><span class="ic ic-dispatch"></span> 報修系統</a>
-    <a href="app.html"><span class="ic ic-inspection"></span> 巡檢</a>
     <a href="admin.html"><span class="ic ic-equipment"></span> 後台</a>
     <span class="nav-user" id="navUser">載入中…</span>
     <span class="clock" id="topClock">--:--:--</span>
@@ -768,14 +767,12 @@ function hasPagePerm(key) {
 
 function applyPerms() {
   if (_handoverHasSession && !hasPagePerm('handover')) {
-    const dest = hasPagePerm('inspector') ? 'app.html'
+    const dest = hasPagePerm('inspector') ? 'guardpatrol.html'
                : hasPagePerm('maintenance') ? 'workorder.html'
                : 'login.html';
     window.location.replace(dest);
     return;
   }
-  if (!hasPagePerm('inspector'))
-    document.querySelectorAll('a[href="app.html"]').forEach(el => el.style.display = 'none');
   if (!hasPagePerm('maintenance'))
     document.querySelectorAll('a[href="workorder.html"]').forEach(el => el.style.display = 'none');
 }
@@ -783,7 +780,7 @@ function applyPerms() {
 // ── CLOCK ──────────────────────────────────────────
 (function tick(){
   const n=new Date(),p=x=>String(x).padStart(2,'0');
-  document.getElementById('topClock').textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  document.getElementById('topClock').textContent=`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())} ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
   setTimeout(tick,1000);
 })();
 

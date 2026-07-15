@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
-<script src="theme.js"></script>
+<script src="theme.js?v=20260715-6"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>駐衛警巡檢系統 — 臺北農產公司巡檢系統</title>
+<title>駐衛警巡檢系統 — 臺北農產巡檢系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="patrolstatus.js"></script>
@@ -121,7 +121,7 @@ td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
 <nav class="navbar">
   <div>
     <div class="nav-title"><span class="ic ic-handover"></span> 駐衛警巡檢系統</div>
-    <div class="nav-sub">巡檢稽核總覽 · 臺北農產公司 第一果菜市場</div>
+    <div class="nav-sub">巡檢稽核總覽 · 臺北農產 第一果菜市場</div>
   </div>
   <div class="nav-space"></div>
   <a href="guardpatrol3d.html"><button class="nav-back">3D駐警巡檢雲台</button></a>
@@ -409,8 +409,8 @@ async function exportReport(from,to){
     styleReportSheet(ws,data.length);
     const wb=XLSX.utils.book_new();
     wb.Props={
-      Title:title,Subject:'第一市場駐衛警巡檢報表',Author:'臺北農產公司',
-      Company:'臺北農產公司',CreatedDate:new Date()
+      Title:title,Subject:'第一市場駐衛警巡檢報表',Author:'臺北農產運銷股份有限公司',
+      Company:'臺北農產運銷股份有限公司',CreatedDate:new Date()
     };
     XLSX.utils.book_append_sheet(wb,ws,'巡檢報表');
     XLSX.writeFile(wb,`第一市場巡檢表_${from}_${to}.xlsx`);
