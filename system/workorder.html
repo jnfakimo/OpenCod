@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
-<script src="theme.js?v=20260715-6"></script>
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
@@ -11,9 +11,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
-  --cyan:#ffb300;--blue:#1a7fff;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;--purple:#b48aff;
+  --cyan:#00d4ff;--blue:#1a7fff;--green:#00ff9d;--amber:#ffb300;--red:#ff3b3b;--purple:#b48aff;
   --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif;--font-mono:'Share Tech Mono',monospace}
-:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#b45309;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--purple:#7c3aed;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--blue:#2563eb;--green:#059669;--amber:#b45309;--red:#dc2626;--purple:#7c3aed;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
 /* light mode overrides */
 :root[data-theme="light"] body{background-image:none}
 :root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
@@ -25,7 +25,7 @@
 :root[data-theme="light"] .th-filter select{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
 :root[data-theme="light"] .page-btn{background:#f8fafc;border-color:#cbd5e1;color:#1e293b}
 :root[data-theme="light"] tbody td{border-bottom-color:#e2e8f0}
-:root[data-theme="light"] tbody tr:hover{background:rgba(180,83,9,.04)}
+:root[data-theme="light"] tbody tr:hover{background:rgba(2,132,199,.04)}
 :root[data-theme="light"] .date-actions .confirm{color:#001521}
 :root[data-theme="light"] .subform{background:#f8fafc;border-color:#e2e8f0}
 :root[data-theme="light"] .toast{background:#ffffff;border-color:#e2e8f0;color:#1e293b}
@@ -34,7 +34,7 @@
 body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
 a{color:inherit;text-decoration:none}
 .navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50}
-.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--cyan);letter-spacing:.06em;text-shadow:0 0 14px rgba(255,179,0,.5)}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--cyan);letter-spacing:.06em;text-shadow:0 0 14px rgba(0,212,255,.5)}
 .nav-sub{font-size:.7rem;color:var(--text-dim)}.nav-space{flex:1}
 .nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;transition:all .2s}
 .nav-back:hover{border-color:var(--cyan);color:var(--cyan)}
@@ -43,19 +43,19 @@ a{color:inherit;text-decoration:none}
 .toolbar select,.toolbar input{background:var(--surface);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:2px;font-size:.76rem;outline:none}
 .toolbar select:focus,.toolbar input:focus{border-color:var(--cyan)}
 .tspace{flex:1}
-.btn-add{background:rgba(255,179,0,.1);border:1px solid var(--cyan);color:var(--cyan);padding:7px 16px;border-radius:2px;cursor:pointer;font-size:.76rem;font-family:var(--font-head);letter-spacing:.04em;transition:all .2s}
-.btn-add:hover{background:rgba(255,179,0,.2)}
+.btn-add{background:rgba(0,212,255,.1);border:1px solid var(--cyan);color:var(--cyan);padding:7px 16px;border-radius:2px;cursor:pointer;font-size:.76rem;font-family:var(--font-head);letter-spacing:.04em;transition:all .2s}
+.btn-add:hover{background:rgba(0,212,255,.2)}
 .stat-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .chip{font-size:.7rem;padding:5px 11px;border:1px solid var(--border);border-radius:14px;cursor:pointer;color:var(--text-dim);background:var(--panel);transition:all .15s}
 .chip:hover{border-color:var(--border-hi)}
-.chip.on{border-color:var(--cyan);color:var(--cyan);background:rgba(255,179,0,.08)}
+.chip.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,212,255,.08)}
 .chip b{color:var(--text-hi);margin-left:4px}
 .table-scroll{width:100%;overflow-x:auto}
 table{width:100%;min-width:780px;border-collapse:collapse;font-size:.76rem}
 thead th{text-align:left;color:var(--text-dim);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--border);font-size:.7rem;letter-spacing:.04em;white-space:nowrap}
 tbody td{padding:9px 10px;border-bottom:1px solid rgba(12,40,64,.5)}
 tbody tr{cursor:pointer;transition:background .15s}
-tbody tr:hover{background:rgba(255,179,0,.04)}
+tbody tr:hover{background:rgba(0,212,255,.04)}
 .th-filter{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .th-filter select{width:120px;max-width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 7px;border-radius:2px;font-size:.68rem;outline:none}
 .th-filter select:focus{border-color:var(--cyan)}
@@ -63,7 +63,7 @@ tbody tr:hover{background:rgba(255,179,0,.04)}
 .pager{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:12px;flex-wrap:wrap;color:var(--text-dim);font-size:.72rem}
 .page-btn{min-width:32px;height:30px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:2px;cursor:pointer;font-family:var(--font-head);font-weight:700}
 .page-btn:hover{border-color:var(--cyan);color:var(--cyan)}
-.page-btn.on{background:rgba(255,179,0,.16);border-color:var(--cyan);color:var(--cyan)}
+.page-btn.on{background:rgba(0,212,255,.16);border-color:var(--cyan);color:var(--cyan)}
 .page-btn:disabled{opacity:.35;cursor:not-allowed;border-color:var(--border);color:var(--text-dim)}
 .page-info{margin-right:auto}
 .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:.66rem;font-weight:700;white-space:nowrap}
@@ -96,21 +96,21 @@ tbody tr:hover{background:rgba(255,179,0,.04)}
 .date-head{display:grid;grid-template-columns:34px 1fr 34px;align-items:center;margin-bottom:8px}
 .date-title{text-align:center;color:var(--text-hi);font-size:.8rem;font-weight:700;letter-spacing:.04em}
 .date-nav{height:30px;border:0;background:transparent;color:var(--cyan);font-size:1.05rem;cursor:pointer}
-.date-nav:hover{background:rgba(255,179,0,.08)}
+.date-nav:hover{background:rgba(0,212,255,.08)}
 .date-week,.date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
 .date-week span{height:25px;display:flex;align-items:center;justify-content:center;color:var(--text-dim);font-size:.68rem}
 .date-cell{height:29px;border:0;background:transparent;color:var(--text);font-family:var(--font-mono);font-size:.72rem;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
-.date-cell:hover{background:rgba(255,179,0,.12);color:var(--cyan)}
-.date-cell.today{box-shadow:inset 0 0 0 1px rgba(255,179,0,.4)}
-.date-cell.selected{background:var(--cyan);color:#001521;font-weight:700;box-shadow:0 0 14px rgba(255,179,0,.42)}
+.date-cell:hover{background:rgba(0,212,255,.12);color:var(--cyan)}
+.date-cell.today{box-shadow:inset 0 0 0 1px rgba(0,212,255,.4)}
+.date-cell.selected{background:var(--cyan);color:#001521;font-weight:700;box-shadow:0 0 14px rgba(0,212,255,.42)}
 .date-cell.empty{cursor:default;pointer-events:none}
 .date-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .date-actions button{height:34px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-family:var(--font-head);font-weight:700;letter-spacing:.04em;cursor:pointer}
 .date-actions button:hover{border-color:var(--cyan);color:var(--cyan)}
 .date-actions .confirm{background:var(--cyan);border-color:var(--cyan);color:#001521}
 .date-actions .confirm:hover{color:#001521;filter:brightness(1.06)}
-.btn-primary{padding:10px 16px;background:rgba(255,179,0,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:2px;cursor:pointer;font-size:.8rem;font-family:var(--font-head);letter-spacing:.05em;transition:all .2s}
-.btn-primary:hover{background:rgba(255,179,0,.22)}
+.btn-primary{padding:10px 16px;background:rgba(0,212,255,.12);border:1px solid var(--cyan);color:var(--cyan);border-radius:2px;cursor:pointer;font-size:.8rem;font-family:var(--font-head);letter-spacing:.05em;transition:all .2s}
+.btn-primary:hover{background:rgba(0,212,255,.22)}
 .msg{font-size:.72rem;text-align:center;padding:5px;min-height:1.3em;white-space:pre-wrap;line-height:1.5}
 .msg.ok{color:var(--green)}.msg.err{color:var(--red)}
 /* detail */
@@ -131,7 +131,7 @@ tbody tr:hover{background:rgba(255,179,0,.04)}
 .tl .op{font-size:.66rem;color:var(--text-dim)}
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .abtn{padding:8px 14px;border-radius:2px;cursor:pointer;font-size:.76rem;font-family:var(--font-head);letter-spacing:.04em;border:1px solid;transition:all .2s;background:none}
-.a-primary{border-color:var(--cyan);color:var(--cyan)}.a-primary:hover{background:rgba(255,179,0,.15)}
+.a-primary{border-color:var(--cyan);color:var(--cyan)}.a-primary:hover{background:rgba(0,212,255,.15)}
 .a-warn{border-color:var(--amber);color:var(--amber)}.a-warn:hover{background:rgba(255,179,0,.12)}
 .a-danger{border-color:var(--red);color:var(--red)}.a-danger:hover{background:rgba(255,59,59,.12)}
 .a-ok{border-color:var(--green);color:var(--green)}.a-ok:hover{background:rgba(0,255,157,.12)}
@@ -153,6 +153,7 @@ tbody tr:hover{background:rgba(255,179,0,.04)}
 <a class="mobile-hide" href="equipment.html"><button class="nav-back"><span class="ic ic-equipment"></span> 設備建置</button></a>
 <a href="workorder.html?v=reporter-20260701"><button class="nav-back"><span class="ic ic-costs"></span> 報修系統</button></a>
 <a href="dispatch.html"><button class="nav-back"><span class="ic ic-dispatch"></span> 派工系統</button></a>
+<a href="app.html"><button class="nav-back"><span class="ic ic-inspection"></span> 巡檢</button></a>
   <a href="admin.html"><button class="nav-back">← 後台</button></a>
 </nav>
 

@@ -73,25 +73,7 @@ RLS is currently open (`allow_all_for_now`) for development. Storage buckets:
 - **New/changed DB columns**: `create table if not exists` won't alter an existing
   table — always add a matching `alter table … add column if not exists`.
 - **Adding a page**: give it the shared navbar/topbar, the Supabase init block, and
-  cross-links consistent with sibling pages. Every page must load `system/theme.js`;
-  its shared system-meta component must be visible at the top and show connectivity,
-  the signed-in user's `department unit | name`, and Asia/Taipei time in
-  `YYYY-MM-DD HH:mm:ss` format. Use the shared component and session profile fields;
-  do not create a second, page-specific user/status/clock format. The component must
-  sit at the far right of the page header in this exact order: user, connectivity,
-  clock.
-- **Shared header actions**: `system/theme.js` owns the global action group. Every
-  application page must use the same four actions in this order: 戰情儀表板 →
-  報修系統 → 完工回報 → 後台. Reuse the exact colorful icons already shown in
-  the `admin.html` top bar: `assets/system-icons/admin-icon.png` for 戰情儀表板
-  and 後台, and `assets/system-icons/maintenance-icon.png` for 報修系統 and
-  完工回報. Do not use the `system/icons/nav-*` set for these four shared actions.
-  Do not add page-specific emoji or text-symbol versions. Page-specific actions
-  may remain immediately to the left.
-  This icon style, order, and shared-component implementation are locked; do not
-  change them unless the user explicitly requests that specific standard to change.
-  Never regenerate, redraw, edit, or replace the two referenced PNG assets for this
-  shared header without an explicit user request.
+  cross-links consistent with sibling pages.
 
 ## Do NOT
 - Do **not** delete `system/plans/*` — those textures/DZI tiles are used live by

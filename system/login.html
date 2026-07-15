@@ -3,18 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
-<script src="theme.js?v=20260715-6"></script>
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>臺北農產運銷股份有限公司 第一果菜市場 設備巡檢維修系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{overflow-x:hidden;max-width:100%}
-:root{--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text-dim:#94a3b8;--cyan:#818cf8;--green:#4ade80;--red:#f87171}
-:root[data-theme="light"]{--surface:#ffffff;--border:#e2e8f0;--text:#1e293b;--text-dim:#64748b;--cyan:#4f46e5;--green:#16a34a;--red:#dc2626}
-body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column;zoom:70%}
-.topbar{display:flex;align-items:center;justify-content:flex-end;padding:10px 16px;min-height:48px;flex-shrink:0}
-.page{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
 .card{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 25px 50px rgba(0,0,0,.5)}
 h1{font-size:1.5rem;font-weight:700;color:#f8fafc;margin-bottom:6px;text-align:center}
 .subtitle{font-size:.85rem;color:#64748b;text-align:center;margin-bottom:32px}
@@ -51,8 +46,6 @@ input:focus{border-color:#6366f1}
 <link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
 </head>
 <body>
-<header class="topbar"></header>
-<div class="page">
 <div class="card" id="loginCard">
   <img class="brand-logo" src="assets/logo-title.png" width="416" height="280" alt="北農 BEINONG MARKET">
   <h1>臺北農產運銷股份有限公司</h1>
@@ -69,7 +62,6 @@ input:focus{border-color:#6366f1}
   <button class="btn" id="loginBtn">登入</button>
   <a class="forgot-link" id="forgotLink">忘記密碼？</a>
   <div class="err" id="errMsg"></div>
-</div>
 </div>
 
 <!-- 忘記密碼 modal -->
@@ -117,7 +109,7 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ROLE_ROUTES = {
   admin:       'admin.html',
   supervisor:  'admin.html',
-  inspector:   'guardpatrol.html',
+  inspector:   'app.html',
   maintenance: 'workorder.html?v=reporter-20260701',
 };
 const RBAC_ROLES = {
@@ -154,7 +146,6 @@ function hasPermission(profile, key) {
 
 function safeRedirect(target) {
   if (!target) return null;
-  if (/^app\.html(?:\?.*)?$/.test(target)) return 'inspection-archived.html';
   if (/^[A-Za-z0-9_\-]+\.html(\?[A-Za-z0-9_\-=&%.]*)?$/.test(target)) return target;
   return null;
 }
@@ -166,18 +157,18 @@ function getLoginRoute(profile) {
     const p = profile.permissions || {};
     if (profile.role === 'admin' || profile.role === 'supervisor') return 'admin.html';
     if (profile.role === 'inspector') {
-      if (p.inspector !== false) return 'guardpatrol.html';
+      if (p.inspector !== false) return 'app.html';
       if (p.handover !== false) return 'handover.html';
       if (p.maintenance !== false) return 'workorder.html?v=reporter-20260701';
-      return 'guardpatrol.html';
+      return 'app.html';
     }
     if (profile.role === 'maintenance') {
       if (p.maintenance !== false) return 'workorder.html?v=reporter-20260701';
-      if (p.inspector !== false) return 'guardpatrol.html';
+      if (p.inspector !== false) return 'app.html';
       if (p.handover !== false) return 'handover.html';
       return 'workorder.html?v=reporter-20260701';
     }
-    return ROLE_ROUTES[profile.role] || 'guardpatrol.html';
+    return ROLE_ROUTES[profile.role] || 'app.html';
   }
 
   const roleId = normalizeRoleId(profile);
@@ -185,7 +176,7 @@ function getLoginRoute(profile) {
   if (roleId === 'unit_supervisor' || roleId === 'mgmt_supervisor') return 'admin.html';
   if (hasPermission(profile, 'maintenance') || hasPermission(profile, 'dispatch') || hasPermission(profile, 'update') || hasPermission(profile, 'create') || hasPermission(profile, 'repair')) return 'workorder.html?v=reporter-20260701';
   if (hasPermission(profile, 'handover')) return 'handover.html';
-  if (hasPermission(profile, 'inspector')) return 'guardpatrol.html';
+  if (hasPermission(profile, 'inspector')) return 'app.html';
   return ROLE_ROUTES[profile.role] || 'workorder.html?v=reporter-20260701';
 }
 

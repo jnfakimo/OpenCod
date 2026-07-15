@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
-<script src="theme.js?v=20260715-6"></script>
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -12,8 +12,11 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;--cyan:#00d4ff;--cyan-glow:0 0 14px rgba(0,212,255,.5);--blue:#1a7fff;--patrol:#ff5470;--text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;--font-head:'Rajdhani',sans-serif}
-:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--patrol:#ff5470;--blue:#2563eb;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
+:root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
+  --cyan:#00d4ff;--cyan-glow:0 0 14px rgba(0,212,255,.5);--blue:#1a7fff;--patrol:#c77dff;
+  --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;
+  --font-head:'Rajdhani',sans-serif}
+:root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;--cyan:#0284c7;--cyan-glow:none;--blue:#2563eb;--patrol:#9333ea;--text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
 /* light mode overrides */
 :root[data-theme="light"] body{background-image:none}
 :root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}

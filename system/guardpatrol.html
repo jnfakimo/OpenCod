@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
-<script src="theme.js?v=20260715-6"></script>
+<script src="theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -14,11 +14,11 @@
 <script src="patrolstatus.js"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;--border-hi:#1a4a70;
-  --cyan:#00d4ff;--patrol:#ff5470;--green:#00ff9d;--red:#dc2626;
+  --cyan:#00d4ff;--patrol:#c77dff;--green:#00ff9d;--red:#ff5470;
   --text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;
   --font-head:'Rajdhani',sans-serif}
 :root[data-theme="light"]{--bg:#f4f6fa;--surface:#ffffff;--panel:#ffffff;--border:#dbe4ee;--border-hi:#93b4d6;
-  --cyan:#0284c7;--patrol:#ff5470;--green:#059669;--red:#dc2626;
+  --cyan:#0284c7;--patrol:#9333ea;--green:#059669;--red:#dc2626;
   --text:#1e293b;--text-hi:#0f172a;--text-dim:#64748b}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans TC',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:40px}
@@ -74,9 +74,9 @@ th.pointcol{position:sticky;left:0;z-index:2;background:var(--panel)}
 td{padding:6px 8px;border-bottom:1px solid rgba(12,40,64,.4);text-align:center}
 td.pointcol{text-align:left;white-space:nowrap;position:sticky;left:0;background:var(--panel);font-size:.78rem}
 td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
-.floor-row{cursor:pointer;background:rgba(255,84,112,.07)}
+.floor-row{cursor:pointer;background:rgba(199,125,255,.07)}
 .floor-row td{text-align:left;color:var(--patrol);font-weight:700;padding:8px 10px;letter-spacing:.04em}
-.floor-row:hover{background:rgba(255,84,112,.13)}
+.floor-row:hover{background:rgba(199,125,255,.13)}
 .floor-arrow{display:inline-block;width:18px;color:var(--text-dim)}
 .floor-count{font-size:.66rem;color:var(--text-dim);font-weight:400;margin-left:8px}
 .floor-cell{color:var(--text-dim);font-size:.7rem;text-align:left}

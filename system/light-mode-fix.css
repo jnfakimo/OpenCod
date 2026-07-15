@@ -1,37 +1,3 @@
-/* ===== GLOBAL DEFAULTS & THEME TOKENS ===== */
-:root {
-  --bg: #020b18 !important;
-  --surface: #04111f !important;
-  --panel: #05101e !important;
-  --border: #0c2840 !important;
-  --border-hi: #1a4a70 !important;
-  --text: #a8d8f0 !important;
-  --text-hi: #d4eeff !important;
-  --text-dim: #5289ad !important;
-
-  --font-mono: 'Share Tech Mono', monospace !important;
-  --font-head: 'Rajdhani', sans-serif !important;
-  --font-tc: 'Noto Sans TC', system-ui, sans-serif !important;
-}
-
-:root[data-theme="light"] {
-  --bg: #f4f6fa !important;
-  --surface: #ffffff !important;
-  --panel: #ffffff !important;
-  --border: #cbd5e1 !important;
-  --border-hi: #94a3b8 !important;
-  --text: #1e293b !important;
-  --text-hi: #0f172a !important;
-  --text-dim: #64748b !important;
-}
-
-/* Global typography & baseline */
-body {
-  font-family: var(--font-tc) !important;
-  font-size: 15px !important;
-  line-height: 1.5 !important;
-}
-
 /* ===== LIGHT MODE GLOBAL FIX ===== */
 /* Overrides all hardcoded dark backgrounds when data-theme="light" */
 
