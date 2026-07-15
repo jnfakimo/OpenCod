@@ -129,7 +129,7 @@
 ### 業主的長期指示（standing instructions）
 - **「有關連一併修正」**：改動某系統時，所有相關系統要一起更新（例：改導覽名稱、共用資料表、樓層對應）。
 - **一次只用一個 AI**（避免並行衝突）。
-- **全站系統狀態列為必要功能**：所有現有頁面及日後新增頁面都必須載入 `system/theme.js`，並在頁面頂部顯示「系統連線狀態」與台北時間 `YYYY-MM-DD HH:mm:ss`。共用元件會優先掛入 `.topbar-right`、`.nav-right`、`.navbar`、`.topbar` 或 `#topbar`；不得自行建立不同格式的重複狀態列。
+- **全站系統狀態列為必要功能**：所有現有頁面及日後新增頁面都必須載入 `system/theme.js`，並在頁面頂部顯示「系統連線狀態」、「部門單位｜登入者姓名」與台北時間 `YYYY-MM-DD HH:mm:ss`。登入資料優先讀取 `sessionStorage` 的 `user_department`、`user_dept_id`、`user_name`；只有部門編號時由共用元件查詢 `departments` 並組成完整部門路徑。共用元件會優先掛入 `.topbar-right`、`.nav-right`、`.navbar`、`.topbar` 或 `#topbar`；不得自行建立不同格式的重複狀態列。
 
 ---
 
@@ -138,6 +138,6 @@
 - [ ] `git fetch origin main && git reset --hard origin/main`
 - [ ] 需要新表/欄位？在 `system/sql/` 寫 idempotent SQL，並提醒業主到 Supabase 執行
 - [ ] 改完頁面用 `node --check` 驗證內嵌 JS
-- [ ] 新增或修改頁面時，確認已載入 `theme.js`，且頂部可見「系統連線狀態＋日期時間」共用元件
+- [ ] 新增或修改頁面時，確認已載入 `theme.js`，且頂部可見「系統連線狀態＋部門單位與登入者姓名＋日期時間」共用元件
 - [ ] 部署後用 `mcp__github__actions_list` 確認 `pages build and deployment` 為 success（無法 curl 線上頁）
 - [ ] 有跨系統關聯時，落實「有關連一併修正」
