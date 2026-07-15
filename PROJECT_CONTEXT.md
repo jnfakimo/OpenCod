@@ -129,7 +129,7 @@
 ### 業主的長期指示（standing instructions）
 - **「有關連一併修正」**：改動某系統時，所有相關系統要一起更新（例：改導覽名稱、共用資料表、樓層對應）。
 - **一次只用一個 AI**（避免並行衝突）。
-- **全站系統狀態列為必要功能**：所有現有頁面及日後新增頁面都必須載入 `system/theme.js`。共用狀態元件固定置於表頭最右側，且順序與形式統一為「部門單位｜登入者姓名」→「系統連線狀態」→「台北時間 `YYYY-MM-DD HH:mm:ss`」。登入資料優先讀取 `sessionStorage` 的 `user_department`、`user_dept_id`、`user_name`；只有部門編號時由共用元件查詢 `departments` 並組成完整部門路徑。共用元件會優先掛入 `.topbar-right`、`.nav-right`、`.navbar`、`.topbar` 或 `#topbar`；不得保留或自行建立不同位置、順序、格式的重複使用者／狀態／時鐘欄位。
+- **全站系統狀態列為必要功能**：所有現有頁面及日後新增頁面都必須載入 `system/theme.js`。共用狀態元件固定置於表頭最右側，且順序與形式統一為「部門單位｜登入者姓名」→「系統連線狀態」→「台北時間 `YYYY-MM-DD HH:mm:ss`」。表頭功能按鈕必須緊接在登入者資訊左側，由右向左依頁面既定順序排列，不可用自動邊距在按鈕與登入者資訊之間產生大段空白。登入資料優先讀取 `sessionStorage` 的 `user_department`、`user_dept_id`、`user_name`；只有部門編號時由共用元件查詢 `departments` 並組成完整部門路徑。共用元件會優先掛入 `.topbar-right`、`.nav-right`、`.navbar`、`.topbar` 或 `#topbar`；不得保留或自行建立不同位置、順序、格式的重複使用者／狀態／時鐘欄位。
 
 ---
 
