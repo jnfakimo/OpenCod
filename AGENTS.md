@@ -80,13 +80,6 @@ RLS is currently open (`allow_all_for_now`) for development. Storage buckets:
   do not create a second, page-specific user/status/clock format. The component must
   sit at the far right of the page header in this exact order: user, connectivity,
   clock.
-- **Shared header actions**: `system/theme.js` owns the global action group. Every
-  application page must use the same four actions in this order: 戰情儀表板 →
-  報修系統 → 完工回報 → 後台. Icons must come from the dashboard `ic-*` icon
-  system; do not add page-specific emoji, text-symbol, or large system-icon versions
-  of these four actions. Page-specific actions may remain immediately to the left.
-  This icon style, order, and shared-component implementation are locked; do not
-  change them unless the user explicitly requests that specific standard to change.
 
 ## Do NOT
 - Do **not** delete `system/plans/*` — those textures/DZI tiles are used live by
