@@ -443,7 +443,7 @@ let currentPage=1;
 /* ===== CLOCK ===== */
 function startClock(){
   const el=document.getElementById('topClock');
-  function tick(){const n=new Date();el.textContent=n.toLocaleDateString('zh-TW')+' '+n.toLocaleTimeString('zh-TW');}
+  function tick(){const n=new Date(),p=x=>String(x).padStart(2,'0');el.textContent=`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())} ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;}
   tick();setInterval(tick,1000);
 }
 

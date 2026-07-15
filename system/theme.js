@@ -2,7 +2,67 @@
   var KEY='siteTheme';
   function current(){ return document.documentElement.getAttribute('data-theme')||'tech'; }
   function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn); }
+  function taipeiNow(){
+    var parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(new Date());
+    var p={};parts.forEach(function(x){p[x.type]=x.value;});
+    return p.year+'-'+p.month+'-'+p.day+' '+p.hour+':'+p.minute+':'+p.second;
+  }
+  function findStatusText(){
+    var nodes=document.querySelectorAll('span,div');
+    for(var i=0;i<nodes.length;i++){
+      if((nodes[i].textContent||'').trim()==='系統連線中') return nodes[i];
+    }
+    return null;
+  }
+  function setStatusText(el,text){
+    var nodes=el.childNodes;
+    for(var i=0;i<nodes.length;i++){
+      if(nodes[i].nodeType===3&&nodes[i].nodeValue.trim()){
+        nodes[i].nodeValue=text;
+        return;
+      }
+    }
+    el.appendChild(document.createTextNode(text));
+  }
+  function installSystemMeta(){
+    var style=document.createElement('style');
+    style.textContent='.system-meta-unified{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;font-family:var(--font-mono,monospace);font-size:.72rem;letter-spacing:.06em;color:var(--text-dim,#64748b)}.system-meta-unified .system-dot{width:7px;height:7px;border-radius:50%;background:var(--green,#00b87a);box-shadow:0 0 8px var(--green,#00b87a);flex:0 0 auto}.system-meta-unified.is-offline .system-dot{background:var(--red,#dc2626);box-shadow:0 0 8px var(--red,#dc2626)}.system-clock-unified{color:var(--cyan,#0284c7);font-family:var(--font-mono,monospace);font-size:.72rem;letter-spacing:.08em;white-space:nowrap}.system-meta-fallback{position:fixed;top:10px;right:12px;z-index:99998;padding:7px 10px;border:1px solid var(--border,#dbe4ee);background:var(--surface,#fff)}@media(max-width:720px){.system-meta-unified{gap:5px;font-size:.62rem;letter-spacing:0}.system-clock-unified{font-size:.62rem;letter-spacing:.02em}.system-connectivity-label{display:none}}';
+    document.head.appendChild(style);
+
+    var clock=document.querySelector('[data-system-clock],#topClock,#clock');
+    if(clock){clock.classList.add('system-clock-unified');clock.setAttribute('data-system-clock','');}
+    var existing=findStatusText();
+    var meta;
+    if(existing){
+      meta=existing.closest('.status-pill')||existing;
+      meta.classList.add('system-meta-unified');
+      existing.classList.add('system-connectivity-label');
+    }else{
+      meta=document.createElement('span');
+      meta.className='system-meta-unified';
+      meta.innerHTML='<span class="system-dot" aria-hidden="true"></span><span class="system-connectivity-label">系統連線中</span>';
+      var host=document.querySelector('.topbar-right,.nav-right,.navbar,.topbar,#topbar,.statusbar-right,header');
+      if(clock&&clock.parentNode){clock.parentNode.insertBefore(meta,clock);}
+      else if(host){host.appendChild(meta);}
+      else{meta.classList.add('system-meta-fallback');document.body.appendChild(meta);}
+    }
+    var legacyDot=document.querySelector('.online-dot');
+    if(legacyDot&&!meta.contains(legacyDot))legacyDot.remove();
+
+    function update(){
+      var online=navigator.onLine;
+      meta.classList.toggle('is-offline',!online);
+      var label=meta.querySelector('.system-connectivity-label')||existing;
+      if(label)setStatusText(label,online?'系統連線中':'系統離線');
+      if(clock)clock.textContent=taipeiNow();
+    }
+    update();
+    setInterval(update,1000);
+    window.addEventListener('online',update);
+    window.addEventListener('offline',update);
+  }
   ready(function(){
+    installSystemMeta();
     var btn=document.createElement('button');
     btn.id='themeToggleBtn';
     btn.type='button';

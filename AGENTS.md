@@ -73,7 +73,10 @@ RLS is currently open (`allow_all_for_now`) for development. Storage buckets:
 - **New/changed DB columns**: `create table if not exists` won't alter an existing
   table — always add a matching `alter table … add column if not exists`.
 - **Adding a page**: give it the shared navbar/topbar, the Supabase init block, and
-  cross-links consistent with sibling pages.
+  cross-links consistent with sibling pages. Every page must load `system/theme.js`;
+  its shared system-meta component must be visible at the top and show connectivity
+  plus Asia/Taipei time in `YYYY-MM-DD HH:mm:ss` format. Do not create a second,
+  page-specific status/clock format.
 
 ## Do NOT
 - Do **not** delete `system/plans/*` — those textures/DZI tiles are used live by
