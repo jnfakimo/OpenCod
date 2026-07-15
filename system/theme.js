@@ -7,6 +7,47 @@
     var p={};parts.forEach(function(x){p[x.type]=x.value;});
     return p.year+'-'+p.month+'-'+p.day+' '+p.hour+':'+p.minute+':'+p.second;
   }
+  function installSharedHeaderActions(host,meta){
+    if(!host||!meta.classList||meta.classList.contains('system-meta-fallback'))return;
+    var page=(location.pathname.split('/').pop()||'').toLowerCase();
+    if(/^(?:index|login|app|inspection-archived|materials|materials-archived)\.html$/.test(page))return;
+
+    var style=document.createElement('style');
+    style.setAttribute('data-system-actions-style','');
+    style.textContent='.system-actions-unified{display:inline-flex;align-items:center;justify-content:flex-end;gap:10px;margin-left:0;white-space:nowrap;order:900}.system-action-unified{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:32px;padding:5px 11px;border:1px solid var(--border,#dbe4ee);border-radius:3px;background:transparent;color:var(--text-dim,#64748b);font-size:.72rem;line-height:1;text-decoration:none;white-space:nowrap;transition:border-color .2s,color .2s,background .2s}.system-action-unified:hover,.system-action-unified:focus-visible{border-color:var(--cyan,#0284c7);color:var(--cyan,#0284c7);outline:none}.system-action-unified.is-current{border-color:var(--cyan,#0284c7);color:var(--cyan,#0284c7);background:rgba(0,212,255,.08);font-weight:700}.system-actions-unified .ic{display:inline-block;width:15px;height:15px;vertical-align:middle;background-size:contain;background-repeat:no-repeat;background-position:center;flex:0 0 15px;filter:invert(1)}:root[data-theme="light"] .system-actions-unified .ic{filter:none}.system-actions-unified .ic-dashboard{background-image:url("icons/nav-dashboard.png")}.system-actions-unified .ic-dispatch{background-image:url("icons/nav-dispatch.png")}.system-action-back{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;font-family:var(--font-mono,monospace);font-size:15px;line-height:1}@media(max-width:1100px){.system-actions-unified{gap:6px;flex-wrap:wrap}.system-action-unified{padding:5px 8px}}@media(max-width:720px){.system-actions-unified{width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));order:998}.system-action-unified{min-width:0;padding:6px 3px;font-size:.62rem;gap:3px}.system-actions-unified .ic,.system-action-back{width:13px;height:13px;flex-basis:13px}}';
+    document.head.appendChild(style);
+
+    var replaceTargets={'dashboard.html':1,'workorder.html':1,'repair.html':1,'admin.html':1,'dispatch.html':1,'equipment.html':1};
+    Array.prototype.slice.call(host.children).forEach(function(child){
+      if(child===meta)return;
+      if(child.tagName==='A'){
+        var href=(child.getAttribute('href')||'').split('#')[0].split('?')[0].toLowerCase();
+        if(replaceTargets[href])child.remove();
+      }else if(child.tagName==='SPAN'&&(child.textContent||'').trim()==='後台'){
+        child.remove();
+      }
+    });
+
+    var actions=document.createElement('nav');
+    actions.className='system-actions-unified';
+    actions.setAttribute('data-system-actions','');
+    actions.setAttribute('aria-label','共用系統導覽');
+    var defs=[
+      {href:'dashboard.html',label:'戰情儀表板',icon:'<span class="ic ic-dashboard" aria-hidden="true"></span>'},
+      {href:'workorder.html',label:'報修系統',icon:'<span class="ic ic-dispatch" aria-hidden="true"></span>'},
+      {href:'repair.html',label:'完工回報',icon:'<span class="ic ic-dispatch" aria-hidden="true"></span>'},
+      {href:'admin.html',label:'後台',icon:'<span class="system-action-back" aria-hidden="true">←</span>'}
+    ];
+    defs.forEach(function(def){
+      var link=document.createElement('a');
+      link.className='system-action-unified';
+      link.href=def.href;
+      link.innerHTML=def.icon+'<span>'+def.label+'</span>';
+      if(page===def.href){link.classList.add('is-current');link.setAttribute('aria-current','page');}
+      actions.appendChild(link);
+    });
+    host.insertBefore(actions,meta);
+  }
   function installSystemMeta(){
     var style=document.createElement('style');
     style.textContent='.system-meta-unified{display:inline-flex;align-items:center;justify-content:flex-end;gap:12px;margin-left:0;white-space:nowrap;font-family:var(--font-mono,monospace);font-size:.72rem;letter-spacing:.05em;color:var(--text-dim,#64748b);order:999}.system-connectivity-unified{display:inline-flex;align-items:center;gap:7px}.system-meta-unified .system-dot{width:7px;height:7px;border-radius:50%;background:var(--green,#00b87a);box-shadow:0 0 8px var(--green,#00b87a);flex:0 0 auto}.system-meta-unified.is-offline .system-dot{background:var(--red,#dc2626);box-shadow:0 0 8px var(--red,#dc2626)}.system-user-unified{max-width:240px;overflow:hidden;text-overflow:ellipsis;color:var(--text,#334155)}.system-clock-unified{color:var(--cyan,#0284c7);font-family:var(--font-mono,monospace);font-size:.72rem;letter-spacing:.08em}.system-user-unified,.system-connectivity-unified,.system-clock-unified{padding-left:11px;border-left:1px solid var(--border,#dbe4ee)}.system-meta-fallback{position:fixed;top:10px;right:12px;z-index:99998;padding:7px 10px;border:1px solid var(--border,#dbe4ee);background:var(--surface,#fff)}@media(max-width:1100px){.system-meta-unified{justify-content:flex-end}.topbar-right,.nav-right,.navbar,.topbar,#topbar{flex-wrap:wrap}}@media(max-width:720px){.system-meta-unified{gap:6px;font-size:.61rem;letter-spacing:0}.system-user-unified{max-width:145px}.system-clock-unified{font-size:.61rem;letter-spacing:0}.system-user-unified,.system-connectivity-unified,.system-clock-unified{padding-left:6px}}';
@@ -29,6 +70,7 @@
     var host=document.querySelector('.topbar-right')||document.querySelector('.nav-right')||document.querySelector('.navbar')||document.querySelector('.topbar')||document.querySelector('#topbar')||document.querySelector('.statusbar-right')||document.querySelector('header');
     if(host)host.appendChild(meta);
     else{meta.classList.add('system-meta-fallback');document.body.appendChild(meta);}
+    installSharedHeaderActions(host,meta);
 
     var deptLookupStarted=false;
     function updateUser(){
