@@ -88,7 +88,7 @@ function showState(icon,iconClass,title,sub,backHref,backLabel){
     <div class="icon ${iconClass}">${icon}</div>
     <h1>${esc(title)}</h1>
     <div class="sub">${esc(sub)}</div>
-    <a class="btn" href="${esc(backHref||'patrollist.html')}">◀ ${esc(backLabel||'返回巡邏點清單')}</a>`;
+<span class="btn" aria-disabled="true" style="cursor:not-allowed;opacity:.55">${esc(backLabel||'巡檢系統修正中')}</span>`;
 }
 
 (async()=>{
@@ -151,7 +151,7 @@ function showState(icon,iconClass,title,sub,backHref,backLabel){
       <div><span class="k">人員</span><b>${esc(userName)}</b></div>
       <div><span class="k">時間</span><b>${esc(fmt(now))}</b></div>
     </div>
-    <a class="btn" href="${esc(backHref)}">◀ ${esc(backLabel)}</a>
+<span class="btn" aria-disabled="true" style="cursor:not-allowed;opacity:.55">${esc(backLabel)}（修正中）</span>
     <div class="hist" id="hist"></div>`;
 
   const HISTORY_PAGE_SIZE=10;
