@@ -12,8 +12,9 @@
 html,body{overflow-x:hidden;max-width:100%}
 :root{--surface:#1e293b;--border:#334155;--text:#e2e8f0;--text-dim:#94a3b8;--cyan:#818cf8;--green:#4ade80;--red:#f87171}
 :root[data-theme="light"]{--surface:#ffffff;--border:#e2e8f0;--text:#1e293b;--text-dim:#64748b;--cyan:#4f46e5;--green:#16a34a;--red:#dc2626}
-body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.system-meta-fallback{max-width:calc(100vw - 24px) !important;overflow:hidden !important;text-overflow:ellipsis}
+body{font-family:'Noto Sans TC',system-ui,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:flex-end;padding:10px 16px;min-height:48px;flex-shrink:0}
+.page{flex:1;display:flex;align-items:center;justify-content:center;padding:24px}
 .card{background:#1e293b;border:1px solid #334155;border-radius:20px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 25px 50px rgba(0,0,0,.5)}
 h1{font-size:1.5rem;font-weight:700;color:#f8fafc;margin-bottom:6px;text-align:center}
 .subtitle{font-size:.85rem;color:#64748b;text-align:center;margin-bottom:32px}
@@ -50,6 +51,8 @@ input:focus{border-color:#6366f1}
 <link rel="stylesheet" href="mobile-unified.css?v=20260713-2">
 </head>
 <body>
+<header class="topbar"></header>
+<div class="page">
 <div class="card" id="loginCard">
   <img class="brand-logo" src="assets/logo-title.png" width="416" height="280" alt="北農 BEINONG MARKET">
   <h1>臺北農產運銷股份有限公司</h1>
@@ -66,6 +69,7 @@ input:focus{border-color:#6366f1}
   <button class="btn" id="loginBtn">登入</button>
   <a class="forgot-link" id="forgotLink">忘記密碼？</a>
   <div class="err" id="errMsg"></div>
+</div>
 </div>
 
 <!-- 忘記密碼 modal -->
