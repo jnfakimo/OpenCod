@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js"></script>
-<script src="inspection-archive.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -223,7 +222,7 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 let currentPatrolView='3d', canManageModels=false;
 async function initModelAccess(){
   const {data:{session}}=await db.auth.getSession();
-  if(!session){location.href='login.html?redirect='+encodeURIComponent('inspection-archived.html');return;}
+  if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol3d.html');return;}
   try{
     const {data:profile}=await db.from('users').select('role,rbac_role,permissions,status').eq('auth_id',session.user.id).maybeSingle();
     const permissions=Array.isArray(profile?.permissions)?profile.permissions:[];
