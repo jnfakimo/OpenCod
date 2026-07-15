@@ -221,7 +221,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <div class="topbar-right">
     <a href="dashboard.html"><span class="ic ic-dashboard"></span> 戰情儀表板</a>
     <a href="workorder.html"><span class="ic ic-dispatch"></span> 報修系統</a>
-    <a href="inspection-archived.html"><span class="ic ic-inspection"></span> 巡檢</a>
+    <span aria-disabled="true" style="cursor:not-allowed;opacity:.55"><span class="ic ic-inspection"></span> 巡檢（修正中）</span>
     <a href="admin.html"><span class="ic ic-equipment"></span> 後台</a>
     <span class="nav-user" id="navUser">載入中…</span>
     <span class="clock" id="topClock">--:--:--</span>
@@ -774,8 +774,6 @@ function applyPerms() {
     window.location.replace(dest);
     return;
   }
-  if (!hasPagePerm('inspector'))
-    document.querySelectorAll('a[href="inspection-archived.html"]').forEach(el => el.style.display = 'none');
   if (!hasPagePerm('maintenance'))
     document.querySelectorAll('a[href="workorder.html"]').forEach(el => el.style.display = 'none');
 }
