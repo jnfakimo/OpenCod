@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js?v=20260715-5"></script>
-<script src="inspection-archive.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -155,8 +154,8 @@ body.controls-hidden #panelToggle{display:inline-flex}
     <button id="viewFlatBtn" class="view-btn" type="button" onclick="switchPatrolView('flat')">平面駐警巡檢</button>
   </div>
   <button id="modelUpdateBtn" class="tb-back mobile-hide" type="button" style="display:none" onclick="manualRefreshCurrentModel()"><span class="ic ic-refresh"></span> 更新目前模型</button>
-  <span class="tb-back" aria-disabled="true" style="cursor:not-allowed;opacity:.55">巡檢稽核總覽（修正中）</span>
-  <span class="tb-back mobile-hide" aria-disabled="true" style="cursor:not-allowed;opacity:.55">班別排程管理（修正中）</span>
+  <a href="guardpatrol.html" class="tb-back">巡檢稽核總覽</a>
+  <a href="patrolshifts.html" class="tb-back mobile-hide">班別排程管理</a>
   <a href="admin.html" class="tb-back mobile-hide">後台</a>
 </div>
 
@@ -223,7 +222,7 @@ const db=supabase.createClient(SUPA_URL,SUPA_KEY);
 let currentPatrolView='3d', canManageModels=false;
 async function initModelAccess(){
   const {data:{session}}=await db.auth.getSession();
-  if(!session){location.href='login.html?redirect='+encodeURIComponent('inspection-archived.html');return;}
+  if(!session){location.href='login.html?redirect='+encodeURIComponent('guardpatrol3d.html');return;}
   try{
     const {data:profile}=await db.from('users').select('role,rbac_role,permissions,status').eq('auth_id',session.user.id).maybeSingle();
     const permissions=Array.isArray(profile?.permissions)?profile.permissions:[];

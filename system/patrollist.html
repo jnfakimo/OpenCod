@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js?v=20260715-5"></script>
-<script src="inspection-archive.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -115,8 +114,8 @@ a{color:inherit;text-decoration:none}
   <a href="modeler.html"><button class="nav-back">3D建模系統</button></a>
   <a href="arealist.html"><button class="nav-back">區域位置表</button></a>
   <a href="b1_integrated_marker_system.html"><button class="nav-back">整合標記系統</button></a>
-  <button class="nav-back" type="button" disabled aria-disabled="true">巡邏點清單（修正中）</button>
-  <button class="nav-back" type="button" disabled aria-disabled="true">駐衛警巡檢系統（修正中）</button>
+  <a href="patrollist.html"><button class="nav-back">巡邏點清單</button></a>
+  <a href="guardpatrol.html"><button class="nav-back">駐衛警巡檢系統</button></a>
   <a href="admin.html#modelhub"><button class="nav-back">後台</button></a>
 </nav>
 
@@ -182,7 +181,7 @@ let rows=[];
 let lastCheckin=new Map(); // marker_id -> checkin_at (最近一次)
 const collapsed=new Set();
 let collapsedReady=false;
-const CHECKIN_BASE=location.origin+location.pathname.replace(/patrollist\.html$/,'inspection-archived.html');
+const CHECKIN_BASE=location.origin+location.pathname.replace(/patrollist\.html$/,'patrolcheckin.html');
 
 function fmtTime(t){
   const d=new Date(t);

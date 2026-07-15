@@ -220,6 +220,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   </div>
   <div class="topbar-right">
     <a href="dashboard.html"><span class="ic ic-dashboard"></span> 戰情儀表板</a>
+    <a href="app.html"><span class="ic ic-inspection"></span> 巡檢</a>
     <a href="workorder.html"><span class="ic ic-dispatch"></span> 報修系統</a>
     <a href="admin.html"><span class="ic ic-equipment"></span> 後台</a>
     <span class="nav-user" id="navUser">載入中…</span>
@@ -767,7 +768,7 @@ function hasPagePerm(key) {
 
 function applyPerms() {
   if (_handoverHasSession && !hasPagePerm('handover')) {
-    const dest = hasPagePerm('inspector') ? 'inspection-archived.html'
+    const dest = hasPagePerm('inspector') ? 'app.html'
                : hasPagePerm('maintenance') ? 'workorder.html'
                : 'login.html';
     window.location.replace(dest);

@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js?v=20260715-5"></script>
-<script src="inspection-archive.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -88,7 +87,7 @@ function showState(icon,iconClass,title,sub,backHref,backLabel){
     <div class="icon ${iconClass}">${icon}</div>
     <h1>${esc(title)}</h1>
     <div class="sub">${esc(sub)}</div>
-<span class="btn" aria-disabled="true" style="cursor:not-allowed;opacity:.55">${esc(backLabel||'巡檢系統修正中')}</span>`;
+    <a class="btn" href="${esc(backHref||'patrollist.html')}">◀ ${esc(backLabel||'返回巡邏點清單')}</a>`;
 }
 
 (async()=>{
@@ -98,7 +97,7 @@ function showState(icon,iconClass,title,sub,backHref,backLabel){
   const targetType=markerId?'marker':(spaceId?'space':null);
   const targetId=markerId||spaceId;
   if(!targetType){ showState('✕','err','無效的連結','缺少地點代碼，請重新掃描 QR code'); return; }
-  const backHref='inspection-archived.html';
+  const backHref=targetType==='marker'?'patrollist.html':'arealist.html';
   const backLabel=targetType==='marker'?'返回巡邏點清單':'返回區域位置表';
 
   const {data:{session}}=await db.auth.getSession();
@@ -151,7 +150,7 @@ function showState(icon,iconClass,title,sub,backHref,backLabel){
       <div><span class="k">人員</span><b>${esc(userName)}</b></div>
       <div><span class="k">時間</span><b>${esc(fmt(now))}</b></div>
     </div>
-<span class="btn" aria-disabled="true" style="cursor:not-allowed;opacity:.55">${esc(backLabel)}（修正中）</span>
+    <a class="btn" href="${esc(backHref)}">◀ ${esc(backLabel)}</a>
     <div class="hist" id="hist"></div>`;
 
   const HISTORY_PAGE_SIZE=10;
