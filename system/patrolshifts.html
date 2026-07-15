@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js"></script>
+<script src="inspection-archive.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -96,9 +97,9 @@ tr:last-child td{border-bottom:none}
     <div class="nav-sub">駐衛警巡檢系統 · 臺北農產 第一果菜市場</div>
   </div>
   <div class="nav-space"></div>
-  <a href="guardpatrol3d.html"><button class="nav-back">3D駐警巡檢雲台</button></a>
-  <a href="guardpatrol.html"><button class="nav-back">巡檢稽核總覽</button></a>
-  <a href="patrollist.html"><button class="nav-back">巡邏點清單</button></a>
+  <a href="inspection-archived.html"><button class="nav-back">3D駐警巡檢雲台（已封存）</button></a>
+  <a href="inspection-archived.html"><button class="nav-back">巡檢稽核總覽（已封存）</button></a>
+  <a href="inspection-archived.html"><button class="nav-back">巡邏點清單（已封存）</button></a>
   <a href="admin.html#modelhub"><button class="nav-back">後台</button></a>
 </nav>
 
@@ -165,7 +166,7 @@ tr:last-child td{border-bottom:none}
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
-(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html?redirect='+encodeURIComponent('patrolshifts.html');}})();
+(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html?redirect='+encodeURIComponent('inspection-archived.html');}})();
 function translateError(msg){
   if(!msg) return '未知錯誤';
   if(msg.includes('duplicate key value')) return '同一天已有相同名稱的班別';
