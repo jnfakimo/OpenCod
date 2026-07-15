@@ -2,6 +2,11 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<script>
+if (location.hash === '#repairs') {
+  document.documentElement.classList.add('maintenance-only');
+}
+</script>
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js?v=20260715-6"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -295,6 +300,12 @@ body{
   .user-create-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .user-create-grid .field{grid-column:span 1}
 }
+
+/* The maintenance portal uses the admin page content without its left menu. */
+html.maintenance-only .sidebar{display:none!important}
+html.maintenance-only .layout{min-height:calc(100vh - 52px)}
+html.maintenance-only .main{width:100%;padding:28px clamp(20px,4vw,64px)}
+html.maintenance-only #page-repairs{max-width:1500px;margin:0 auto}
 @media(max-width:720px){.user-create-grid{grid-template-columns:1fr}}
 .field{margin-bottom:0}
 .field label{
