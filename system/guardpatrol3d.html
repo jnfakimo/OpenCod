@@ -10,10 +10,8 @@
 <meta http-equiv="Expires" content="0">
 <title>3D駐警巡檢雲台 — 臺北農產巡檢系統</title>
 <style>
-:root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0;
-  --green:#00ff9d;--patrol:#c77dff;--red:#ff5470;--amber:#ffb300}
-:root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b;
-  --green:#059669;--patrol:#9333ea;--red:#dc2626;--amber:#b45309}
+:root{--bg:#020b18;--panel:#041428;--border:#0a3a5a;--cyan:#00d4ff;--cyan2:#00a8cc;--text:#b0d8f0;--text2:#5a8ab0;--green:#00ff9d;--patrol:#ff5470;--red:#ff5470;--amber:#ffb300}
+:root[data-theme="light"]{--bg:#f4f6fa;--panel:#ffffff;--border:#c3d4e3;--cyan:#0284c7;--cyan2:#0369a1;--text:#1e293b;--text2:#64748b;   --green:#059669;--patrol:#ff5470;--red:#dc2626;--amber:#b45309}
 /* light mode overrides */
 :root[data-theme="light"] #topbar{background:rgba(255,255,255,.97)}
 :root[data-theme="light"] #osd{background:#f8fafc;color:#1e293b}
@@ -58,12 +56,12 @@ body.mode-flat #c3d,body.mode-flat #panel,body.mode-flat #panelToggle,body.mode-
 #floors{position:fixed;right:14px;top:104px;z-index:160;background:rgba(4,20,40,.97);border:1px solid var(--border);border-radius:6px;overflow:hidden;display:none;box-shadow:0 0 22px rgba(199,125,255,.15)}
 .fbtn{display:flex;align-items:center;gap:8px;width:100%;padding:9px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);cursor:pointer;font-size:12px;text-align:left;transition:all .15s;white-space:nowrap}
 .fbtn:last-child{border-bottom:none}
-.fbtn:hover{background:rgba(199,125,255,.08)}
+.fbtn:hover{background:rgba(255,84,112,.08)}
 .fbtn .dot{width:9px;height:9px;border-radius:2px;border:1px solid var(--patrol);flex-shrink:0}
 .fbtn.on .dot{background:var(--patrol);box-shadow:0 0 6px var(--patrol)}
 .fbtn.off{color:var(--text2)}
 
-#panel{position:fixed;left:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:11px 13px;font-size:11px;line-height:1.9;min-width:165px;max-width:min(280px,calc(100vw - 28px));max-height:calc(100vh - 76px);overflow-y:auto;box-shadow:0 0 22px rgba(199,125,255,.12)}
+#panel{position:fixed;left:14px;top:62px;z-index:150;background:rgba(4,20,40,.95);border:1px solid var(--border);border-radius:6px;padding:11px 13px;font-size:11px;line-height:1.9;min-width:165px;max-width:min(280px,calc(100vw - 28px));max-height:calc(100vh - 76px);overflow-y:auto;box-shadow:0 0 22px rgba(255,84,112,.12)}
 .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:5px}
 #panel .p-t{color:var(--patrol);font-weight:700;font-size:12px}
 .panel-close{display:inline-flex;background:none;border:1px solid var(--border);color:var(--text2);border-radius:3px;padding:3px 8px;font-size:10px;cursor:pointer}
@@ -310,7 +308,7 @@ function layoutFloors(){
 
 // ── 整合標記 → 3D 拋轉（巡邏點另套班別即時上色）──────────────
 const MARK_H=6;                                  // 標記懸浮高度 (m)
-const PATROL_BASE=0xc77dff;
+const PATROL_BASE=0xff5470;
 const MARK_COL={equipment:0x00d4ff,space:0x00ff9d,patrol:PATROL_BASE,repair:0xff5470,note:0xffb300};
 const kindVis={equipment:true,space:true,patrol:true,repair:true,note:true};
 const patrolStatusVisible={ok:true,pending:true,overdue:true};
