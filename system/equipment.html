@@ -6,7 +6,7 @@
 <script src="theme.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>設備建置與生命週期管理 — 臺北農產</title>
+<title>設備建置與生命週期管理 — 臺北農產公司</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
@@ -446,14 +446,14 @@ function styleExportSheet(wb,name,rows){
   headers.forEach((h,i)=>{let width=Math.max(10,Math.min(22,h.length*2+3));rows.slice(0,200).forEach(row=>{const v=row[h];if(v instanceof Date)return;const len=String(v??'').length;width=Math.max(width,Math.min(34,len+3));});if((opt.urls||[]).includes(h))width=16;if(/備註|內容|原因|處理方式|服務內容|位置說明/.test(h))width=28;if(/日期|保固|保養$|最後同步|最後收到/.test(h))width=Math.max(width,13);ws.getColumn(i+1).width=width;});
   const lastRow=Math.max(1,rows.length+1);ws.autoFilter={from:{row:1,column:1},to:{row:lastRow,column:headers.length}};ws.properties.defaultRowHeight=23;
   ws.pageSetup={paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:0.25,right:0.25,top:0.5,bottom:0.5,header:0.2,footer:0.2},printTitlesRow:'1:1'};
-  ws.headerFooter={oddHeader:`&C&"Microsoft JhengHei,Bold"臺北農產運銷股份有限公司 第一果菜市場｜${name}`,oddFooter:'&L設備生命週期管理&R第 &P 頁／共 &N 頁'};
+  ws.headerFooter={oddHeader:`&C&"Microsoft JhengHei,Bold"臺北農產公司 第一果菜市場｜${name}`,oddFooter:'&L設備生命週期管理&R第 &P 頁／共 &N 頁'};
   ws.properties.tabColor={argb:name==='設備總表'?'FF00A6C8':'FF4F86A6'};
   return ws;
 }
 
 function buildExportSummary(wb,rowsBySheet){
   const ws=wb.addWorksheet('匯出說明',{views:[{showGridLines:false}]});
-  ws.mergeCells('A1:F1');ws.getCell('A1').value='臺北農產運銷股份有限公司 第一果菜市場';ws.getCell('A1').font={name:'Microsoft JhengHei',size:18,bold:true,color:{argb:'FFFFFFFF'}};ws.getCell('A1').fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF083B55'}};ws.getCell('A1').alignment={horizontal:'center',vertical:'middle'};ws.getRow(1).height=36;
+  ws.mergeCells('A1:F1');ws.getCell('A1').value='臺北農產公司 第一果菜市場';ws.getCell('A1').font={name:'Microsoft JhengHei',size:18,bold:true,color:{argb:'FFFFFFFF'}};ws.getCell('A1').fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF083B55'}};ws.getCell('A1').alignment={horizontal:'center',vertical:'middle'};ws.getRow(1).height=36;
   ws.mergeCells('A2:F2');ws.getCell('A2').value='設備生命週期管理｜完整資料匯出';ws.getCell('A2').font={name:'Microsoft JhengHei',size:13,bold:true,color:{argb:'FF075985'}};ws.getCell('A2').alignment={horizontal:'center',vertical:'middle'};ws.getRow(2).height=28;
   const now=new Date(),metadata=[['匯出日期',`${todayISO()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`],['匯出範圍','完整資料（不受頁面搜尋、樓層或類別篩選影響）'],['設備總數',state.assets.length],['運轉中',state.assets.filter(x=>x.status==='active').length]];
   metadata.forEach((v,i)=>{const r=ws.getRow(i+4);r.values=[v[0],v[1]];r.getCell(1).font={name:'Microsoft JhengHei',bold:true,color:{argb:'FF075985'}};r.getCell(2).font={name:'Microsoft JhengHei',color:{argb:'FF263746'}};});
@@ -467,7 +467,7 @@ let exportingWorkbook=false;
 async function exportWorkbook(){
   if(exportingWorkbook)return;if(typeof ExcelJS==='undefined'){toast('XLSX 排版元件載入失敗，請重新整理後再試。',true);return;}if(!state.assets.length){toast('目前沒有設備資料可匯出。',true);return;}
   exportingWorkbook=true;toast('正在整理完整設備資料…');
-  try{const rowsBySheet=buildExportRows(),wb=new ExcelJS.Workbook();wb.creator='臺北農產設備建置系統';wb.company='臺北農產運銷股份有限公司';wb.subject='第一果菜市場設備生命週期管理';wb.created=new Date();buildExportSummary(wb,rowsBySheet);Object.keys(rowsBySheet).forEach(name=>styleExportSheet(wb,name,rowsBySheet[name]));
+  try{const rowsBySheet=buildExportRows(),wb=new ExcelJS.Workbook();wb.creator='臺北農產設備建置系統';wb.company='臺北農產公司';wb.subject='第一果菜市場設備生命週期管理';wb.created=new Date();buildExportSummary(wb,rowsBySheet);Object.keys(rowsBySheet).forEach(name=>styleExportSheet(wb,name,rowsBySheet[name]));
     const buffer=await wb.xlsx.writeBuffer(),blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),url=URL.createObjectURL(blob),a=document.createElement('a'),now=new Date();a.href=url;a.download=`設備生命週期_${todayISO()}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}.xlsx`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);toast(`已匯出 ${state.assets.length} 台設備完整資料`);
   }catch(e){console.error(e);toast('匯出失敗：'+e.message,true);}finally{exportingWorkbook=false;}
 }
