@@ -285,6 +285,17 @@ body{
 /* ===== FORM ===== */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media(max-width:640px){.form-grid{grid-template-columns:1fr}}
+.user-create-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px 18px;align-items:end}
+.user-create-grid .field{min-width:0;margin-bottom:0}
+.user-create-grid .field-name,.user-create-grid .field-pass{grid-column:span 3}
+.user-create-grid .field-username,.user-create-grid .field-phone{grid-column:span 4}
+.user-create-grid .field-email,.user-create-grid .field-dept-l1{grid-column:span 5}
+.user-create-grid .field-dept-l2,.user-create-grid .field-role{grid-column:span 6}
+@media(max-width:1200px){
+  .user-create-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .user-create-grid .field{grid-column:span 1}
+}
+@media(max-width:720px){.user-create-grid{grid-template-columns:1fr}}
 .field{margin-bottom:0}
 .field label{
   display:block;font-size:0.68rem;
@@ -674,15 +685,15 @@ body{
       <div class="page-header"><h2><span class="section-icon"><img src="../assets/system-icons/account-icon.png" alt=""></span> 帳號管理</h2><p>帳號與角色權限管理</p></div>
       <div class="panel">
         <div class="panel-title">新增帳號</div>
-        <div class="form-grid">
-          <div class="field"><label>姓名</label><input id="u-name" type="text" placeholder="姓名"></div>
-          <div class="field"><label>登入帳號（英數字/底線）</label><input id="u-username" type="text" placeholder="例：tcfm_admin" autocomplete="off"></div>
-          <div class="field"><label>電子郵件（密碼找回用）</label><input id="u-email" type="email" placeholder="user@example.com"></div>
-          <div class="field"><label>初始密碼</label><input id="u-pass" type="password" placeholder="至少 6 碼"></div>
-          <div class="field"><label>電話</label><input id="u-phone" type="text" placeholder="聯絡電話"></div>
-          <div class="field"><label>第一層部門</label><select id="u-dept-l1" onchange="onAdminDeptL1Change()"><option value="">-- 選擇第一層 --</option></select></div>
-          <div class="field"><label>第二層（課）</label><select id="u-dept-l2" disabled><option value="">-- 無下級單位 --</option></select></div>
-          <div class="field"><label>角色</label>
+        <div class="user-create-grid">
+          <div class="field field-name"><label>姓名</label><input id="u-name" type="text" placeholder="請輸入姓名" autocomplete="name"></div>
+          <div class="field field-username"><label>登入帳號（英數字／底線）</label><input id="u-username" type="text" placeholder="例：tcfm_admin" autocomplete="off"></div>
+          <div class="field field-email"><label>電子郵件（密碼找回用）</label><input id="u-email" type="email" placeholder="user@example.com" autocomplete="email"></div>
+          <div class="field field-pass"><label>初始密碼（至少 6 碼）</label><input id="u-pass" type="password" placeholder="請輸入初始密碼" autocomplete="new-password"></div>
+          <div class="field field-phone"><label>聯絡電話</label><input id="u-phone" type="tel" placeholder="市話或手機號碼" autocomplete="tel"></div>
+          <div class="field field-dept-l1"><label>第一層部門</label><select id="u-dept-l1" onchange="onAdminDeptL1Change()"><option value="">-- 選擇第一層 --</option></select></div>
+          <div class="field field-dept-l2"><label>第二層部門（課）</label><select id="u-dept-l2" disabled><option value="">-- 無下級單位 --</option></select></div>
+          <div class="field field-role"><label>角色</label>
             <select id="u-role" onchange="applyRolePreset('c')">
               <option value="reporter">一般報修人員</option>
               <option value="duty">值班人員</option>
