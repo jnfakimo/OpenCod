@@ -159,7 +159,7 @@ function safeRedirect(target) {
   return null;
 }
 function getRedirectTarget(profile) {
-  return safeRedirect(new URLSearchParams(window.location.search).get('redirect')) || getLoginRoute(profile);
+  return 'index.html';
 }
 function getLoginRoute(profile) {
   if (!profile.rbac_role) {
