@@ -109,7 +109,7 @@ const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const ROLE_ROUTES = {
   admin:       'admin.html',
   supervisor:  'admin.html',
-  inspector:   'app.html',
+  inspector:   'inspection-archived.html',
   maintenance: 'workorder.html?v=reporter-20260701',
 };
 const RBAC_ROLES = {
@@ -146,6 +146,7 @@ function hasPermission(profile, key) {
 
 function safeRedirect(target) {
   if (!target) return null;
+  if (/^(?:app|guardpatrol|guardpatrol3d|patrollist|patrolcheckin|patrolshifts|setup|b1plan)\.html(?:\?.*)?$/.test(target)) return 'inspection-archived.html';
   if (/^[A-Za-z0-9_\-]+\.html(\?[A-Za-z0-9_\-=&%.]*)?$/.test(target)) return target;
   return null;
 }
@@ -157,18 +158,18 @@ function getLoginRoute(profile) {
     const p = profile.permissions || {};
     if (profile.role === 'admin' || profile.role === 'supervisor') return 'admin.html';
     if (profile.role === 'inspector') {
-      if (p.inspector !== false) return 'app.html';
+      if (p.inspector !== false) return 'inspection-archived.html';
       if (p.handover !== false) return 'handover.html';
       if (p.maintenance !== false) return 'workorder.html?v=reporter-20260701';
-      return 'app.html';
+      return 'inspection-archived.html';
     }
     if (profile.role === 'maintenance') {
       if (p.maintenance !== false) return 'workorder.html?v=reporter-20260701';
-      if (p.inspector !== false) return 'app.html';
+      if (p.inspector !== false) return 'inspection-archived.html';
       if (p.handover !== false) return 'handover.html';
       return 'workorder.html?v=reporter-20260701';
     }
-    return ROLE_ROUTES[profile.role] || 'app.html';
+    return ROLE_ROUTES[profile.role] || 'inspection-archived.html';
   }
 
   const roleId = normalizeRoleId(profile);
@@ -176,7 +177,7 @@ function getLoginRoute(profile) {
   if (roleId === 'unit_supervisor' || roleId === 'mgmt_supervisor') return 'admin.html';
   if (hasPermission(profile, 'maintenance') || hasPermission(profile, 'dispatch') || hasPermission(profile, 'update') || hasPermission(profile, 'create') || hasPermission(profile, 'repair')) return 'workorder.html?v=reporter-20260701';
   if (hasPermission(profile, 'handover')) return 'handover.html';
-  if (hasPermission(profile, 'inspector')) return 'app.html';
+  if (hasPermission(profile, 'inspector')) return 'inspection-archived.html';
   return ROLE_ROUTES[profile.role] || 'workorder.html?v=reporter-20260701';
 }
 

@@ -231,6 +231,10 @@
     transition:transform .2s;
   }
   .sys-card:hover .card-enter-arrow{transform:translateX(4px)}
+  .sys-card.module-archived{opacity:.58;filter:grayscale(.45)}
+  .sys-card.module-archived:hover{border-color:var(--border-hi);transform:none;box-shadow:none}
+  .module-status{display:inline-flex;align-items:center;margin:0 0 14px;padding:4px 9px;border:1px solid var(--card-color);color:var(--card-color);font-size:.68rem;letter-spacing:.08em}
+  .module-archived .card-enter{color:var(--text-dim);background:transparent}
 
   /* card color tokens */
   .card-admin   { --card-color:var(--cyan);  --card-rgb:0,212,255  }
@@ -339,14 +343,15 @@
       <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
     </a>
 
-    <a class="sys-card card-inspect" href="guardpatrol.html">
+    <a class="sys-card card-inspect module-archived" href="inspection-archived.html" aria-label="駐警隊巡檢系統（已封存）">
       <span class="card-icon" aria-hidden="true">
         <img src="../assets/system-icons/guardpatrol-icon.png" alt="">
       </span>
       <div class="card-sys-id">SYS-03 ｜ GUARD PATROL</div>
       <div class="card-title">駐警隊巡檢系統</div>
       <div class="card-desc">行動端QR掃描巡邏、異常回報、離線暫存與即時同步上傳。</div>
-      <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
+      <div class="module-status">目前已封存</div>
+      <div class="card-enter">暫停使用 <span class="card-enter-arrow">—</span></div>
     </a>
 
     <a class="sys-card card-handover" href="handover.html">

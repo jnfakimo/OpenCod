@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
 <script src="theme.js"></script>
+<script src="inspection-archive.js"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
@@ -97,7 +98,7 @@ function showState(icon,iconClass,title,sub,backHref,backLabel){
   const targetType=markerId?'marker':(spaceId?'space':null);
   const targetId=markerId||spaceId;
   if(!targetType){ showState('✕','err','無效的連結','缺少地點代碼，請重新掃描 QR code'); return; }
-  const backHref=targetType==='marker'?'patrollist.html':'arealist.html';
+  const backHref='inspection-archived.html';
   const backLabel=targetType==='marker'?'返回巡邏點清單':'返回區域位置表';
 
   const {data:{session}}=await db.auth.getSession();
