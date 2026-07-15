@@ -609,6 +609,7 @@ body{
   <div class="topbar-right">
     <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'"><img src="../assets/system-icons/admin-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 戰情儀表板</a>
     <a href="workorder.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="報修派工系統"><img src="../assets/system-icons/maintenance-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 報修系統</a>
+    <a href="repair.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="維修完工回報"><img src="../assets/system-icons/maintenance-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 完工回報</a>
     <a href="app.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'"><img src="../assets/system-icons/guardpatrol-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 巡檢</a>
     <span style="font-size:.7rem;color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600"><img src="../assets/system-icons/admin-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 後台</span>
     <span><span class="online-dot"></span>系統連線中</span>
@@ -624,6 +625,7 @@ body{
       <h1><span class="section-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span> 後台管理系統</h1>
     </div>
     <nav class="sidebar-nav">
+      <a class="nav-item" href="index.html" style="border-bottom: 1px solid var(--border); margin-bottom: 8px; color: var(--cyan);"><span class="nav-icon"><img src="../assets/system-icons/settings-icon.png" alt="" style="filter: brightness(1.2) hue-rotate(120deg)"></span> ← 系統入口首頁</a>
       <a class="nav-item" href="dashboard.html"><span class="nav-icon"><img src="../assets/system-icons/admin-icon.png" alt=""></span> 戰情儀表板</a>
       <div class="nav-item" data-page="settings"><span class="nav-icon"><img src="../assets/system-icons/settings-icon.png" alt=""></span> 系統設定</div>
       <div class="nav-item" data-page="users"><span class="nav-icon"><img src="../assets/system-icons/account-icon.png" alt=""></span> 帳號管理</div>
@@ -631,6 +633,7 @@ body{
       <a class="nav-item" href="materials.html"><span class="nav-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 設備材料管理</a>
       <div class="nav-item" data-page="repairs"><span class="nav-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 報修 &amp; 維修</div>
       <a class="nav-item" href="dispatch.html"><span class="nav-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 派工系統</a>
+      <a class="nav-item" href="repair.html"><span class="nav-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></span> 維修完工</a>
       <a class="nav-item" href="handover.html"><span class="nav-icon"><img src="../assets/system-icons/handover-icon.png" alt=""></span> 電子交接簿</a>
       <a class="nav-item" href="guardpatrol.html"><span class="nav-icon"><img src="../assets/system-icons/guardpatrol-icon.png" alt=""></span> 駐衛警巡檢系統</a>
       <div class="nav-item" data-page="modelhub"><span class="nav-icon"><img src="../assets/system-icons/equipment-icon.png" alt=""></span> 3D雲台建模</div>
@@ -1291,10 +1294,56 @@ body{
         <label>可使用系統（功能選單）</label>
         <div id="perm-e-list" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px 14px;padding:6px 0"></div>
       </div>
+      <!-- 密碼重設區塊 -->
+      <div class="field" style="grid-column:1/-1;margin-top:4px">
+        <div style="border:1px solid rgba(255,179,0,.3);border-radius:3px;overflow:hidden">
+          <div onclick="toggleEditPwSection()" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,179,0,.06);cursor:pointer;user-select:none">
+            <span style="font-size:.8rem;color:var(--amber);font-weight:700;letter-spacing:.06em">🔑 重設密碼（選填）</span>
+            <span id="editPwToggleIcon" style="color:var(--text-dim);font-size:.8rem;transition:transform .2s">&#9660;</span>
+          </div>
+          <div id="editPwSection" style="display:none;padding:12px 14px;border-top:1px solid rgba(255,179,0,.2);background:rgba(2,8,20,.4)">
+            <p style="font-size:.75rem;color:var(--text-dim);margin-bottom:10px">若不需要變更密碼，請保持空白。填寫密碼則儲存時同步重設。</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div class="field">
+                <label>新密碼（至少 6 碼）</label>
+                <input id="edit-u-newpw" type="password" placeholder="不變更請留空" autocomplete="new-password">
+              </div>
+              <div class="field">
+                <label>確認新密碼</label>
+                <input id="edit-u-newpw2" type="password" placeholder="再輸一次" autocomplete="new-password">
+              </div>
+            </div>
+            <div id="editPwMsg" style="font-size:.76rem;min-height:1em;color:var(--text-dim)"></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-sm" style="background:rgba(12,40,64,0.6);color:var(--text-dim);border:1px solid var(--border)" onclick="closeModal('editUserModal')">取消</button>
       <button class="btn btn-primary btn-sm" onclick="saveEditUser()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="modal-bg" id="resetPwModal">
+  <div class="modal">
+    <div class="modal-title">🔑 重設密碼</div>
+    <p id="resetPwTarget" style="font-size:.85rem;color:var(--text-dim);margin-bottom:16px"></p>
+    <div class="form-grid">
+      <div class="field" style="grid-column:1/-1">
+        <label>新密碼（至少 6 碼）</label>
+        <input id="reset-new-pw" type="password" placeholder="輸入新密碼" autocomplete="new-password">
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>確認新密碼</label>
+        <input id="reset-new-pw2" type="password" placeholder="再次輸入新密碼" autocomplete="new-password">
+      </div>
+    </div>
+    <div id="resetPwMsg" style="font-size:.8rem;min-height:1.4em;margin:8px 0;padding:6px;border-radius:2px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-sm" style="background:rgba(12,40,64,0.6);color:var(--text-dim);border:1px solid var(--border)" onclick="closeModal('resetPwModal')">取消</button>
+      <button class="btn btn-primary btn-sm" id="resetPwSaveBtn" onclick="doResetUserPw()">確認重設</button>
     </div>
   </div>
 </div>
@@ -1742,11 +1791,26 @@ function editUser(userId) {
   document.getElementById('edit-u-phone').value = u.phone || '';
   document.getElementById('edit-u-username').value = u.username || '';
   document.getElementById('edit-u-email').value = u.email || '—';
+  // 清空密碼欄位
+  document.getElementById('edit-u-newpw').value = '';
+  document.getElementById('edit-u-newpw2').value = '';
+  document.getElementById('editPwMsg').textContent = '';
+  document.getElementById('editPwSection').style.display = 'none';
+  document.getElementById('editPwToggleIcon').innerHTML = '&#9660;';
   const rbacRole = normalizeRoleId(u);
   document.getElementById('edit-u-role').value = rbacRole;
   populateEditUserDeptSelects(u.dept_id || null);
   renderPermissionList('e', normalizePermissions(u.permissions, rbacRole));
   document.getElementById('editUserModal').classList.add('show');
+}
+
+function toggleEditPwSection() {
+  const sec = document.getElementById('editPwSection');
+  const icon = document.getElementById('editPwToggleIcon');
+  const isOpen = sec.style.display !== 'none';
+  sec.style.display = isOpen ? 'none' : 'block';
+  icon.innerHTML = isOpen ? '&#9660;' : '&#9650;';
+  if (!isOpen) document.getElementById('edit-u-newpw').focus();
 }
 
 async function saveEditUser() {
@@ -1757,17 +1821,62 @@ async function saveEditUser() {
   const rbacRole = document.getElementById('edit-u-role').value;
   const role   = legacyRoleForRbac(rbacRole);
   const deptId = document.getElementById('edit-u-dept-l2').value || document.getElementById('edit-u-dept-l1').value || null;
+  const newPw  = document.getElementById('edit-u-newpw').value;
+  const newPw2 = document.getElementById('edit-u-newpw2').value;
+  const pwMsg  = document.getElementById('editPwMsg');
+
   if (!name) { showToast('請填寫姓名', true); return; }
   if (!/^[一-龥]{2,10}$/.test(name)) { showToast('姓名格式錯誤，請輸入 2~10 個中文字', true); return; }
   if (!username) { showToast('請填寫登入帳號', true); return; }
   if (!/^[a-zA-Z0-9_]+$/.test(username)) { showToast('帳號格式錯誤：僅限英數字與底線', true); return; }
+
+  // 密碼驗證（如果有填寫）
+  if (newPw) {
+    if (newPw.length < 6) {
+      pwMsg.textContent = '密碼至少需要 6 個字元'; pwMsg.style.color = 'var(--red)';
+      document.getElementById('editPwSection').style.display = 'block';
+      document.getElementById('editPwToggleIcon').innerHTML = '&#9650;';
+      return;
+    }
+    if (newPw !== newPw2) {
+      pwMsg.textContent = '兩次密碼不一致'; pwMsg.style.color = 'var(--red)';
+      document.getElementById('editPwSection').style.display = 'block';
+      document.getElementById('editPwToggleIcon').innerHTML = '&#9650;';
+      return;
+    }
+  }
+
   const permissions = collectPermissionValues('e');
   const before = userMap[userId];
   const updates = { name, username, phone: phone || null, role, rbac_role: rbacRole, dept_id: deptId, permissions };
   const { error } = await db.from('users').update(updates).eq('user_id', userId);
   if (error) { showToast('儲存失敗：' + translateError(error.message), true); return; }
+
+  // 密碼同步重設
+  if (newPw) {
+    pwMsg.textContent = '密碼重設中…'; pwMsg.style.color = 'var(--cyan)';
+    const targetEmail = document.getElementById('edit-u-email').value;
+    const { error: rpcErr } = await db.rpc('admin_reset_user_password', {
+      p_email: targetEmail,
+      p_new_password: newPw
+    });
+    if (rpcErr) {
+      // fallback: 寄送重設信
+      const redirectTo = window.location.origin + '/word-cloud/system/login.html';
+      const { error: mailErr } = await db.auth.resetPasswordForEmail(targetEmail, { redirectTo });
+      if (mailErr) {
+        showToast('資料儲存成功，但密碼重設失敗：' + translateError(mailErr.message), true);
+      } else {
+        showToast(`資料已更新，密碼重設信已寄至 ${targetEmail}`);
+      }
+    } else {
+      showToast(`使用者「${name}」已更新，密碼同步重設完成`);
+    }
+  } else {
+    showToast(`使用者「${name}」已更新`);
+  }
+
   await writeAudit('users', userId, 'update', { name: before?.name, phone: before?.phone, role: before?.role, rbac_role: before?.rbac_role, dept_id: before?.dept_id, permissions: before?.permissions }, updates);
-  showToast(`使用者「${name}」已更新`);
   closeModal('editUserModal');
   await loadUsers();
 }
@@ -1837,6 +1946,7 @@ function renderUsers(users) {
     <td><span class="badge ${u.status === 'active' ? 'badge-active' : 'badge-inactive'}">${u.status === 'active' ? '啟用' : '停用'}</span></td>
     <td style="display:flex;gap:6px;flex-wrap:wrap">
       <button class="btn btn-primary btn-sm" onclick="editUser('${u.user_id}')">編輯</button>
+      <button class="btn btn-sm" style="border:1px solid var(--amber);color:var(--amber);background:rgba(255,179,0,.08)" onclick="openResetPwModal('${u.user_id}','${escHtml(u.name)}','${escHtml(u.email||'')}')">🔑 重設密碼</button>
       ${u.status === 'active' && u.user_id !== currentUser.user_id ? `<button class="btn btn-warn btn-sm" onclick="toggleUserStatus('${u.user_id}','inactive')">停用</button>` : ''}
       ${u.status === 'inactive' ? `<button class="btn btn-primary btn-sm" onclick="toggleUserStatus('${u.user_id}','active')">啟用</button>` : ''}
     </td>
@@ -2017,16 +2127,41 @@ async function importUsersXlsx() {
     const userRole = legacyRoleForRbac(rbacRole);
     const permissions = defaultPermsForRole(rbacRole);
     const { data: authData, error: authErr } = await db.auth.signUp({ email, password: pwd });
-    if (authErr) {
+
+    // 情況 A：Email 確認開啟 → error 'User already registered'
+    // 情況 B：Email 確認關閉 → 無 error，但 identities = [] 表示 email 已存在
+    const isTaken = authErr?.message === 'User already registered' ||
+      (!authErr && authData?.user && authData.user.identities?.length === 0);
+
+    if (authErr && !isTaken) {
       log.innerHTML += `<div style="color:var(--red)">第 ${i+2} 行「${name}」：${translateError(authErr.message)}</div>`; failed++; continue;
     }
-    const profile = { auth_id: authData.user.id, name, username, email, phone: phone || null, role: userRole, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser?.user_id };
+
+    let finalAuthId = authData?.user?.id;
+
+    if (isTaken) {
+      // 檢查 users 表是否已有 profile
+      const { data: existProf } = await db.from('users').select('user_id,name,status').eq('email', email).maybeSingle();
+      if (existProf) {
+        log.innerHTML += `<div style="color:var(--text-dim)">第 ${i+2} 行「${name}」：Email 已有帳號「${existProf.name}」，跳過</div>`; skipped++; continue;
+      }
+      // 孤立帳號 → 嘗試用 RPC 取得 auth_id 後補建 profile
+      const { data: orphanId, error: rpcErr } = await db.rpc('get_auth_user_id_by_email', { p_email: email });
+      if (rpcErr || !orphanId) {
+        log.innerHTML += `<div style="color:var(--amber)">第 ${i+2} 行「${name}」：偵測到孤立帳號，但無法自動取得認證 ID，請至 Supabase 建立 get_auth_user_id_by_email 函式後重試</div>`; failed++; continue;
+      }
+      finalAuthId = orphanId;
+      log.innerHTML += `<div style="color:var(--amber)">第 ${i+2} 行「${name}」：偵測到孤立帳號，自動補建 profile…</div>`;
+    }
+
+    const profile = { auth_id: finalAuthId, name, username, email, phone: phone || null, role: userRole, rbac_role: rbacRole, permissions, status: 'active', created_by: currentUser?.user_id };
     const { error: profErr } = await db.from('users').insert(profile);
     if (profErr) {
       log.innerHTML += `<div style="color:var(--red)">第 ${i+2} 行「${name}」：${translateError(profErr.message)}</div>`; failed++; continue;
     }
     const pwdNote = !password ? `<span style="color:var(--amber)">（臨時密碼：${pwd}）</span>` : '';
-    log.innerHTML += `<div style="color:var(--green)">✓ 「${name}」（${username}）匯入成功 ${pwdNote}</div>`;
+    const repairNote = isTaken ? `<span style="color:var(--amber)">【孤立帳號修復】</span>` : '';
+    log.innerHTML += `<div style="color:var(--green)">✓ 「${name}」（${username}）匯入成功 ${repairNote}${pwdNote}</div>`;
     success++;
     log.scrollTop = log.scrollHeight;
   }
@@ -2050,11 +2185,31 @@ async function createUser() {
   if (!/^[A-Za-z0-9_]+$/.test(username)) { showToast('帳號僅限英文、數字、底線', true); return; }
 
   const { data: authData, error: authErr } = await db.auth.signUp({ email, password: pass });
-  if (authErr) {
-    if (authErr.message === 'User already registered') {
-      showToast('此 Email 已被註冊，請換一個 Email 或確認帳號是否已存在', true);
+
+  // 情況 A：Email 確認開啟 → authErr = 'User already registered'
+  // 情況 B：Email 確認關閉 → 無 error，但 identities = [] 表示 email 已存在
+  const isEmailTaken =
+    authErr?.message === 'User already registered' ||
+    (!authErr && authData?.user && (authData.user.identities?.length === 0));
+
+  if (authErr && !isEmailTaken) {
+    showToast('建立帳號失敗：' + translateError(authErr.message), true);
+    return;
+  }
+
+  if (isEmailTaken) {
+    const { data: existProf } = await db.from('users').select('user_id,name,status').eq('email', email).maybeSingle();
+    if (existProf) {
+      const statusTxt = existProf.status === 'active' ? '（啟用中）' : '（已停用）';
+      showToast(`此 Email 已有帳號「${existProf.name}」${statusTxt}，請至帳號清單查看`, true);
     } else {
-      showToast('建立帳號失敗：' + translateError(authErr.message), true);
+      if (confirm(`⚠️ 偵測到孤立帳號
+
+此 Email（${email}）在認證系統已存在，但帳號清單沒有資料。
+
+點「確定」自動修復，建立使用者資料`)) {
+        await forceCreateOrphanProfile({ name, username, email, phone, deptId, rbacRole, role });
+      }
     }
     return;
   }
@@ -2073,6 +2228,99 @@ async function createUser() {
   document.getElementById('u-role').value = 'reporter';
   applyRolePreset('c');
   await loadUsers();
+}
+
+// ─── 修復孤立帳號：Auth 存在但 users 無 profile ─────────────────────────────────
+async function forceCreateOrphanProfile({ name, username, email, phone, deptId, rbacRole, role }) {
+  // 嘗試透過 RPC 取得孤立 auth user 的 auth_id
+  let authId = null;
+  const { data: rpcId, error: rpcErr } = await db.rpc('get_auth_user_id_by_email', { p_email: email });
+  if (!rpcErr && rpcId) {
+    authId = rpcId;
+  } else {
+    // RPC 不存在：fallback — 用不存在的 uuid 代替，後續須手動對掃
+    showToast('無法自動取得認證 ID，請先建立以下 SQL 函式再重試（見底部說明）', true);
+    return;
+  }
+  const permissions = collectPermissionValues('c');
+  const profile = {
+    auth_id: authId, name, username, email,
+    phone: phone || null, dept_id: deptId,
+    role, rbac_role: rbacRole, permissions,
+    status: 'active', created_by: currentUser.user_id
+  };
+  const { error: profErr } = await db.from('users').insert(profile);
+  if (profErr) { showToast('修復失敗：' + translateError(profErr.message), true); return; }
+  await writeAudit('users', authId, 'insert', null, { ...profile, _note: '孤立帳號修復' });
+  showToast(`✅ 帳號「${name}」修復建立成功！請使用「重設密碼」功能更新密碼`);
+  ['u-name','u-username','u-email','u-pass','u-phone'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('u-dept-l1').value = '';
+  document.getElementById('u-dept-l2').innerHTML = '<option value="">—— 無下級單位 ——</option>';
+  document.getElementById('u-dept-l2').disabled = true;
+  document.getElementById('u-role').value = 'reporter';
+  applyRolePreset('c');
+  await loadUsers();
+}
+
+// ─── 管理員重設使用者密碼 ─────────────────────────────────────────────────────
+let _resetTargetEmail = '';
+
+function openResetPwModal(userId, name, email) {
+  _resetTargetEmail = email;
+  document.getElementById('resetPwTarget').textContent = `對象：${name}（${email}）`;
+  document.getElementById('reset-new-pw').value = '';
+  document.getElementById('reset-new-pw2').value = '';
+  const msg = document.getElementById('resetPwMsg');
+  msg.textContent = ''; msg.style.cssText = '';
+  document.getElementById('resetPwModal').classList.add('show');
+}
+
+async function doResetUserPw() {
+  const pw  = document.getElementById('reset-new-pw').value;
+  const pw2 = document.getElementById('reset-new-pw2').value;
+  const msg = document.getElementById('resetPwMsg');
+  const btn = document.getElementById('resetPwSaveBtn');
+  msg.textContent = ''; msg.style.cssText = '';
+
+  if (pw.length < 6) {
+    msg.textContent = '密碼至少需要 6 個字元'; msg.style.color = 'var(--red)'; return;
+  }
+  if (pw !== pw2) {
+    msg.textContent = '兩次密碼不一致'; msg.style.color = 'var(--red)'; return;
+  }
+  if (!_resetTargetEmail) {
+    msg.textContent = '找不到使用者 Email'; msg.style.color = 'var(--red)'; return;
+  }
+
+  btn.disabled = true; btn.textContent = '處理中…';
+
+  // 步驟一：呼叫 Supabase RPC admin_reset_user_password（需 DB function）
+  const { error: rpcErr } = await db.rpc('admin_reset_user_password', {
+    p_email: _resetTargetEmail,
+    p_new_password: pw
+  });
+
+  if (rpcErr) {
+    // 若 RPC 不存在，改用寄送重設信（fallback）
+    const redirectTo = window.location.origin + '/word-cloud/system/login.html';
+    const { error: mailErr } = await db.auth.resetPasswordForEmail(_resetTargetEmail, { redirectTo });
+    if (mailErr) {
+      msg.textContent = '重設失敗：' + translateError(mailErr.message);
+      msg.style.cssText = 'color:var(--red);background:rgba(255,59,59,.06);border:1px solid rgba(255,59,59,.2);padding:8px;border-radius:2px';
+    } else {
+      msg.textContent = '✅ 已發送密碼重設信至 ' + _resetTargetEmail + '，請通知使用者收信。';
+      msg.style.cssText = 'color:var(--green);background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.2);padding:8px;border-radius:2px';
+      showToast('重設信已寄出');
+      setTimeout(() => closeModal('resetPwModal'), 3000);
+    }
+  } else {
+    msg.textContent = '✅ 密碼已重設完成！';
+    msg.style.cssText = 'color:var(--green);background:rgba(0,255,157,.06);border:1px solid rgba(0,255,157,.2);padding:8px;border-radius:2px';
+    showToast(`${_resetTargetEmail} 密碼已重設`);
+    setTimeout(() => closeModal('resetPwModal'), 2000);
+  }
+
+  btn.disabled = false; btn.textContent = '確認重設';
 }
 
 async function toggleUserStatus(userId, status) {

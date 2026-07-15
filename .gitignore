@@ -1,4 +1,4 @@
-﻿# Google Drive 系統檔
+# Google Drive 系統檔
 desktop.ini
 *.tmp
 ~$*
@@ -14,3 +14,7 @@ credentials.*
 # Node.js
 node_modules/
 package-lock.json
+
+# Playwright MCP temp
+.playwright-mcp/
+generated/

@@ -301,9 +301,12 @@
         <span>系統連線中</span>
       </div>
       <span style="color:var(--text-dim)" data-sysname="site">第一果菜市場</span>
+      <span style="color:var(--border); margin:0 4px">|</span>
+      <span id="userInfo" style="color:var(--text-hi); font-weight:700">載入用戶中...</span>
     </div>
-    <div class="statusbar-right">
+    <div class="statusbar-right" style="display:flex; align-items:center; gap:16px;">
       <span id="clock">--:--:--</span>
+      <button id="logoutBtn" style="background:none; border:1px solid var(--red); color:var(--red); padding:3px 12px; border-radius:4px; cursor:pointer; font-size:0.68rem; font-family:var(--font-mono); transition:all 0.2s;" onmouseover="this.style.background='var(--red)'; this.style.color='#fff'; this.style.boxShadow='0 0 8px var(--red)'" onmouseout="this.style.background='none'; this.style.color='var(--red)'; this.style.boxShadow='none'">登出系統</button>
     </div>
   </div>
 
@@ -319,52 +322,52 @@
   <!-- CARDS -->
   <div class="cards-area">
 
-    <a class="sys-card card-admin" href="admin.html">
+    <a class="sys-card card-admin" href="admin.html" id="cardAdmin">
       <span class="card-icon" aria-hidden="true">
         <img src="../assets/system-icons/admin-icon.png" alt="">
       </span>
       <div class="card-sys-id">SYS-01 ｜ 後台</div>
       <div class="card-title">後台管理系統</div>
       <div class="card-desc">設備管理、巡檢週期設定、報修單總覽、QR 碼產生與系統紀錄。</div>
-      <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
+      <div class="card-enter" id="enterAdmin">進入 <span class="card-enter-arrow">▶</span></div>
     </a>
 
-    <a class="sys-card card-maint" href="workorder.html">
+    <a class="sys-card card-maint" href="workorder.html" id="cardWorkorder">
       <span class="card-icon" aria-hidden="true">
         <img src="../assets/system-icons/maintenance-icon.png" alt="">
       </span>
       <div class="card-sys-id">SYS-02 ｜ MAINTENANCE</div>
       <div class="card-title">維修管理系統</div>
       <div class="card-desc">報修單處理流程、維修人員指派、進度追蹤與結案驗收管理。</div>
-      <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
+      <div class="card-enter" id="enterWorkorder">進入 <span class="card-enter-arrow">▶</span></div>
     </a>
 
-    <a class="sys-card card-inspect" href="guardpatrol.html">
+    <a class="sys-card card-inspect" href="guardpatrol.html" id="cardGuardpatrol">
       <span class="card-icon" aria-hidden="true">
         <img src="../assets/system-icons/guardpatrol-icon.png" alt="">
       </span>
       <div class="card-sys-id">SYS-03 ｜ GUARD PATROL</div>
       <div class="card-title">駐警隊巡檢系統</div>
       <div class="card-desc">行動端QR掃描巡邏、異常回報、離線暫存與即時同步上傳。</div>
-      <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
+      <div class="card-enter" id="enterGuardpatrol">進入 <span class="card-enter-arrow">▶</span></div>
     </a>
 
-    <a class="sys-card card-handover" href="handover.html">
+    <a class="sys-card card-handover" href="handover.html" id="cardHandover">
       <span class="card-icon" aria-hidden="true">
         <img src="../assets/system-icons/handover-icon.png" alt="">
       </span>
       <div class="card-sys-id">SYS-04 ｜ HANDOVER</div>
       <div class="card-title">電子交接簿</div>
       <div class="card-desc">班別交接紀錄、設備運轉概況自動帶入、異常事項與待辦清單管理。</div>
-      <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
+      <div class="card-enter" id="enterHandover">進入 <span class="card-enter-arrow">▶</span></div>
     </a>
 
-    <a class="sys-card card-asset" href="equipment.html">
+    <a class="sys-card card-asset" href="equipment.html" id="cardEquipment">
       <span class="card-icon" aria-hidden="true"><img src="../assets/system-icons/equipment-icon.png" alt=""></span>
       <div class="card-sys-id">SYS-05 ｜ ASSET LIFECYCLE</div>
       <div class="card-title">設備建置系統</div>
       <div class="card-desc">設備主檔、保養排程、維修履歷、合約文件、年度成本與中央監控介接。</div>
-      <div class="card-enter">進入 <span class="card-enter-arrow">▶</span></div>
+      <div class="card-enter" id="enterEquipment">進入 <span class="card-enter-arrow">▶</span></div>
     </a>
 
   </div>
@@ -377,13 +380,137 @@
 <script>
   const SUPABASE_URL = 'https://qztffronusdhgxhjjubt.supabase.co';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
-  const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  (async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='login.html';}})();
-  db.from('system_settings').select('key,value').then(({ data }) => {
-    if (!data) return;
-    const s = Object.fromEntries(data.map(r => [r.key, r.value]));
-    document.querySelectorAll('[data-sysname="org"]').forEach(el => { if (s.org_name) el.textContent = s.org_name; });
-    document.querySelectorAll('[data-sysname="site"]').forEach(el => { if (s.site_name) el.textContent = s.site_name; });
+  let db;
+
+  const RBAC_ROLES = {
+    reporter: '一般報修人員',
+    duty: '值班人員',
+    dispatcher: '派工管理員',
+    technician: '維修技術人員',
+    unit_supervisor: '單位主管',
+    mgmt_supervisor: '管理部主管',
+    sysadmin: '系統管理員'
+  };
+  const LEGACY_TO_RBAC = { admin: 'sysadmin', supervisor: 'unit_supervisor', maintenance: 'technician', inspector: 'reporter' };
+  const ROLE_PERMISSION_PRESETS = {
+    reporter: { maintenance: true, repair: true, read: true, create: true },
+    duty: { maintenance: true, handover: true, repair: true, read: true, create: true, dispatch: true },
+    dispatcher: { maintenance: true, repair: true, read: true, create: true, update: true, dispatch: true, export: true },
+    technician: { maintenance: true, read: true, update: true, dispatch: true },
+    unit_supervisor: { maintenance: true, handover: true, repair: true, read: true, create: true, dispatch: true, close: true, sign: true, export: true },
+    mgmt_supervisor: { maintenance: true, handover: true, read: true, close: true, sign: true, export: true },
+    sysadmin: { inspector: true, maintenance: true, handover: true, repair: true, read: true, create: true, update: true, delete: true, dispatch: true, close: true, sign: true, export: true, admin: true }
+  };
+
+  function normalizeRoleId(profile) {
+    const role = profile?.rbac_role || profile?.role;
+    if (RBAC_ROLES[role]) return role;
+    return LEGACY_TO_RBAC[role] || 'reporter';
+  }
+
+  function hasPermission(profile, key) {
+    const p = profile.permissions || {};
+    if (typeof p[key] === 'boolean') return p[key];
+    return ROLE_PERMISSION_PRESETS[normalizeRoleId(profile)]?.[key] === true;
+  }
+
+  (async () => {
+    try {
+      if (typeof supabase === 'undefined') {
+        throw new Error('Supabase SDK not loaded');
+      }
+      db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      
+      const { data: { session }, error: sessionErr } = await db.auth.getSession();
+      if (sessionErr || !session) {
+        location.href = 'login.html';
+        return;
+      }
+
+      // Fetch user profile info
+      const { data: profile, error: profileErr } = await db
+        .from('users')
+        .select('name,role,rbac_role,permissions')
+        .eq('auth_id', session.user.id)
+        .single();
+
+      if (profileErr || !profile) {
+        console.warn('Profile fetch failed, using sessionStorage backup.');
+        const backupName = sessionStorage.getItem('user_name') || '使用者';
+        const backupRole = sessionStorage.getItem('user_rbac_role') || sessionStorage.getItem('user_role') || 'reporter';
+        const normRole = RBAC_ROLES[backupRole] || backupRole;
+        document.getElementById('userInfo').textContent = `${normRole} ｜ ${backupName}`;
+        // Apply basic fallback filter (mostly allow except admin)
+        if (backupRole !== 'sysadmin' && backupRole !== 'admin') {
+          disableCard('cardAdmin', 'enterAdmin');
+          disableCard('cardEquipment', 'enterEquipment');
+        }
+      } else {
+        const roleId = normalizeRoleId(profile);
+        const roleName = RBAC_ROLES[roleId] || '未知角色';
+        document.getElementById('userInfo').textContent = `${roleName} ｜ ${profile.name}`;
+
+        // Evaluate RBAC permissions for each portal card
+        // Card 1: Admin System (後台)
+        const canAdmin = hasPermission(profile, 'admin') || ['sysadmin', 'unit_supervisor', 'mgmt_supervisor'].includes(roleId);
+        if (!canAdmin) disableCard('cardAdmin', 'enterAdmin');
+
+        // Card 2: Maintenance/Workorder (維修派工)
+        const canMaint = hasPermission(profile, 'maintenance') || hasPermission(profile, 'repair') || hasPermission(profile, 'dispatch') || hasPermission(profile, 'create') || hasPermission(profile, 'read');
+        if (!canMaint) disableCard('cardWorkorder', 'enterWorkorder');
+
+        // Card 3: Guard Patrol (巡檢)
+        const canInspect = hasPermission(profile, 'inspector') || hasPermission(profile, 'handover') || ['sysadmin', 'duty', 'unit_supervisor'].includes(roleId);
+        if (!canInspect) disableCard('cardGuardpatrol', 'enterGuardpatrol');
+
+        // Card 4: Handover (交接簿)
+        const canHandover = hasPermission(profile, 'handover') || ['sysadmin', 'duty', 'unit_supervisor', 'mgmt_supervisor'].includes(roleId);
+        if (!canHandover) disableCard('cardHandover', 'enterHandover');
+
+        // Card 5: Equipment Asset (設備)
+        const canEquipment = hasPermission(profile, 'admin') || ['sysadmin'].includes(roleId);
+        if (!canEquipment) disableCard('cardEquipment', 'enterEquipment');
+      }
+
+      // Fetch dynamic system settings for org/site name
+      db.from('system_settings').select('key,value').then(({ data }) => {
+        if (!data) return;
+        const s = Object.fromEntries(data.map(r => [r.key, r.value]));
+        document.querySelectorAll('[data-sysname="org"]').forEach(el => { if (s.org_name) el.textContent = s.org_name; });
+        document.querySelectorAll('[data-sysname="site"]').forEach(el => { if (s.site_name) el.textContent = s.site_name; });
+      });
+
+    } catch (e) {
+      console.error('Initialization error:', e);
+      location.href = 'login.html';
+    }
+  })();
+
+  function disableCard(cardId, enterId) {
+    const card = document.getElementById(cardId);
+    const enter = document.getElementById(enterId);
+    if (card) {
+      card.style.opacity = '0.45';
+      card.style.pointerEvents = 'none';
+      card.style.cursor = 'not-allowed';
+      card.removeAttribute('href');
+    }
+    if (enter) {
+      enter.textContent = '無權限存取 🔒';
+      enter.style.borderColor = 'var(--text-dim)';
+      enter.style.color = 'var(--text-dim)';
+    }
+  }
+
+  // Logout handler
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    try {
+      if (db) await db.auth.signOut();
+    } catch (e) {
+      console.error(e);
+    }
+    sessionStorage.clear();
+    location.href = 'login.html';
   });
 
   // Real-time clock
