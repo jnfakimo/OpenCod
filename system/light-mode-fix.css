@@ -439,6 +439,7 @@
 /* Dark line icons on transparent bg. Invert for dark theme, show as-is for light. */
 .ic{display:inline-block;width:1.1em;height:1.1em;vertical-align:middle;background-size:contain;background-repeat:no-repeat;background-position:center;flex-shrink:0;filter:invert(1);}
 :root[data-theme="light"] .ic{filter:none;}
+.ic-logout, .ic-refresh { filter: none !important; }
 .ic-dashboard{background-image:url(icons/nav-dashboard.png);}
 .ic-dispatch{background-image:url(icons/nav-dispatch.png);}
 .ic-inspection{background-image:url(icons/nav-inspection.png);}
