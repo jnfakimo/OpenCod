@@ -9,7 +9,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>巡邏點簽到 — 臺北農產巡檢系統</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="vendor/supabase-js-2.min.js"></script>
+<script src="patrol-offline.js?v=20260717-1"></script>
 <style>
 :root{--bg:#020b18;--surface:#04111f;--panel:#05101e;--border:#0c2840;
   --patrol:#c77dff;--green:#00ff9d;--red:#ff5470;--text:#a8d8f0;--text-hi:#d4eeff;--text-dim:#3a6a8a;
@@ -48,6 +49,8 @@ h1{font-family:var(--font-head);font-size:1.2rem;color:var(--text-hi);letter-spa
 .hist-page-btn:not(:disabled):hover{border-color:var(--patrol);color:var(--patrol)}
 .hist-page-btn:disabled{opacity:.4;cursor:not-allowed}
 .hist-page-info{min-width:72px;text-align:center;color:var(--text-dim);font-size:.72rem}
+.queue-badge{position:fixed;right:14px;top:14px;z-index:10;padding:7px 10px;border:1px solid var(--patrol);
+  border-radius:999px;background:var(--panel);color:var(--patrol);font-size:.72rem;box-shadow:0 4px 16px rgba(0,0,0,.18)}
 @media(max-width:480px){
   .hist-row{font-size:.72rem;gap:10px}.hist-row span:last-child{white-space:nowrap}
   .hist-pages{gap:8px}.hist-page-btn{min-width:68px;min-height:40px}
@@ -58,13 +61,14 @@ h1{font-family:var(--font-head);font-size:1.2rem;color:var(--text-hi);letter-spa
 <link rel="stylesheet" href="mobile-unified.css?v=20260717-1">
 </head>
 <body>
+<div class="queue-badge" id="offlineQueueBadge" hidden></div>
 <div class="card" id="card">
   <div class="icon load">◐</div>
   <h1>處理中…</h1>
   <div class="sub">正在確認登入狀態</div>
 </div>
 
-<script>
+<script type="text/plain" id="legacy-checkin-script">
 const SUPA_URL='https://qztffronusdhgxhjjubt.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
 const db=supabase.createClient(SUPA_URL,SUPA_KEY);
@@ -193,5 +197,6 @@ function showState(icon,iconClass,title,sub,backHref,backLabel){
   loadHistory();
 })();
 </script>
+<script src="patrolcheckin-app.js?v=20260717-1"></script>
 </body>
 </html>
