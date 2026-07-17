@@ -236,7 +236,6 @@ function syncFilters(result){
   const floors=[...new Set(result.markers.map(m=>canonicalFloor(m.floor_id)))].sort((a,b)=>floorOrder(a)-floorOrder(b)||a.localeCompare(b,'zh-Hant'));
   fillSelect('floorFilter',floors.map(f=>({value:f,label:f})),'全部樓層');
   fillSelect('shiftFilter',result.shifts.map(s=>({value:s.shift_id,label:`${s.name} ${fmtHM(s.start_time)}–${fmtHM(s.end_time)}`})),'全部班別');
-  if(!expandedFloors.size&&floors.length)expandedFloors.add(floors.includes('B1')?'B1':floors[0]);
 }
 
 async function load(){
