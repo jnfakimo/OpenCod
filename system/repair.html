@@ -425,7 +425,9 @@ const ST={
   closed:['已結案','#3a6a8a'],returned:['已退回','#ff3b3b'],rejected:['已拒絕','#ff3b3b'],
   cancelled:['已取消','#3a6a8a'],overdue:['逾期','#ff3b3b']
 };
-function badge(s){const x=ST[s]||[s,'#888'];return `<span class="badge" style="background:${x[1]}22;color:${x[1]};border:1px solid ${x[1]}66">${x[0]}</span>`;}
+function statusText(s){return ST[s]?.[0]||'未知狀態';}
+function badge(s){const x=ST[s]||['未知狀態','#888'];return `<span class="badge" style="background:${x[1]}22;color:${x[1]};border:1px solid ${x[1]}66">${x[0]}</span>`;}
+function feedbackError(){return '系統操作失敗，請稍後再試或聯絡系統管理員';}
 function urgLabel(u){
   if(u==='urgent')return '<span class="urg-tag urg-urgent">⚠ 緊急</span>';
   if(u==='high')return '<span class="urg-tag urg-high">▲ 高</span>';
@@ -559,7 +561,7 @@ async function loadOrders(){
     updateCounts();
   }catch(e){
     console.error('loadOrders error',e);
-    toast('工單載入失敗：'+e.message,true);
+    toast('工單載入失敗：'+feedbackError(),true);
     allOrders=[];
     updateCounts();
   }
@@ -756,7 +758,7 @@ function buildDetailBody(o,repairLog,timeline){
       const ts=new Date(t.created_at).toLocaleString('zh-TW');
       tlHTML+=`<li>
         <div class="ts">${ts}</div>
-        <div class="st">${t.action||t.status||ST[t.to_status]?.[0]||t.to_status||''} ${t.operator_name?'— '+t.operator_name:''}</div>
+        <div class="st">${t.action||statusText(t.status||t.to_status)} ${t.operator_name?'— '+t.operator_name:''}</div>
         ${t.note?`<div class="nt">${t.note}</div>`:''}
       </li>`;
     });
@@ -1026,7 +1028,7 @@ async function submitRepairLog(){
 
   }catch(e){
     console.error('submitRepairLog error',e);
-    setMsg(msgEl,'送出失敗：'+e.message,'err');
+    setMsg(msgEl,'送出失敗：'+feedbackError(),'err');
   }finally{
     if(btn){btn.disabled=false;btn.textContent='📤 送出完工回報';}
   }
@@ -1065,7 +1067,7 @@ async function doCloseCase(orderId){
     await loadOrders();
     renderCards();
   }catch(e){
-    toast('結案失敗：'+e.message,true);
+    toast('結案失敗：'+feedbackError(),true);
   }
 }
 

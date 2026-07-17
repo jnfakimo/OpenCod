@@ -279,7 +279,8 @@ const ST={pending:['待派工','#ffb300'],transferred:['已轉派','#1a7fff'],as
   accepted:['已接單','#00d4ff'],in_progress:['維修中','#00d4ff'],waiting_parts:['等待料件','#b48aff'],
   waiting_vendor:['等待廠商','#b48aff'],pending_review:['待驗收','#00ff9d'],completed:['已完成','#00ff9d'],
   closed:['已結案','#3a6a8a'],returned:['已退回','#ff3b3b'],rejected:['已拒絕','#ff3b3b'],cancelled:['已取消','#3a6a8a'],overdue:['逾期','#ff3b3b']};
-function badge(s){const x=ST[s]||[s,'#888'];return `<span class="badge" style="background:${x[1]}22;color:${x[1]};border:1px solid ${x[1]}66">${x[0]}</span>`;}
+function statusText(s){return ST[s]?.[0]||'未知狀態';}
+function badge(s){const x=ST[s]||['未知狀態','#888'];return `<span class="badge" style="background:${x[1]}22;color:${x[1]};border:1px solid ${x[1]}66">${x[0]}</span>`;}
 
 const RBAC_ROLES={reporter:'一般報修人員',duty:'值班人員',dispatcher:'派工管理員',technician:'維修技術人員',unit_supervisor:'單位主管',mgmt_supervisor:'管理部主管',sysadmin:'系統管理員'};
 const LEGACY_TO_RBAC={admin:'sysadmin',supervisor:'unit_supervisor',maintenance:'technician',inspector:'reporter'};
@@ -469,7 +470,7 @@ function renderChips(){
   const order=['pending','assigned','in_progress','waiting_parts','pending_review','closed'];
   const box=document.getElementById('chips');
   let html=`<div class="chip ${filterStatus===''?'on':''}" onclick="setFilter('')">全部<b>${reqs.length}</b></div>`;
-  order.forEach(s=>{ if(counts[s]) html+=`<div class="chip ${filterStatus===s?'on':''}" onclick="setFilter('${s}')">${(ST[s]||[s])[0]}<b>${counts[s]}</b></div>`; });
+  order.forEach(s=>{ if(counts[s]) html+=`<div class="chip ${filterStatus===s?'on':''}" onclick="setFilter('${s}')">${statusText(s)}<b>${counts[s]}</b></div>`; });
   box.innerHTML=html;
 }
 function setFilter(s){filterStatus=s;renderChips();renderList();}
@@ -888,7 +889,7 @@ async function openDetail(id){
     </div>
     ${atts&&atts.length?`<div class="sect">附件</div><div class="atts">${atts.map(a=>attHtml(a)).join('')}</div>`:''}
     <div class="sect">處理歷程</div>
-    <ul class="tl">${(logs||[]).map(l=>`<li><div class="st">${escHtml((ST[l.to_status]||[l.to_status])[0])}</div>${l.note?`<div class="nt">${escHtml(l.note)}</div>`:''}<div class="op">${escHtml(l.operator_name||'')} · <span class="ts">${fmt(l.created_at)}</span></div></li>`).join('')||'<li><div class="nt">尚無歷程</div></li>'}</ul>
+    <ul class="tl">${(logs||[]).map(l=>`<li><div class="st">${escHtml(statusText(l.to_status))}</div>${l.note?`<div class="nt">${escHtml(l.note)}</div>`:''}<div class="op">${escHtml(l.operator_name||'')} · <span class="ts">${fmt(l.created_at)}</span></div></li>`).join('')||'<li><div class="nt">尚無歷程</div></li>'}</ul>
     <div class="sect">操作</div>
     <div class="actions" id="d-actions"></div>
     <div id="d-sub"></div>`;

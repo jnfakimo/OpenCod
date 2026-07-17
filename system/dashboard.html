@@ -345,8 +345,8 @@ function render(R,O,from,to){
   rankBars('rkTech', countBy(O,o=>o.users?.name||'\u672a\u6307\u6d3e'));
 
   // status distribution
-  const stMap={pending:'\u5f85\u6d3e\u5de5',transferred:'\u5df2\u8f49\u6d3e',assigned:'\u5f85\u63a5\u55ae',in_progress:'\u7dad\u4fee\u4e2d',waiting_parts:'\u7b49\u5f85\u6599\u4ef6',waiting_vendor:'\u7b49\u5f85\u5ee0\u5546',pending_review:'\u5f85\u9a57\u6536',completed:'\u5df2\u5b8c\u6210',closed:'\u5df2\u7d50\u6848',rejected:'\u9000\u4ef6',cancelled:'\u53d6\u6d88',overdue:'\u904e\u671f'};
-  const stc=countBy(R,r=>stMap[r.status]||r.status);
+  const stMap={pending:'\u5f85\u6d3e\u5de5',transferred:'\u5df2\u8f49\u6d3e',assigned:'\u5df2\u6d3e\u5de5',accepted:'\u5df2\u63a5\u55ae',in_progress:'\u7dad\u4fee\u4e2d',waiting_parts:'\u7b49\u5f85\u6599\u4ef6',waiting_vendor:'\u7b49\u5f85\u5ee0\u5546',pending_review:'\u5f85\u9a57\u6536',completed:'\u5df2\u5b8c\u6210',closed:'\u5df2\u7d50\u6848',returned:'\u5df2\u9000\u56de',rejected:'\u5df2\u62d2\u7d55',cancelled:'\u5df2\u53d6\u6d88',overdue:'\u5df2\u903e\u671f'};
+  const stc=countBy(R,r=>stMap[r.status]||'\u672a\u77e5\u72c0\u614b');
   drawDoughnut('statusChart',stc);
 
   drawTrend();

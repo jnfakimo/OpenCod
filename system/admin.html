@@ -1551,8 +1551,14 @@ const ROLE_PERMISSION_PRESETS = {
   mgmt_supervisor:{ maintenance:true, handover:true, read:true, close:true, sign:true, export:true },
   sysadmin:Object.fromEntries(PERMISSION_DEFS.map(p => [p.key, true]))
 };
-const STATUS_LABEL = { pending:'待處理', transferred:'已轉維修', closed:'已結案' };
-const ORDER_STATUS_LABEL = { pending:'待處理', in_progress:'處理中', pending_review:'待驗收', completed:'已完成', closed:'結案' };
+const STATUS_LABEL = {
+  pending:'待處理', transferred:'已轉維修', assigned:'已派工', accepted:'已接單',
+  in_progress:'維修中', waiting_parts:'等待料件', waiting_vendor:'等待廠商',
+  pending_review:'待驗收', completed:'已完成', closed:'已結案', returned:'已退回',
+  rejected:'已拒絕', cancelled:'已取消', overdue:'已逾期'
+};
+const ORDER_STATUS_LABEL = { ...STATUS_LABEL };
+function maintenanceStatusLabel(value) { return STATUS_LABEL[value] || ORDER_STATUS_LABEL[value] || '未知狀態'; }
 const COST_TYPE_LABEL = { purchase:'購置費', outsource:'委外維修', parts:'零件費', labor:'工時費', other:'其他' };
 const ADMIN_PAGE_KEY = 'tcfm.admin.activePage';
 
@@ -1965,7 +1971,7 @@ async function loadDashboard() {
         <td>${o.equipment?.name || '—'}</td>
         <td>${o.repair_requests?.reporter || '—'}</td>
         <td>${(o.repair_requests?.fault_desc || '—').substring(0,40)}</td>
-        <td><span class="badge ${o.status === 'closed' ? 'badge-active' : 'badge-inactive'}">${ORDER_STATUS_LABEL[o.status] || o.status}</span></td>
+        <td><span class="badge ${o.status === 'closed' ? 'badge-active' : 'badge-inactive'}">${maintenanceStatusLabel(o.status)}</span></td>
         <td style="font-family:var(--font-mono);font-size:.75rem">${new Date(o.created_at).toLocaleDateString('zh-TW')}</td>
       </tr>`).join('')}</tbody>
     </table></div>` : '<div style="color:var(--text-dim);font-size:.85rem;font-family:var(--font-mono)">目前無維修單</div>';
@@ -2759,8 +2765,8 @@ function renderRepairs() {
       <td>${(r.fault_desc || '').substring(0,40)}</td>
       <td style="font-size:.78rem;color:var(--text-dim)">${fmtLoc(r.locations)}</td>
       <td style="font-family:var(--font-mono);font-size:.78rem">${r.source === 'inspection' ? '巡檢' : '直接通報'}</td>
-      <td><span class="badge badge-${r.status === 'closed' ? 'active' : 'inactive'}">${STATUS_LABEL[r.status] || r.status}</span></td>
-      <td>${ordStatus ? `<span class="badge badge-inactive">${ORDER_STATUS_LABEL[ordStatus] || ordStatus}</span>` : '—'}</td>
+      <td><span class="badge badge-${r.status === 'closed' ? 'active' : 'inactive'}">${maintenanceStatusLabel(r.status)}</span></td>
+      <td>${ordStatus ? `<span class="badge badge-inactive">${maintenanceStatusLabel(ordStatus)}</span>` : '—'}</td>
       <td style="font-family:var(--font-mono);font-size:.75rem">${new Date(r.created_at).toLocaleDateString('zh-TW')}</td>
     </tr>`;
   }).join('') : '<tr><td colspan="9" style="color:var(--text-dim);font-family:var(--font-mono)">目前無紀錄</td></tr>';
@@ -2910,7 +2916,7 @@ function auditStatusLabel(value) {
     draft:'草稿',
     confirmed:'已確認'
   };
-  return labels[value] || STATUS_LABEL[value] || ORDER_STATUS_LABEL[value] || value;
+  return labels[value] || STATUS_LABEL[value] || ORDER_STATUS_LABEL[value] || '未知項目';
 }
 
 function auditPermLabels(perms) {
