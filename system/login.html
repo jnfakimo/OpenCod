@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('siteTheme')||'tech');</script>
-<script src="theme.js?v=20260717-1"></script>
+<script src="theme.js?v=20260717-2"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>臺北農產公司 第一果菜市場 設備巡檢維修系統</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -273,16 +273,17 @@ async function doLogin() {
     return;
   }
 
-  sessionStorage.setItem('user_role', profile.role);
-  sessionStorage.setItem('user_rbac_role', profile.rbac_role || '');
-  sessionStorage.setItem('user_name', profile.name);
-  if (profile.username) sessionStorage.setItem('user_username', profile.username);
-  else sessionStorage.removeItem('user_username');
-  if (profile.user_id) sessionStorage.setItem('user_id', profile.user_id);
-  if (profile.dept_id) sessionStorage.setItem('user_dept_id', profile.dept_id);
-  if (profile.department) sessionStorage.setItem('user_department', profile.department);
-  if (profile.phone) sessionStorage.setItem('user_phone', profile.phone);
-  else sessionStorage.removeItem('user_phone');
+  if (window.SystemUserProfile) window.SystemUserProfile.save(profile);
+  else {
+    sessionStorage.setItem('user_role', profile.role);
+    sessionStorage.setItem('user_rbac_role', profile.rbac_role || '');
+    sessionStorage.setItem('user_name', profile.name);
+    if (profile.username) sessionStorage.setItem('user_username', profile.username);
+    if (profile.user_id) sessionStorage.setItem('user_id', profile.user_id);
+    if (profile.dept_id) sessionStorage.setItem('user_dept_id', profile.dept_id);
+    if (profile.department) sessionStorage.setItem('user_department', profile.department);
+    if (profile.phone) sessionStorage.setItem('user_phone', profile.phone);
+  }
   window.location.href = getRedirectTarget(profile);
 }
 

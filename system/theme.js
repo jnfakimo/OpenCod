@@ -1,5 +1,29 @@
 (function(){
   var KEY='siteTheme';
+  var PROFILE_KEY='inspectionSystemUserProfile';
+  var SUPABASE_URL='https://qztffronusdhgxhjjubt.supabase.co';
+  var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+  var PROFILE_FIELDS=['user_id','username','name','role','rbac_role','dept_id','department','phone'];
+  function readProfile(){
+    try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')||null;}catch(e){return null;}
+  }
+  function saveProfile(profile){
+    if(!profile||!profile.name)return;
+    var clean={};
+    PROFILE_FIELDS.forEach(function(key){if(profile[key]!=null&&profile[key]!=='')clean[key]=profile[key];});
+    localStorage.setItem(PROFILE_KEY,JSON.stringify(clean));
+    var keyMap={user_id:'user_id',username:'user_username',name:'user_name',role:'user_role',rbac_role:'user_rbac_role',dept_id:'user_dept_id',department:'user_department',phone:'user_phone'};
+    Object.keys(keyMap).forEach(function(key){
+      if(clean[key]!=null&&clean[key]!=='')sessionStorage.setItem(keyMap[key],clean[key]);
+      else sessionStorage.removeItem(keyMap[key]);
+    });
+    window.dispatchEvent(new CustomEvent('system-user-profile-updated'));
+  }
+  function clearProfile(){
+    localStorage.removeItem(PROFILE_KEY);
+    ['user_id','user_username','user_name','user_role','user_rbac_role','user_dept_id','user_department','user_phone'].forEach(function(key){sessionStorage.removeItem(key);});
+  }
+  window.SystemUserProfile={read:readProfile,save:saveProfile,clear:clearProfile};
   function current(){ return document.documentElement.getAttribute('data-theme')||'tech'; }
   function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn); }
   function taipeiNow(){
@@ -74,11 +98,36 @@
     installSharedHeaderActions(host,meta);
 
     var deptLookupStarted=false;
+    var authLookupStarted=false;
+    function storedAuthSession(){
+      try{
+        var raw=localStorage.getItem('sb-qztffronusdhgxhjjubt-auth-token');
+        if(!raw)return null;
+        if(raw.indexOf('base64-')===0)raw=decodeURIComponent(escape(atob(raw.slice(7))));
+        return JSON.parse(raw);
+      }catch(e){return null;}
+    }
+    function recoverProfileFromAuth(){
+      if(authLookupStarted)return;
+      var auth=storedAuthSession();
+      var token=auth&&auth.access_token;
+      var authId=auth&&auth.user&&auth.user.id;
+      if(!token||!authId)return;
+      authLookupStarted=true;
+      var url=SUPABASE_URL+'/rest/v1/users?select=user_id,username,name,role,rbac_role,dept_id,department,phone&auth_id=eq.'+encodeURIComponent(authId)+'&status=eq.active&limit=1';
+      fetch(url,{headers:{apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+token}})
+        .then(function(r){return r.ok?r.json():[];})
+        .then(function(rows){if(rows&&rows[0]){saveProfile(rows[0]);updateUser();}})
+        .catch(function(){});
+    }
     function updateUser(){
-      var name=sessionStorage.getItem('user_name')||'';
-      var dept=sessionStorage.getItem('user_department')||'';
+      var cached=readProfile()||{};
+      var name=sessionStorage.getItem('user_name')||cached.name||'';
+      var dept=sessionStorage.getItem('user_department')||cached.department||'';
+      if(name&&!sessionStorage.getItem('user_name'))saveProfile(cached);
       userMeta.textContent=name?(dept||'未設定單位')+'｜'+name:'尚未登入';
-      var deptId=sessionStorage.getItem('user_dept_id')||'';
+      var deptId=sessionStorage.getItem('user_dept_id')||cached.dept_id||'';
+      if(!name)recoverProfileFromAuth();
       if(name&&!dept&&deptId&&!deptLookupStarted){
         deptLookupStarted=true;
         fetch('https://qztffronusdhgxhjjubt.supabase.co/rest/v1/departments?select=dept_id,name,parent_id&status=eq.active',{headers:{apikey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA'}})
@@ -87,7 +136,12 @@
             var map={};rows.forEach(function(d){map[d.dept_id]=d;});
             var path=[],cur=map[deptId],guard=0;
             while(cur&&guard++<10){path.unshift(cur.name);cur=map[cur.parent_id];}
-            if(path.length){sessionStorage.setItem('user_department',path.join(' / '));updateUser();}
+            if(path.length){
+              var profile=readProfile()||{name:name,dept_id:deptId};
+              profile.department=path.join(' / ');
+              saveProfile(profile);
+              updateUser();
+            }
           }).catch(function(){});
       }
     }
@@ -103,6 +157,8 @@
     setInterval(update,1000);
     window.addEventListener('online',update);
     window.addEventListener('offline',update);
+    window.addEventListener('storage',updateUser);
+    window.addEventListener('system-user-profile-updated',updateUser);
   }
   ready(function(){
     installSystemMeta();
