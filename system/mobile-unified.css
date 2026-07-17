@@ -15,6 +15,8 @@ img, canvas, video, svg { max-width: 100%; }
 @media (max-width: 768px) {
   :root { --mobile-gutter: 12px; }
 
+  html { scroll-padding-top: 12px; }
+
   /* Explicitly optional desktop controls. Pages use this for exports,
      administration links, duplicated navigation and nonessential hints. */
   .mobile-hide { display: none !important; }
@@ -24,6 +26,7 @@ img, canvas, video, svg { max-width: 100%; }
     width: 100% !important;
     margin: 0 !important;
     padding-bottom: env(safe-area-inset-bottom, 0) !important;
+    touch-action: manipulation;
   }
 
   /* Never allow Traditional Chinese titles to collapse into one character
@@ -104,6 +107,29 @@ img, canvas, video, svg { max-width: 100%; }
   }
   .topbar-right a, .topbar-right button { min-height: 36px !important; }
 
+  /* Shared user/status/clock and the five global actions must remain readable
+     without creating a page-wide horizontal scrollbar. */
+  .system-actions-unified {
+    width: 100% !important;
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+  .system-action-unified {
+    min-height: 44px !important;
+    padding-inline: 4px !important;
+  }
+  .system-action-unified span { overflow-wrap: anywhere; }
+  .system-meta-unified {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto auto !important;
+    gap: 6px !important;
+    margin-left: 0 !important;
+  }
+  .system-user-unified {
+    max-width: none !important;
+    min-width: 0 !important;
+  }
+
   /* Tabs remain horizontal but scroll inside their own row, never the page. */
   .tab-bar, .tabs, .nav-tabs {
     width: 100% !important;
@@ -151,6 +177,13 @@ img, canvas, video, svg { max-width: 100%; }
     flex-wrap: wrap !important;
   }
 
+  .toolbar > input,
+  .toolbar > select,
+  .filter-bar > input,
+  .filter-bar > select {
+    flex: 1 1 160px !important;
+  }
+
   .panel, .card, .stat-card, .scard, .eq-card {
     min-width: 0 !important;
     max-width: 100% !important;
@@ -182,6 +215,9 @@ img, canvas, video, svg { max-width: 100%; }
     font-size: 16px !important;
   }
   button, .btn, .btn-sm, a.button { min-height: 40px; }
+  button, .btn, .btn-sm, a.button, .tab, .nav-tab {
+    touch-action: manipulation;
+  }
 
   /* Dialogs fit around browser toolbars and device safe areas. */
   .modal-bg {
@@ -196,6 +232,20 @@ img, canvas, video, svg { max-width: 100%; }
     overflow-y: auto !important;
     margin: auto !important;
   }
+  .modal-head {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background: var(--panel, var(--surface, #fff));
+  }
+  .modal-foot, .modal-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    flex-wrap: wrap !important;
+    background: var(--panel, var(--surface, #fff));
+  }
+  .modal-foot .msg { flex: 1 1 100%; }
   .dtp-popup, [id$="_dtp_p"], [id$="-dtp_p"] {
     max-width: calc(100vw - 24px) !important;
   }
@@ -206,4 +256,19 @@ img, canvas, video, svg { max-width: 100%; }
   .navbar .nav-back { font-size: .78rem !important; }
   .content, .main, .main-content { padding-left: 10px !important; padding-right: 10px !important; }
   .panel, .card, .stat-card, .scard { padding-left: 10px !important; padding-right: 10px !important; }
+  .system-actions-unified { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .system-meta-unified { grid-template-columns: 1fr auto !important; }
+  .system-user-unified { grid-column: 1 / -1; }
+  .toolbar > input,
+  .toolbar > select,
+  .toolbar > button,
+  .toolbar > .btn,
+  .filter-bar > input,
+  .filter-bar > select,
+  .filter-bar > button,
+  .filter-bar > .btn { width: 100% !important; flex-basis: 100% !important; }
+  .modal-foot > button,
+  .modal-foot > .btn,
+  .modal-actions > button,
+  .modal-actions > .btn { flex: 1 1 calc(50% - 6px); }
 }
