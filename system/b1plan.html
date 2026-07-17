@@ -138,10 +138,10 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
 </div>
 
 <!-- 標記顯示選單（左側，預設隱藏，與 3D 立體樓層一致）-->
-<button id="mkToggle" onclick="toggleMkPanel(true)"><span class="ic ic-handover"></span> 標記顯示</button>
+<button id="mkToggle" onclick="toggleMkPanel(true)">標記顯示</button>
 <div id="mkpanel">
   <div class="panel-head">
-    <div class="p-t"><span class="ic ic-handover"></span> 標記顯示</div>
+    <div class="p-t">標記顯示</div>
     <span style="display:flex;gap:6px">
       <button class="panel-close" id="mkPinBtn" onclick="toggleMkPin()" title="釘住後點空白處不會自動收合">📌 釘住</button>
       <button class="panel-close" onclick="toggleMkPanel(false)">隱藏</button>
@@ -152,14 +152,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Segoe 
   <label><input type="checkbox" id="mk-patrol" checked onchange="toggleMkKind('patrol',this.checked)"><span style="color:#c77dff">●</span> 巡邏點</label>
   <label><input type="checkbox" id="mk-repair" checked onchange="toggleMkKind('repair',this.checked)"><span style="color:#ff5470">●</span> 報修點</label>
   <label><input type="checkbox" id="mk-note" checked onchange="toggleMkKind('note',this.checked)"><span style="color:#ffb300">●</span> 一般</label>
-  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" onchange="toggleMkLabels(this.checked)"><span style="color:var(--cyan)">🏷</span> 顯示標記名稱</label>
+  <label style="border-top:1px solid var(--border);margin-top:4px;padding-top:6px"><input type="checkbox" onchange="toggleMkLabels(this.checked)"> 顯示標記名稱</label>
   <div style="color:var(--text2);margin-top:3px">標記數：<span style="color:var(--text)" id="mkNum">—</span></div>
 </div>
 
 <div id="bottomRightRow">
   <div id="hint">拖曳 平移 &nbsp;|&nbsp; 滾輪 局部縮放 &nbsp;|&nbsp; ↺<span class="ic ic-refresh"></span> 旋轉 &nbsp;|&nbsp; 樓層上下對位</div>
   <div id="hud">
-    <div class="h-t" id="hudFloor"><span class="ic ic-3d"></span> B1 地下一層</div>
+    <div class="h-t" id="hudFloor">B1 地下一層</div>
     <div class="h-r">縮放：<span id="h-zoom">100%</span></div>
     <div class="h-r">旋轉：<span id="h-rot">0°</span></div>
     <div class="h-r">樓高：<span>B1↔1F 450 cm</span></div>
@@ -239,7 +239,7 @@ function showFloor(f){
   FLOORS.forEach(fl=>{ const it=item(fl.idx); if(it) it.setOpacity(fl.id===f?1:0); });
   const sel=document.getElementById('floorSel'); if(sel && sel.value!==f) sel.value=f;
   const cur=FLOORS.find(fl=>fl.id===f);
-  document.getElementById('hudFloor').innerHTML='<span class="ic ic-3d"></span> '+cur.label;
+  document.getElementById('hudFloor').textContent=cur.label;
   document.getElementById('tbTitle').textContent=cur.label+' 平面圖';
   drawPlanMarkers();
 }
