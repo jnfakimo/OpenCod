@@ -212,7 +212,7 @@ body.controls-hidden #panelToggle{display:inline-flex}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="model-theme.js"></script>
+<script src="model-theme.js?v=20260717-2"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="patrolstatus.js"></script>
 <script>
@@ -258,8 +258,9 @@ function init(){
   scene.fog=new THREE.FogExp2(ModelTheme.isLight()?0xffffff:0x020b18,0.0009);
   const W=innerWidth,H=innerHeight-50;
   camera=new THREE.PerspectiveCamera(42,W/H,0.5,6000);
-  renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  const mobile=matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+  renderer=new THREE.WebGLRenderer({antialias:!mobile,alpha:false,powerPreference:mobile?'low-power':'high-performance',precision:mobile?'mediump':'highp'});
+  renderer.setPixelRatio(mobile?1:Math.min(devicePixelRatio,2));
   renderer.setSize(W,H);
   document.getElementById('c3d').appendChild(renderer.domElement);
   scene.add(new THREE.AmbientLight(0xffffff,1.0));
@@ -280,10 +281,20 @@ function floorFrame(y){
 
 function buildFloors(){
   const loader=new THREE.TextureLoader();
-  let done=0;
+  let done=0,finished=false;
+  const settled=new Set();
+  const markDone=(fl,msg)=>{
+    if(settled.has(fl.id))return false;
+    settled.add(fl.id);done++;
+    prog(35+done*15,msg||'載入樓層貼圖…');
+    if(done===FLOORS.length&&!finished){finished=true;layoutFloors();finishLoad();}
+    return true;
+  };
   FLOORS.forEach(fl=>{
     const fr=floorFrame(0); fr.userData.fl=fl; scene.add(fr); fl.frame=fr;
+    const timer=setTimeout(()=>markDone(fl,'部分貼圖載入較慢，先開啟場景…'),12000);
     loader.load(fl.tex, tex=>{
+      clearTimeout(timer);
       tex.minFilter=THREE.LinearFilter; tex.magFilter=THREE.LinearFilter;
       tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
       const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide});
@@ -293,9 +304,9 @@ function buildFloors(){
       m.userData.fl=fl; fl.mesh=m; scene.add(m);
       ModelTheme.registerFloor(THREE,fl,tex,renderer);
       ModelTheme.apply3D(scene,[fl]);
-      done++; prog(40+done*28,'載入樓層貼圖…');
-      if(done===FLOORS.length){ layoutFloors(); finishLoad(); }
-    }, undefined, ()=>{ done++; if(done===FLOORS.length){layoutFloors();finishLoad();} });
+      const first=markDone(fl,'載入樓層貼圖…');
+      if(!first)layoutFloors();
+    }, undefined, ()=>{clearTimeout(timer);markDone(fl,'部分貼圖無法載入，先開啟場景…');});
   });
 }
 
@@ -588,7 +599,9 @@ function topView(){ orb.theta=0;orb.phi=0.06;orb.r=560;orb.tx=0;orb.ty=viewY();o
 // fetch any updated floor models from Storage (override static textures)
 async function applyCustomModels(){
   try{
-    const {data}=await db.from('floor_models').select('*');
+    prog(20,'讀取樓層模型設定…');
+    const timeout=new Promise(resolve=>setTimeout(()=>resolve({data:null,error:new Error('timeout')}),4000));
+    const {data}=await Promise.race([db.from('floor_models').select('*'),timeout]);
     if(data&&data.length){
       data.forEach(m=>{
         const fl=FLOORS.find(f=>f.id===m.floor_id);
@@ -599,7 +612,7 @@ async function applyCustomModels(){
         }
       });
     }
-  }catch(e){ /* fall back to static textures */ }
+  }catch(e){ /* 查詢逾時或失敗時直接使用內建貼圖 */ }
 }
 
 // ── 3D 模型更新偵測：定期比對 floor_models，有新版本時亮起頂欄按鈕，點擊才套用 ──
@@ -683,7 +696,15 @@ async function applyModelUpdates(){
   }
 }
 
-(async()=>{ init(); setupOrbit(); await applyCustomModels(); buildFloors(); })();
+(async()=>{
+  try{
+    init();setupOrbit();await applyCustomModels();prog(30,'載入樓層貼圖…');buildFloors();
+  }catch(e){
+    console.error('3D patrol initialization failed',e);
+    prog(100,'3D 模式無法啟動，切換平面巡檢…');
+    setTimeout(()=>{switchPatrolView('flat');document.getElementById('loading').style.display='none';},500);
+  }
+})();
 </script>
 </body>
 </html>
