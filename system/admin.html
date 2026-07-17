@@ -637,6 +637,7 @@ html.maintenance-only #page-repairs{max-width:1500px;margin:0 auto}
     <a href="dashboard.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'"><img src="../assets/system-icons/admin-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 戰情儀表板</a>
     <a href="admin.html#repairs" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="報修派工系統"><img src="../assets/system-icons/maintenance-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 報修系統</a>
     <a href="guardpatrol.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="駐衛警巡檢系統"><img src="../assets/system-icons/guardpatrol-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 駐衛警巡檢</a>
+    <a href="repair.html" style="font-size:.7rem;color:var(--text-dim);text-decoration:none;padding:3px 8px;border:1px solid var(--border);border-radius:2px;transition:all .2s" onmouseover="this.style.color='var(--cyan)';this.style.borderColor='var(--cyan)'" onmouseout="this.style.color='var(--text-dim)';this.style.borderColor='var(--border)'" title="維修完工回報"><img src="../assets/system-icons/maintenance-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 完工回報</a>
     <span style="font-size:.7rem;color:var(--cyan);padding:3px 8px;border:1px solid var(--cyan);border-radius:2px;background:rgba(0,212,255,.1);cursor:default;font-weight:600"><img src="../assets/system-icons/admin-icon.png" alt="" style="width:15px;height:15px;vertical-align:-3px;object-fit:contain"> 後台</span>
     <span><span class="online-dot"></span>系統連線中</span>
     <span class="topbar-clock" id="topClock"></span>
@@ -663,7 +664,7 @@ html.maintenance-only #page-repairs{max-width:1500px;margin:0 auto}
     </nav>
     <div class="sidebar-footer">
       <div class="user-info" id="sidebarUser">載入中…</div>
-      <button class="logout-btn" style="margin-bottom:6px;background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3);color:var(--cyan)" onclick="openChangePwModal()"><span class="ic ic-password"></span> 更改密碼</button>
+      <button class="logout-btn" style="margin-bottom:6px;background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.3);color:var(--cyan)" onclick="openChangePwModal()">🔑 更改密碼</button>
       <button class="logout-btn" onclick="logout()"><span class="ic ic-logout"></span> 登出</button>
     </div>
   </aside>
@@ -845,9 +846,9 @@ html.maintenance-only #page-repairs{max-width:1500px;margin:0 auto}
           <div class="scard-desc">新增報修、案件查詢<br>維修進度與狀態管理</div>
           <div class="scard-enter">▶ 進入報修與維修</div>
         </a>
-          <a class="scard" style="--scard-c:#ffb300" href="dispatch.html">
-            <div class="scard-badge">MAIN-02</div>
-            <div class="scard-icon"><img src="../assets/system-icons/dispatch-icon.png" alt="派工系統"></div>
+        <a class="scard" style="--scard-c:#ffb300" href="dispatch.html">
+          <div class="scard-badge">MAIN-02</div>
+          <div class="scard-icon"><img src="../assets/system-icons/maintenance-icon.png" alt=""></div>
           <div class="scard-title">派工系統</div>
           <div class="scard-desc">建立派工、承辦指派<br>工單處理進度追蹤</div>
           <div class="scard-enter">▶ 進入派工系統</div>
@@ -1197,7 +1198,7 @@ html.maintenance-only #page-repairs{max-width:1500px;margin:0 auto}
 
       <!-- ══ SETTINGS DETAIL (點卡片後顯示) ══ -->
       <div id="settings-detail" style="display:none">
-        <button class="settings-back-btn" onclick="backToSettingsHub()">◀ 返回設定總覽</button>
+        <button class="settings-back-btn" onclick="backToSettingsHub()">◀ 返回上一層</button>
 
         <!-- 系統識別 -->
         <div class="settings-section" id="sec-sysname" style="display:none">
@@ -3068,8 +3069,7 @@ function openSettingsSection(id) {
   document.getElementById(id).style.display = 'block';
 }
 function backToSettingsHub() {
-  document.getElementById('settings-hub').style.display = 'block';
-  document.getElementById('settings-detail').style.display = 'none';
+  window.location.href = 'admin.html';
 }
 
 let sysSettings = {};
