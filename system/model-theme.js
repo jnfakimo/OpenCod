@@ -5,14 +5,16 @@
   function makeLightTexture(THREE,source){
     const img=source&&source.image;
     if(!img) return source;
+    const mobile=matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+    // iOS Safari has a tight GPU/canvas memory budget. Reuse the original
+    // texture on phones instead of allocating a second converted 2K canvas.
+    if(mobile) return source;
     const sourceW=img.naturalWidth||img.videoWidth||img.width;
     const sourceH=img.naturalHeight||img.videoHeight||img.height;
     if(!sourceW||!sourceH) return source;
     try{
       // 亮色線稿只供 3D 視覺化；限制尺寸，避免四層 4K 複本造成行動裝置記憶體壓力。
-      const mobile=matchMedia('(max-width: 768px), (pointer: coarse)').matches;
-      const maxSide=mobile?1024:2048;
-      const scale=Math.min(1,maxSide/Math.max(sourceW,sourceH));
+      const scale=Math.min(1,2048/Math.max(sourceW,sourceH));
       const w=Math.max(1,Math.round(sourceW*scale)),h=Math.max(1,Math.round(sourceH*scale));
       const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h;
       const ctx=canvas.getContext('2d',{willReadFrequently:true});
