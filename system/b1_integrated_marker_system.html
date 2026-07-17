@@ -187,7 +187,7 @@ body.panel-open #panelToggle{display:none}
 <div id="panel">
   <div class="pn-head" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
     <div>
-      <div class="pn-title"><span class="ic ic-handover"></span> 整合標記</div>
+      <div class="pn-title">整合標記</div>
       <div class="pn-sub" id="pnFloor">B1 地下一層</div>
     </div>
     <div style="display:flex;gap:6px;flex:none">
@@ -252,7 +252,7 @@ body.panel-open #panelToggle{display:none}
 <div id="bottomRightRow">
   <div id="mouseHint">🖱 滾輪：縮放　拖曳：平移　雙擊：放大</div>
   <div id="hud">
-    <div class="h-t" id="hudFloor"><span class="ic ic-3d"></span> B1 地下一層</div>
+    <div class="h-t" id="hudFloor">B1 地下一層</div>
     <div>縮放：<span id="h-zoom">100%</span>　旋轉：<span id="h-rot">0°</span></div>
   </div>
 </div>
@@ -398,7 +398,7 @@ function showFloor(f){
   FLOORS.forEach(fl=>{ const it=item(fl.idx); if(it) it.setOpacity(fl.id===f?1:0); });
   const sel=document.getElementById('floorSel'); if(sel && sel.value!==f) sel.value=f;
   const cur=FLOORS.find(fl=>fl.id===f);
-  document.getElementById('hudFloor').innerHTML='<span class="ic ic-3d"></span> '+cur.label;
+  document.getElementById('hudFloor').textContent=cur.label;
   document.getElementById('pnFloor').textContent=cur.label;
   hideDetail();
   drawMarkers(); renderList();
