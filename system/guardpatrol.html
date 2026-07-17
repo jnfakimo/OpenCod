@@ -27,9 +27,10 @@ a{color:inherit;text-decoration:none}
 .navbar{background:rgba(3,10,22,.97);border-bottom:1px solid var(--border);
   padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;overflow-x:auto;overflow-y:hidden}
 :root[data-theme="light"] .navbar{background:rgba(255,255,255,.97)}
-.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--patrol);letter-spacing:.06em}
-.nav-sub{font-size:.7rem;color:var(--text-dim)}
-.nav-space{flex:1 0 auto}.navbar a{flex:0 0 auto}
+.nav-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;color:var(--patrol);letter-spacing:.06em;white-space:nowrap}
+.nav-heading{flex:0 0 auto;min-width:max-content}
+.nav-sub{font-size:.7rem;color:var(--text-dim);white-space:nowrap}
+.nav-space{flex:1 1 24px;min-width:24px}.navbar a{flex:0 0 auto}
 .nav-back{font-size:.7rem;color:var(--text-dim);border:1px solid var(--border);padding:5px 10px;border-radius:2px;cursor:pointer;background:none;
   transition:all .2s;font-family:var(--font-head);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
 .nav-back:hover{border-color:var(--patrol);color:var(--patrol)}
@@ -119,7 +120,7 @@ td.pointcol .fl{color:var(--text-dim);font-size:.68rem;margin-right:4px}
 </head>
 <body>
 <nav class="navbar">
-  <div>
+  <div class="nav-heading">
     <div class="nav-title">駐衛警巡檢系統</div>
   </div>
   <div class="nav-space"></div>
