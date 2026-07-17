@@ -2,7 +2,7 @@
   var KEY='siteTheme';
   var PROFILE_KEY='inspectionSystemUserProfile';
   var SUPABASE_URL='https://qztffronusdhgxhjjubt.supabase.co';
-  var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
+  var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA';
   var PROFILE_FIELDS=['user_id','username','name','role','rbac_role','dept_id','department','phone'];
   function readProfile(){
     try{return JSON.parse(localStorage.getItem(PROFILE_KEY)||'null')||null;}catch(e){return null;}
@@ -127,10 +127,12 @@
       if(name&&!sessionStorage.getItem('user_name'))saveProfile(cached);
       userMeta.textContent=name?(dept||'未設定單位')+'｜'+name:'尚未登入';
       var deptId=sessionStorage.getItem('user_dept_id')||cached.dept_id||'';
-      if(!name)recoverProfileFromAuth();
+      if(!name||(!dept&&!deptId))recoverProfileFromAuth();
       if(name&&!dept&&deptId&&!deptLookupStarted){
         deptLookupStarted=true;
-        fetch('https://qztffronusdhgxhjjubt.supabase.co/rest/v1/departments?select=dept_id,name,parent_id&status=eq.active',{headers:{apikey:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6InF6dGZmcm9udXNkaGd4aGpqdWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2OTI1MzgsImV4cCI6MjA5NzI2ODUzOH0.FnUxot5YXI3yKCUCmJA5P4ysEJhmtaQQA6rM7MRy3oA'}})
+        var auth=storedAuthSession();
+        var bearer=auth&&auth.access_token||SUPABASE_ANON_KEY;
+        fetch(SUPABASE_URL+'/rest/v1/departments?select=dept_id,name,parent_id&status=eq.active',{headers:{apikey:SUPABASE_ANON_KEY,Authorization:'Bearer '+bearer}})
           .then(function(r){return r.ok?r.json():[];})
           .then(function(rows){
             var map={};rows.forEach(function(d){map[d.dept_id]=d;});
